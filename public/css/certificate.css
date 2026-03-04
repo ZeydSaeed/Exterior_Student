@@ -1,0 +1,414 @@
+@page {
+    size: A4 portrait;
+    margin: 1cm;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20px;
+    line-height: 1.8;
+    margin: 0;
+    direction: rtl;
+    color: #0a0a0a;
+}
+
+.support-paper {
+    width: calc(100% - 2cm);
+    min-height: calc(100vh - 2cm);
+    padding: 1cm;
+    padding-top: calc(1cm + 10px);
+    box-sizing: border-box;
+    border: 1px solid #000;
+    page-break-after: always;
+    font-size: 20px;
+    margin: 1cm auto;
+    position: relative;
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.8;
+    color: #0a0a0a;
+    background: #fff;
+}
+
+.page-certificate .support-paper {
+    max-width: 19cm;
+    padding-top: calc(1cm + 60px);
+}
+
+.page-certificate .support-paper .form-actions {
+    position: absolute;
+    top: 0.4cm;
+    left: 0.4cm;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    background: transparent;
+}
+
+.page-certificate .support-paper .form-actions .btn-primary {
+    background: #000;
+    color: #fff;
+    padding: 0 16px;
+    min-width: 5rem;
+    height: 2.25rem;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.page-certificate .support-paper .form-actions .btn-primary:hover {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #555;
+}
+
+.support-paper .top-line,
+.support-paper .right-line,
+.support-paper .right-line2,
+.support-paper .meta-line {
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.top-line {
+    text-align: center;
+    font-weight: bold;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.right-line {
+    margin-right: 10px;
+    font-weight: normal;
+    display: inline-block;
+}
+
+.support-paper .right-line,
+.support-paper .right-line2,
+.support-paper .meta-line {
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.support-paper .right-line2 {
+    text-align: right;
+}
+
+.support-paper .meta-line {
+    text-align: right;
+}
+
+.meta-line.exam-line {
+    margin-bottom: 3px;
+}
+
+.photo-frame {
+    width: 120px;
+    height: 140px;
+    border: 1px solid #000;
+    float: left;
+    margin: 10px;
+    margin-top: -90px;
+    text-align: center;
+    line-height: 140px;
+    color: #444;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.meta-line.to-line {
+    margin-top: 2px;
+    margin-bottom: 0;
+    text-align: center;
+    white-space: normal;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100%;
+    display: block;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.topic-line {
+    margin-top: 0;
+    margin-bottom: 2px;
+    text-align: center;
+    display: block;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.subject-line {
+    margin-top: 0;
+    margin-bottom: 2px;
+    text-align: center;
+    display: block;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.support-paper.support-paper-with-grades .meta-line.to-line {
+    margin-top: 30px;
+    margin-bottom: 0;
+    text-align: center;
+    white-space: normal;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100%;
+    display: block;
+}
+
+.support-paper.support-paper-with-grades .topic-line {
+    margin-top: 0;
+    margin-bottom: 2px;
+    text-align: center;
+    display: block;
+}
+
+.support-body-text,
+.support-paper .body-line {
+    margin-top: 1px;
+    margin-bottom: 5px;
+    text-align: justify;
+    line-height: 1.8;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.support-paper #certificate-body {
+    text-align: justify;
+    margin-bottom: 5px;
+    line-height: 1.8;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.editable {
+    min-width: 80px;
+    display: inline-block;
+    padding: 0 2px;
+    font-weight: bold;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.signature-columns {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 60px;
+}
+
+.signature-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 200px;
+    margin-top: 60px;
+}
+
+.signature-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+    line-height: 1.2;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.signature-name {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0;
+    color: #0a0a0a;
+    line-height: 1.2;
+}
+
+.signature-date {
+    font-size: 0.9rem;
+    color: #0a0a0a;
+    line-height: 1.2;
+    direction: rtl;
+    unicode-bidi: embed;
+}
+
+.arabic-date,
+.arabic-date-applied {
+    direction: rtl;
+    unicode-bidi: embed;
+}
+
+.footer-note {
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: right;
+    position: absolute;
+    bottom: 0.5cm;
+    left: 1cm;
+    right: 1cm;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0a;
+}
+
+.support-paper [contenteditable="true"] {
+    outline: none;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.modal-backdrop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    padding: 30px 0;
+}
+
+.modal-backdrop .modal {
+    background: #fff;
+    width: 21cm;
+    max-width: 100%;
+    margin: 0 ;
+    padding: 0;
+    /* border-radius: 6px; */
+    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); */
+}
+
+.certificate-modal {
+    width: 16cm;
+    max-width: 95%;
+}
+
+.certificate-modal .modal-body {
+    padding: 0;
+}
+
+.certificate-modal .modal-actions-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 8px 15px;
+    background: #000;
+    border-radius: 6px 6px 0 0;
+}
+
+.certificate-modal .modal-actions-top .btn,
+.certificate-modal .btn.print,
+.certificate-modal .btn.close {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 0 16px;
+    margin: 0;
+    min-width: 5rem;
+    height: 2.25rem;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: "Times New Roman", Times, serif;
+    background: transparent;
+    color: #fff;
+}
+
+.certificate-modal .modal-actions-top .btn.print:hover,
+.certificate-modal .modal-actions-top .btn.close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.certificate-modal .support-paper {
+    margin: 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.page-certificate .modal-backdrop {
+    align-items: flex-start;
+    padding-top: 0.75rem;
+    z-index: 200;
+}
+
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .print-area,
+    .print-area * {
+        visibility: visible;
+    }
+
+    .print-area {
+        position: absolute;
+        inset: 0;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        background: #fff;
+    }
+
+    .support-paper {
+        transform: none !important;
+        width: 100% !important;
+        min-height: auto;
+        margin: 0 !important;
+        padding: 1cm;
+        padding-top: calc(1cm + 10px);
+        box-sizing: border-box;
+        box-shadow: none;
+        border: 1px solid #000;
+        border-radius: 0;
+        font-family: "Times New Roman", serif;
+        font-size: 20px;
+        line-height: 1.8;
+    }
+
+    .support-paper .photo-frame {
+        float: left;
+        width: 120px;
+        height: 140px;
+        margin: 10px;
+        margin-top: -90px;
+        line-height: 140px;
+    }
+
+    .modal-backdrop,
+    .certificate-modal {
+        background: #fff !important;
+        box-shadow: none;
+    }
+
+    html, body {
+        background: #fff !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .editable {
+        all: unset;
+    }
+}

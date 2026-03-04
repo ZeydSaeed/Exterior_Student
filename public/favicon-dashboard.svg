@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <defs>
+    <linearGradient id="dash-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d6d2cd"/>
+      <stop offset="100%" stop-color="#a0b0bf"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#dash-bg)"/>
+  <!-- #JBHF) 4(JG) (DH-) *-CE -->
+  <rect x="14" y="14" width="14" height="14" rx="3" fill="#4a545e"/>
+  <rect x="36" y="14" width="14" height="10" rx="3" fill="#717980"/>
+  <rect x="14" y="36" width="16" height="14" rx="3" fill="#717980"/>
+  <rect x="36" y="30" width="14" height="20" rx="3" fill="#4a545e"/>
+</svg>
+
