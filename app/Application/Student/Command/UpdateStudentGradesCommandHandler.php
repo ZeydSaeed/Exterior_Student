@@ -20,6 +20,7 @@ final class UpdateStudentGradesCommandHandler
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   gender?: string,
      *   branch?: string,
      *   major?: string,
      *   academic_year?: string,
@@ -39,7 +40,7 @@ final class UpdateStudentGradesCommandHandler
     private function normalizePayload(array $payload): array
     {
         $out = [];
-        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'branch', 'major', 'academic_year', 'result', 'total', 'average', 'round'];
+        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'gender', 'branch', 'major', 'academic_year', 'result', 'total', 'average', 'round'];
         foreach ($basic as $key) {
             if (array_key_exists($key, $payload)) {
                 $out[$key] = trim((string) $payload[$key]);

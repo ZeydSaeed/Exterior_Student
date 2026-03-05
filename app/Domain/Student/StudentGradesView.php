@@ -15,6 +15,7 @@ final class StudentGradesView
         public readonly string $nameGrandfather,
         public readonly string $nameSurname,
         public readonly string $examNumber,
+        public readonly string $gender,
         public readonly string $branch,
         public readonly string $major,
         public readonly string $academicYear,

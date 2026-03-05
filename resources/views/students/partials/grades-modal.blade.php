@@ -38,6 +38,11 @@
                     <input type="text" name="exam_number" id="grades-exam-number-input" class="grades-edit grades-edit-hidden" aria-label="الرقم الامتحاني">
                 </div>
                 <div class="grades-field">
+                    <label>الجنس</label>
+                    <span class="grades-readonly" id="grades-gender"></span>
+                    <input type="text" name="gender" id="grades-gender-input" class="grades-edit grades-edit-hidden" aria-label="الجنس">
+                </div>
+                <div class="grades-field">
                     <label>الفرع</label>
                     <span class="grades-readonly" id="grades-branch"></span>
                     <input type="text" name="branch" id="grades-branch-input" class="grades-edit grades-edit-hidden" aria-label="الفرع">

@@ -17,6 +17,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         'name_grandfather' => 'اسم الجد',
         'name_surname' => 'اللقب',
         'exam_number' => 'الرقم الامتحاني',
+        'gender' => 'الجنس',
         'branch' => 'الفرع',
         'major' => 'الاختصاص',
         'academic_year' => 'العام الدراسي',

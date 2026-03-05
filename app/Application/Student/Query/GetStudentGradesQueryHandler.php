@@ -116,6 +116,7 @@ final class GetStudentGradesQueryHandler
             name_grandfather: $view->nameGrandfather,
             name_surname: $view->nameSurname,
             exam_number: $view->examNumber,
+            gender: $view->gender,
             branch: $view->branch,
             major: $view->major,
             academic_year: $view->academicYear,

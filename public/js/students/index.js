@@ -105,6 +105,8 @@
         setVal('grades-name-surname-input', data.name_surname != null ? data.name_surname : '');
         setText('grades-exam-number', data.exam_number);
         setVal('grades-exam-number-input', data.exam_number);
+        setText('grades-gender', data.gender != null ? data.gender : '');
+        setVal('grades-gender-input', data.gender != null ? data.gender : '');
         setText('grades-branch', data.branch);
         setVal('grades-branch-input', data.branch);
         setText('grades-major', data.major);
@@ -152,6 +154,7 @@
                     name_father: '',
                     name_grandfather: '',
                     name_surname: '',
+                    gender: btn ? (btn.getAttribute('data-gender') || '') : '',
                     branch: btn ? btn.getAttribute('data-branch') : '',
                     major: btn ? btn.getAttribute('data-major') : '',
                     academic_year: btn ? btn.getAttribute('data-year') : '',
@@ -203,6 +206,7 @@
         }
         btn.setAttribute('data-name', fullName);
         btn.setAttribute('data-exam-number', payload.exam_number != null ? String(payload.exam_number) : '');
+        btn.setAttribute('data-gender', payload.gender != null ? String(payload.gender) : '');
         btn.setAttribute('data-branch', payload.branch != null ? String(payload.branch) : '');
         btn.setAttribute('data-major', payload.major != null ? String(payload.major) : '');
         btn.setAttribute('data-year', payload.academic_year != null ? String(payload.academic_year) : '');
@@ -224,8 +228,8 @@
                 name_grandfather: (document.getElementById('grades-name-grandfather-input') || {}).value || '',
                 name_surname: (document.getElementById('grades-name-surname-input') || {}).value || '',
                 exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
+                gender: (document.getElementById('grades-gender-input') || {}).value || '',
                 branch: (document.getElementById('grades-branch-input') || {}).value || '',
-                major: (document.getElementById('grades-major-input') || {}).value || '',
                 academic_year: (document.getElementById('grades-year-input') || {}).value || '',
                 total: (document.getElementById('grades-total-input') || {}).value || '',
                 average: (document.getElementById('grades-average-input') || {}).value || '',

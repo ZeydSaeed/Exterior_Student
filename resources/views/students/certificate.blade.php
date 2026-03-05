@@ -13,6 +13,8 @@
         $organizerTitle = $dto->employees[0]['type'] ?? 'منظم التأييد';
         $manager = $dto->employees[1]['name'] ?? 'غير محدد';
         $managerTitle = $dto->employees[1]['type'] ?? 'مسؤول شعبة شؤون الطلبة';
+        $genderTrim = trim($dto->gender ?? '');
+        $isFemale = in_array($genderTrim, ['انثى', 'أنثى'], true);
     @endphp
 
     <div class="students-layout">
@@ -30,7 +32,7 @@
                         <div class="right-line2">قسم التعليم المهني / كربلاء المقدسة</div>
                         <div class="right-line2">المدرسة: خارجيون</div>
 
-                        <div class="photo-frame">صورة الطالب</div>
+                        <div class="photo-frame">@if($isFemale)صورة الطالبة@elseصورة الطالب@endif</div>
 
                         <div class="meta-line">العدد: <span class="editable arabic-number" contenteditable="true"></span></div>
                         <div class="meta-line">التاريخ: <span class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('d / m / Y') }}</span></div>
@@ -48,7 +50,11 @@
                         </div>
 
                         <div class="body-line" contenteditable="true">
+                            @if($isFemale)
+                            نؤيد لكم أن الطالبة ({{ $dto->fullName }}) الملصقة صورتها أعلاه، والمولودة بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> إحدى طالبات الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشتركت بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت نتيجتها ({{ $dto->result }}) في الدور ({{ $dto->round }})، وبناءً على طلبها زُوِّدَت بهذا التأييد.
+                            @else
                             نؤيد لكم أن الطالب ({{ $dto->fullName }}) الملصقة صورته أعلاه، والمولود بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> أحد طلاب الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشترك بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت النتيجة ({{ $dto->result }}) في الدور ({{ $dto->round }})، وبناءً على طلبه زُوِّد بهذا التأييد.
+                            @endif
                         </div>
 
                         <div class="signature-space"></div>

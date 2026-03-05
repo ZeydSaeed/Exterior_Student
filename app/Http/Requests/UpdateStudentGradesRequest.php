@@ -24,6 +24,7 @@ class UpdateStudentGradesRequest extends FormRequest
             'name_grandfather'  => ['nullable', 'string', 'max:255'],
             'name_surname'      => ['nullable', 'string', 'max:255'],
             'exam_number'       => ['nullable', 'string', 'max:255'],
+            'gender'            => ['nullable', 'string', 'max:255'],
             'branch'            => ['nullable', 'string', 'max:255'],
             'major'             => ['nullable', 'string', 'max:255'],
             'academic_year'     => ['nullable', 'string', 'max:255'],
@@ -46,6 +47,7 @@ class UpdateStudentGradesRequest extends FormRequest
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   gender?: string,
      *   branch?: string,
      *   major?: string,
      *   academic_year?: string,
@@ -69,7 +71,7 @@ class UpdateStudentGradesRequest extends FormRequest
 
         $allowedKeys = [
             'name_student', 'name_father', 'name_grandfather', 'name_surname',
-            'exam_number', 'branch', 'major', 'academic_year',
+            'exam_number', 'gender', 'branch', 'major', 'academic_year',
             'result', 'total', 'average', 'round', 'grades',
         ];
 

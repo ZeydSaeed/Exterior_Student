@@ -35,6 +35,7 @@
                             data-student-id="{{ $student->id }}"
                             data-exam-number="{{ e($student->exam_number ?? '') }}"
                             data-name="{{ e($student->full_name ?? '') }}"
+                            data-gender="{{ e($student->gender ?? '') }}"
                             data-branch="{{ e($student->branch ?? '') }}"
                             data-major="{{ e($student->major ?? '') }}"
                             data-year="{{ e($student->academic_year ?? '') }}"
