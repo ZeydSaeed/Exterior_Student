@@ -1,19 +1,9 @@
+/**
+ * صفحة التأييد (تأييد بدون درجات) — طباعة + تكيف بالعرض
+ * يُحمّل من صفحة التأييد فقط (داخل الداشبورد، لا مودال).
+ */
 (function () {
     'use strict';
-
-    function setText(id, value) {
-        var el = document.getElementById(id);
-        if (el) {
-            el.textContent = value != null ? String(value) : '';
-        }
-    }
-
-    function todayIso() {
-        var d = new Date();
-        var m = String(d.getMonth() + 1).padStart(2, '0');
-        var day = String(d.getDate()).padStart(2, '0');
-        return d.getFullYear() + '-' + m + '-' + day;
-    }
 
     function openPrintDialog() {
         if (typeof window.print === 'function') {
@@ -21,125 +11,101 @@
         }
     }
 
+    /**
+     * حساب نهاية التولبار وارتفاع منطقة التأييد: من نهاية التولبار إلى نهاية الداشبورد.
+     */
+    function getToolbarEndAndContentHeight() {
+        var toolbar = document.querySelector('.dashboard-toolbar');
+        if (!toolbar) return { contentHeight: window.innerHeight, toolbarHeight: 0 };
+        var rect = toolbar.getBoundingClientRect();
+        var toolbarEnd = rect.bottom;
+        var contentHeight = window.innerHeight - toolbarEnd;
+        return { contentHeight: contentHeight > 0 ? contentHeight : 0, toolbarHeight: rect.height };
+    }
+
+    function applyDashboardHeight() {
+        var dashboardContent = document.querySelector('.page-certificate .dashboard-content');
+        if (!dashboardContent) return;
+        var result = getToolbarEndAndContentHeight();
+        if (result.contentHeight > 0) {
+            dashboardContent.style.height = result.contentHeight + 'px';
+            dashboardContent.style.minHeight = result.contentHeight + 'px';
+            dashboardContent.style.maxHeight = result.contentHeight + 'px';
+        }
+    }
+
     function fitCertificate() {
         var content = document.querySelector('.support-paper');
+        var wrapper = content ? content.closest('.certificate-fit-wrapper') || content.parentElement : null;
         if (!content) return;
         content.style.transform = '';
         content.style.transformOrigin = '';
-        var rect = content.getBoundingClientRect();
-        var available = window.innerHeight - rect.top - 16;
-        var natural = content.scrollHeight;
-        if (!natural || available <= 0) return;
-        var scale = Math.min(1, available / natural);
-        if (scale < 0.7) scale = 0.7;
-        content.style.transformOrigin = 'top center';
+
+        var naturalHeight = content.scrollHeight;
+        var naturalWidth = content.scrollWidth || content.offsetWidth;
+        if (!naturalHeight || !naturalWidth) return;
+
+        var dashboardContent = document.querySelector('.page-certificate .dashboard-content');
+        var padding = 8;
+        var availableWidth, availableHeight;
+        if (dashboardContent && dashboardContent.offsetHeight > padding && dashboardContent.offsetWidth > padding) {
+            availableWidth = dashboardContent.offsetWidth - padding;
+            availableHeight = dashboardContent.offsetHeight - padding;
+        } else {
+            var result = getToolbarEndAndContentHeight();
+            availableHeight = result.contentHeight - padding;
+            availableWidth = window.innerWidth - padding * 2;
+        }
+        if (availableHeight <= 0) availableHeight = 400;
+        if (availableWidth <= 0) availableWidth = 400;
+
+        var scaleH = availableHeight / naturalHeight;
+        var scaleW = availableWidth / naturalWidth;
+        var scale = scaleW < scaleH ? scaleW : scaleH;
+        if (scale > 1) scale = 1;
+        if (scale < 0.15) scale = 0.15;
+
+        content.style.transformOrigin = 'top left';
         content.style.transform = 'scale(' + scale + ')';
+
+        if (wrapper) {
+            wrapper.style.width = (naturalWidth * scale) + 'px';
+            wrapper.style.height = (naturalHeight * scale) + 'px';
+        }
     }
 
-    // دعم فتح نموذج التأييد كمودال فوق جدول الطلاب (صفحة index)
-    var certificateModal = document.getElementById('certificate-modal');
-    var certificatePrintBtn = document.getElementById('certificate-btn-print');
-    var certificateCloseBtn = document.querySelector('[data-certificate-modal-close]');
+    var printBtn = document.getElementById('certificate-btn-print');
+    if (printBtn) {
+        printBtn.addEventListener('click', openPrintDialog);
+    }
 
-    function openCertificateModal() {
-        if (!certificateModal) return;
-        certificateModal.classList.add('is-visible');
-        certificateModal.setAttribute('aria-hidden', 'false');
+    function runFit() {
+        applyDashboardHeight();
         fitCertificate();
-    }
-
-    function closeCertificateModal() {
-        if (!certificateModal) return;
-        certificateModal.classList.remove('is-visible');
-        certificateModal.setAttribute('aria-hidden', 'true');
-    }
-
-    function fillCertificate(data) {
-        if (!data) return;
-        setText('certificate-exam-number', data.exam_number || '');
-        setText('certificate-full-name', data.full_name || '');
-        setText('certificate-birth-date', data.birth_date || '');
-        setText('certificate-branch', data.branch || '');
-        setText('certificate-specialization', data.specialization || '');
-        setText('certificate-academic-year', data.academic_year || '');
-        setText('certificate-result', data.result || '');
-        setText('certificate-round', data.round || '');
-
-        var employees = Array.isArray(data.employees) ? data.employees : [];
-        var organizer = employees[0] || {};
-        var manager = employees[1] || {};
-
-        setText('certificate-organizer-title', organizer.type || 'منظم التأييد');
-        setText('certificate-organizer-name', organizer.name || 'غير محدد');
-        setText('certificate-manager-title', manager.type || 'مسؤول شعبة شؤون الطلبة');
-        setText('certificate-manager-name', manager.name || 'غير محدد');
-
-        var today = todayIso();
-        setText('certificate-date', today);
-        setText('certificate-organizer-date', today);
-        setText('certificate-manager-date', today);
-
-        if (window.ArabicDate && typeof window.ArabicDate.init === 'function') {
-            window.ArabicDate.init();
-        }
-    }
-
-    function attachCertificateButtons() {
-        var urlTpl = window.STUDENTS_CERTIFICATE_URL_TEMPLATE || '/students/__ID__/certificate';
-        var buttons = document.querySelectorAll('.btn-certificate-open');
-        if (!buttons.length) {
-            return;
-        }
-        buttons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var id = this.getAttribute('data-student-id');
-                if (!id) return;
-                openCertificateModal();
-                var url = urlTpl.replace('__ID__', id);
-                fetch(url, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data && !data.error) {
-                            fillCertificate(data);
-                        }
-                    })
-                    .catch(function () {
-                        // في حالة الفشل نغلق المودال فقط
-                        closeCertificateModal();
-                        alert('تعذر تحميل بيانات التأييد. يرجى المحاولة مرة أخرى.');
-                    });
+        if (document.querySelector('.certificate-page')) {
+            setTimeout(function () {
+                applyDashboardHeight();
+                fitCertificate();
+            }, 50);
+            setTimeout(function () {
+                applyDashboardHeight();
+                fitCertificate();
+            }, 200);
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    applyDashboardHeight();
+                    fitCertificate();
+                });
             });
-        });
+        }
     }
-
-    // ربط أزرار الطباعة والإغلاق
-    if (certificatePrintBtn) {
-        certificatePrintBtn.addEventListener('click', openPrintDialog);
-    }
-    if (certificateCloseBtn) {
-        certificateCloseBtn.addEventListener('click', closeCertificateModal);
-    }
-    if (certificateModal) {
-        certificateModal.addEventListener('click', function (e) {
-            if (e.target === certificateModal) {
-                closeCertificateModal();
-            }
-        });
-    }
-
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            fitCertificate();
-            attachCertificateButtons();
-        });
+        document.addEventListener('DOMContentLoaded', runFit);
     } else {
-        fitCertificate();
-        attachCertificateButtons();
+        runFit();
     }
-    window.addEventListener('resize', fitCertificate);
+    window.addEventListener('resize', function () {
+        applyDashboardHeight();
+        fitCertificate();
+    });
 })();
