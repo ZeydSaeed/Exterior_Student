@@ -1,3 +1,7 @@
+/**
+ * تنسيقات صفحة التأييد بالدرجات — ملف معزول ومستقل
+ * نفس مظهر صفحة التأييد بدون درجات + جدول الدرجات وصف المجموع
+ */
 @page {
     size: A4 portrait;
     margin: 1cm;
@@ -19,47 +23,36 @@
     min-height: 0;
 }
 .page-certificate .students-layout,
-.page-certificate .students-table-area,
+.page-certificate .students-table-area {
+    overflow: hidden !important;
+    min-height: 0;
+    height: 100%;
+}
+
 .page-certificate .certificate-page {
     overflow: hidden !important;
     min-height: 0;
 }
 
+/* الورقة تملأ منطقة الداشبورد من جميع الجهات */
 .page-certificate .certificate-fit-wrapper {
-    margin-top: 0px;
+    margin: 0;
+    padding: 0;
+    width: 200%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
 }
 
-/* سلسلة الارتفاع: طول صفحة التأييد = طول منطقة الداشبورد (يُحسب من JS) */
 
-
-
-
-
-
-.support-paper {
-    width: 100%;
-    max-width:200%;
-    min-height: 10px;
-    max-height: 84vh;
-    padding: 1cm;
-    padding-top: calc(1cm + 10px);
-    box-sizing: border-box;
-    border: 1px solid #000;
-    page-break-after: always;
-    font-size: 20px;
-    margin: 0 auto;
-    position: relative;
-    font-family: "Times New Roman", Times, serif;
-    line-height: 1.8;
-    color: #0a0a0a;
-    background: #fff;
-}
 
 
 .page-certificate .support-paper .form-actions {
     position: absolute;
-    top: 0.4cm;
-    left: 0.4cm;
+    top: 0.5cm;
+    left: 1cm;
     display: inline-flex;
     align-items: center;
     gap: 1rem;
@@ -93,8 +86,9 @@
 .support-paper .right-line,
 .support-paper .right-line2,
 .support-paper .meta-line {
-    line-height: 1.2;
-    margin-bottom: 4px;
+    line-height: 0.9;
+    margin-bottom: 2px;
+    width: 90%;
 }
 
 .top-line {
@@ -131,13 +125,15 @@
 
 .photo-frame {
     width: 120px;
-    height: 140px;
+    height: 100px;
     border: 1px solid #000;
     float: left;
     margin: 1px;
-    margin-top: -90px;
+    margin-right: 10px;
+    margin-left: 15px;
+    margin-top: -10px;
     text-align: center;
-    line-height: 140px;
+    line-height: 90px;
     color: #444;
     font-family: "Times New Roman", Times, serif;
 }
@@ -173,23 +169,83 @@
     color: #0a0a0a;
 }
 
+/* تأييد بالدرجات: تعديلات إضافية للورقة */
+.support-paper.support-paper-with-grades .meta-line.to-line {
+    margin-top: 10px;
+    margin-bottom: 0;
+    text-align: center;
+    white-space: normal;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100%;
+    display: block;
+}
+
+.support-paper.support-paper-with-grades .topic-line {
+    margin-top: 0;
+    margin-bottom: 1px;
+    text-align: center;
+    display: block;
+}
+
 .support-body-text,
 .support-paper .body-line {
     margin-top: 1px;
     margin-bottom: 0;
     text-align: justify;
-    line-height: 1.8;
+    line-height: 1;
     font-family: "Times New Roman", Times, serif;
     color: #0a0a0a;
+    width: 100%;
 }
-
 
 .support-paper #certificate-body {
     text-align: justify;
     margin-bottom: 0;
-    line-height: 1.8;
+    line-height: 0.9;
     font-family: "Times New Roman", Times, serif;
     color: #0a0a0a;
+}
+
+/* جدول الدرجات — خاص بصفحة التأييد بالدرجات */
+.support-paper-with-grades .certificate-grades-table {
+    width: 100%;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    border-collapse: collapse;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1rem;
+    color: #0a0a0a;
+    line-height: 0.5;
+}
+
+.support-paper-with-grades .certificate-grades-table th{
+    text-align: center;
+    border: 1px solid #0a0a0a;
+    padding: 0.35rem 0.5rem;
+}
+.support-paper-with-grades .certificate-grades-table td {
+    border: 1px solid #0a0a0a;
+    padding: 0.35rem 0.5rem;
+    text-align: right;
+}
+
+.support-paper-with-grades .certificate-grades-table th {
+    font-weight: 700;
+    background: #f5f5f5;
+}
+
+.support-paper-with-grades .certificate-grades-table .certificate-grade-num {
+    text-align: center;
+}
+
+.support-paper-with-grades .certificate-grades-total-row {
+    font-weight: 700;
+    background: #e8e8e8;
+}
+
+.support-paper-with-grades .certificate-grades-total-row td {
+    border-top: 2px solid #0a0a0a;
 }
 
 .support-paper .signature-space {
@@ -206,8 +262,8 @@
 }
 
 .certificate-signatures-header {
-    margin-top: 10px;
-    margin-bottom: 4px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     font-family: "Times New Roman", Times, serif;
     color: #0a0a0a;
 }
@@ -216,7 +272,7 @@
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
-    margin-bottom: 4px;
+    margin-bottom: 1px;
     line-height: 1.4;
 }
 
@@ -235,8 +291,9 @@
     margin-top: 0;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content:space-between;
     gap: 60px;
+    margin-left: 30px;
 }
 
 .signature-col {
@@ -245,7 +302,7 @@
     align-items: center;
     text-align: center;
     min-width: 200px;
-    margin-top: 60px;
+    margin-top: 10px;
 }
 
 .signature-title {
@@ -281,15 +338,10 @@
 
 .footer-note {
     font-size: 12px;
-    /* margin-top: 5px;
-    margin-bottom: 20px;
-    text-align: right;
-    position: absolute;
-    bottom: 0.5cm; */
     left: 1cm;
     right: 1cm;
-    margin-top: 20px;
-    padding-bottom: 20px;
+    margin-top: 35px;
+    padding-bottom: 10px;
     font-family: "Times New Roman", Times, serif;
     color: #0a0a0a;
 }
@@ -302,81 +354,24 @@
     white-space: nowrap;
 }
 
-.modal-backdrop {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    padding: 30px 0;
-}
-
-.modal-backdrop .modal {
-    background: #fff;
-    width: 21cm;
-    max-width: 100%;
-    margin: 0 ;
-    padding: 0;
-    /* border-radius: 6px; */
-    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); */
-}
-
-.certificate-modal {
-    width: 16cm;
-    max-width: 95%;
-}
-
-.certificate-modal .modal-body {
-    padding: 0;
-}
-
-.certificate-modal .modal-actions-top {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
-    padding: 8px 15px;
-    background: #000;
-    border-radius: 6px 6px 0 0;
-}
-
-.certificate-modal .modal-actions-top .btn,
-.certificate-modal .btn.print,
-.certificate-modal .btn.close {
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    padding: 0 16px;
-    margin: 0;
-    min-width: 5rem;
-    height: 2.25rem;
+.support-paper {
+    width: 98%;
+    /* max-width:200%; */
+    /* min-height: 10px; */
+    /* max-height: 80.6vh; */
+    height: 100%;
+    padding: 1cm;
+    /* padding-top: calc(0cm + 10px); */
     box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 0.95rem;
+    border: 1px solid #000;
+    page-break-after: always;
+    font-size: 18px;
+    margin: 0 auto;
+    position: relative;
     font-family: "Times New Roman", Times, serif;
-    background: transparent;
-    color: #fff;
-}
-
-.certificate-modal .modal-actions-top .btn.print:hover,
-.certificate-modal .modal-actions-top .btn.close:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.8);
-}
-
-.certificate-modal .support-paper {
-    margin: 0;
-    border-radius: 6px 6px 0 0;
-}
-
-.page-certificate .modal-backdrop {
-    align-items: flex-start;
-    padding-top: 0.75rem;
-    z-index: 200;
+    /* line-height: 1.8; */
+    color: #0a0a0a;
+    background: #fff;
 }
 
 @media print {
@@ -432,6 +427,22 @@
         margin-top: -90px;
         line-height: 140px;
     }
+    .support-paper .body-line {
+        line-height: 1.9;
+    }
+    .support-paper #certificate-body {
+        line-height: 1.9;
+    }
+        .support-paper .certificate-grades-table {
+        line-height: 1.9;
+        margin-bottom: 0px;
+    }
+    .support-paper .certificate-grades-table th {
+        line-height: 1;
+    }
+    .support-paper .certificate-grades-table td {
+        line-height: 1;
+    }
 
     .modal-backdrop,
     .certificate-modal {
@@ -451,9 +462,9 @@
         all: unset;
     }
     .support-paper .signature-space {
-        height: 200px;
+        height: 100px;
     }
     .support-paper .footer-note {
-        margin-top: 200px;
+        margin-top: 100px;
     }
 }

@@ -28,6 +28,9 @@ Route::delete('/students/{id}', [StudentController::class, 'destroy'])
 Route::get('/students/{id}/certificate', [StudentCertificateController::class, 'show'])
     ->name('students.certificate');
 
+Route::get('/students/{id}/certificate-with-grades', [StudentCertificateController::class, 'showWithGrades'])
+    ->name('students.certificate-with-grades');
+
 Route::get('/employees', [EmployeeController::class, 'index'])
     ->name('employees.index');
 

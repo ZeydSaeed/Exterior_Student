@@ -192,7 +192,7 @@ body.page-students .dashboard-main {
     height: 1.25rem;
 }
 .dashboard-content {
-    padding: 1.5rem;
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
     align-items: stretch;

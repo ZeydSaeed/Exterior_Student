@@ -51,9 +51,11 @@
                         </a>
                     </td>
                     <td>
-                        <button type="button" class="btn-primary btn-confirm-with-grades" title="تأييد بالدرجات">
-                            <span class="btn-label">تأييد بالدرجات</span>
-                        </button>
+                        <a href="{{ route('students.certificate-with-grades', ['id' => $student->id]) }}"
+                           class="btn-primary btn-confirm-with-grades"
+                           title="تأييد بالدرجات">
+                            <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">تأييد بالدرجات</span>
+                        </a>
                     </td>
                     <td>
                         <button type="button" class="btn-primary btn-enroll" title="قيد الطالب">
