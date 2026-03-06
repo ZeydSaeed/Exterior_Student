@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\DB;
  */
 final class MySQLEmployeeCommandRepository implements EmployeeCommandRepository
 {
-    public function create(string $type, string $name): void
+    public function create(string $type, string $name, int $tableGroup = 1): void
     {
-        DB::transaction(function () use ($type, $name): void {
+        DB::transaction(function () use ($type, $name, $tableGroup): void {
             DB::table('employees')->insert([
                 'type' => $type,
                 'name' => $name,
+                'table_group' => $tableGroup,
             ]);
         });
     }

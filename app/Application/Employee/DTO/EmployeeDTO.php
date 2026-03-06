@@ -11,6 +11,7 @@ final class EmployeeDTO
         public readonly int $id,
         public readonly string $type,
         public readonly string $name,
+        public readonly int $tableGroup = 1,
     ) {}
 
     public function toArray(): array
@@ -19,6 +20,7 @@ final class EmployeeDTO
             'id' => $this->id,
             'type' => $this->type,
             'name' => $this->name,
+            'table_group' => $this->tableGroup,
         ];
     }
 }

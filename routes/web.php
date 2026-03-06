@@ -37,8 +37,8 @@ Route::get('/employees', [EmployeeController::class, 'index'])
 Route::post('/employees', [EmployeeController::class, 'store'])
     ->name('employees.store');
 
-Route::post('/employees/selected-to-session', [EmployeeController::class, 'storeSelectedToSession'])
-    ->name('employees.selected-to-session');
+Route::post('/employees/signatures', [EmployeeController::class, 'storeSignatures'])
+    ->name('employees.signatures.store');
 
 Route::put('/employees/{id}', [EmployeeController::class, 'update'])
     ->name('employees.update');

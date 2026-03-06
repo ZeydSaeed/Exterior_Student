@@ -2,35 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Certificate\Command\SaveCertificateSignatureSettingsCommandHandler;
+use App\Application\Certificate\Query\GetCertificateSignatureSettingsQueryHandler;
 use App\Application\Employee\Command\CreateEmployeeCommandHandler;
 use App\Application\Employee\Command\DeleteEmployeeCommandHandler;
 use App\Application\Employee\Command\UpdateEmployeeCommandHandler;
 use App\Application\Employee\Query\ListEmployeesQueryHandler;
-use App\Domain\Employee\EmployeeQueryRepository;
+use App\Http\Requests\SaveCertificateSignatureSettingsRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
-use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index(ListEmployeesQueryHandler $handler)
-    {
-        $response = $handler->handle();
+    public function index(
+        ListEmployeesQueryHandler $listHandler,
+        GetCertificateSignatureSettingsQueryHandler $signatureSettingsHandler
+    ) {
+        $response = $listHandler->handle();
+        $data = $response->toArray();
 
-        return view('employees.index', $response->toArray());
+        $signatures = $signatureSettingsHandler->handle();
+        $data['right_selected'] = $signatures['right'];
+        $data['left_selected'] = $signatures['left'];
+
+        return view('employees.index', $data);
     }
 
-    public function store(StoreEmployeeRequest $request, CreateEmployeeCommandHandler $handler)
+    public function store(StoreEmployeeRequest $request, CreateEmployeeCommandHandler $handler, SaveCertificateSignatureSettingsCommandHandler $signatureHandler)
     {
         $handler->handle(
             type: (string) $request->validated('type'),
-            name: (string) $request->validated('name')
+            name: (string) $request->validated('name'),
+            tableGroup: (int) $request->validated('table_group')
         );
+
+        $this->saveSignaturesFromRequest($request, $signatureHandler);
 
         return redirect()->back();
     }
 
-    public function update(int $id, UpdateEmployeeRequest $request, UpdateEmployeeCommandHandler $handler)
+    public function update(int $id, UpdateEmployeeRequest $request, UpdateEmployeeCommandHandler $handler, SaveCertificateSignatureSettingsCommandHandler $signatureHandler)
     {
         $handler->handle(
             id: $id,
@@ -38,43 +49,65 @@ class EmployeeController extends Controller
             name: (string) $request->validated('name')
         );
 
+        $this->saveSignaturesFromRequest($request, $signatureHandler);
+
         return redirect()->back();
     }
 
-    public function destroy(int $id, DeleteEmployeeCommandHandler $handler)
+    public function destroy(int $id, \Illuminate\Http\Request $request, DeleteEmployeeCommandHandler $handler, SaveCertificateSignatureSettingsCommandHandler $signatureHandler)
     {
         $handler->handle($id);
+
+        $this->saveSignaturesFromRequest($request, $signatureHandler);
 
         return redirect()->back();
     }
 
     /**
-     * حفظ الموظفين المختارين في الجلسة (لصفحة التأييد).
+     * حفظ إعدادات التواقيع من بيانات الطلب (إن وُجدت).
      */
-    public function storeSelectedToSession(Request $request, EmployeeQueryRepository $queryRepository)
+    private function saveSignaturesFromRequest(\Illuminate\Http\Request $request, SaveCertificateSignatureSettingsCommandHandler $signatureHandler): void
     {
-        $ids = $request->input('ids', []);
-        if (!is_array($ids)) {
-            $ids = [];
+        $rightId = $request->input('right_signature');
+        $leftId = $request->input('left_signature');
+        if ($rightId === '' || $rightId === null) {
+            $rightId = null;
         }
-        $ids = array_slice(array_map('intval', array_filter($ids)), 0, 2);
+        if ($leftId === '' || $leftId === null) {
+            $leftId = null;
+        }
+        if ($rightId === null && $leftId === null) {
+            return;
+        }
+        $valid = $request->validate([
+            'right_signature' => ['nullable', 'integer', 'exists:employees,id'],
+            'left_signature' => ['nullable', 'integer', 'exists:employees,id'],
+        ]);
+        $signatureHandler->handle(
+            rightEmployeeId: isset($valid['right_signature']) ? (int) $valid['right_signature'] : null,
+            leftEmployeeId: isset($valid['left_signature']) ? (int) $valid['left_signature'] : null
+        );
+    }
 
-        $all = $queryRepository->all();
-        $byId = [];
-        foreach ($all as $emp) {
-            $byId[$emp->id] = ['type' => $emp->type, 'name' => $emp->name];
+    /**
+     * حفظ إعدادات تواقيع التأييد (يمين / يسار) في قاعدة البيانات.
+     */
+    public function storeSignatures(
+        SaveCertificateSignatureSettingsRequest $request,
+        SaveCertificateSignatureSettingsCommandHandler $handler
+    ) {
+        $rightId = $request->validated('right_signature');
+        $leftId = $request->validated('left_signature');
+
+        $handler->handle(
+            rightEmployeeId: $rightId !== null && $rightId !== '' ? (int) $rightId : null,
+            leftEmployeeId: $leftId !== null && $leftId !== '' ? (int) $leftId : null
+        );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['ok' => true]);
         }
 
-        $selected = [];
-        foreach ($ids as $id) {
-            if (isset($byId[$id])) {
-                $selected[] = $byId[$id];
-            }
-        }
-
-        session(['selected_employees' => $selected]);
-
-        return response()->json(['ok' => true]);
+        return redirect()->back()->with('success', 'تم حفظ إعدادات التواقيع.');
     }
 }
-

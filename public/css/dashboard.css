@@ -894,6 +894,75 @@ body.grades-modal-open {
     .grades-summary { grid-template-columns: 1fr 1fr; }
 }
 
+/* ========== صفحة الموظفين / إعدادات التواقيع ========== */
+.page-employees .employees-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+.page-employees .employees-page-header h1 {
+    margin: 0;
+    text-align: center;
+    font-weight: bold;
+    width: 100%;
+}
+.page-employees .employees-header-actions {
+    margin-inline-start: auto;
+}
+.page-employees .employees-success {
+    color: var(--color-dark-accent);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+/* كروت الجدولين بألوان خلفية مختلفة */
+.page-employees .employees-card {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.page-employees .employees-card:last-child {
+    margin-bottom: 0;
+}
+.page-employees .employees-card-title {
+    font-size: 1rem;
+    margin: 0 0 0.75rem 0;
+    font-weight: 600;
+    color: var(--color-dark-accent);
+}
+.page-employees .employees-card-right {
+    background: rgba(113, 121, 128, 0.18);
+    border: 2px solid var(--color-primary);
+    color: #0d0d0d;
+}
+.page-employees .employees-card-right .students-table {
+    background: rgba(255, 255, 255, 0.7);
+}
+.page-employees .employees-card-left {
+    background: rgba(163, 178, 130, 0.5);
+    border: 2px solid var(--color-primary);
+    color: #0d0d0d;
+}
+.page-employees .employees-card-left .students-table {
+    background: rgba(255, 255, 255, 0.6);
+}
+.page-employees .employees-card-add {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(74, 84, 94, 0.2);
+}
+.page-employees .employees-add-title {
+    font-size: 0.95rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    color: var(--color-dark-accent);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 900px) {
     .students-layout {

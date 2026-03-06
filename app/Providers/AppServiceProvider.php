@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use App\Domain\Employee\EmployeeCommandRepository;
 use App\Domain\Employee\EmployeeQueryRepository;
+use App\Domain\Certificate\CertificateSignatureRepository;
 use App\Domain\Student\StudentCommandRepository;
 use App\Domain\Student\StudentQueryRepository;
 use App\Domain\Student\StudentReadRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
+use App\Infrastructure\Persistence\MySQLCertificateSignatureRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeCommandRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
@@ -35,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
         // Employees
         $this->app->bind(EmployeeQueryRepository::class, MySQLEmployeeQueryRepository::class);
         $this->app->bind(EmployeeCommandRepository::class, MySQLEmployeeCommandRepository::class);
+
+        // Certificate signatures
+        $this->app->bind(CertificateSignatureRepository::class, MySQLCertificateSignatureRepository::class);
     }
 
     /**

@@ -14,10 +14,10 @@ final class CreateEmployeeCommandHandler
         private EmployeeCommandRepository $repository
     ) {}
 
-    public function handle(string $type, string $name): void
+    public function handle(string $type, string $name, int $tableGroup = 1): void
     {
-        $employee = Employee::create($type, $name);
-        $this->repository->create($employee->type, $employee->name);
+        $employee = Employee::createWithTableGroup($type, $name, $tableGroup);
+        $this->repository->create($employee->type, $employee->name, $employee->tableGroup);
     }
 }
 

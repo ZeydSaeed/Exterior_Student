@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Certificate\Query\GetCertificateSignatureEmployeesQueryHandler;
 use App\Application\Student\Query\GetStudentCertificateQueryHandler;
 use App\Application\Student\Query\GetStudentCertificateWithGradesQueryHandler;
 use Illuminate\Http\Request;
@@ -13,13 +14,13 @@ final class StudentCertificateController
 {
     public function __construct(
         private GetStudentCertificateQueryHandler $handler,
-        private GetStudentCertificateWithGradesQueryHandler $handlerWithGrades
+        private GetStudentCertificateWithGradesQueryHandler $handlerWithGrades,
+        private GetCertificateSignatureEmployeesQueryHandler $signatureEmployeesHandler
     ) {}
 
     public function show(int $id, Request $request)
     {
-        $employees = session('selected_employees', []);
-        $employees = is_array($employees) ? $employees : [];
+        $employees = $this->signatureEmployeesHandler->handle();
 
         try {
             $dto = $this->handler->handle($id, $employees);
@@ -42,8 +43,7 @@ final class StudentCertificateController
 
     public function showWithGrades(int $id, Request $request)
     {
-        $employees = session('selected_employees', []);
-        $employees = is_array($employees) ? $employees : [];
+        $employees = $this->signatureEmployeesHandler->handle();
 
         try {
             $dto = $this->handlerWithGrades->handle($id, $employees);

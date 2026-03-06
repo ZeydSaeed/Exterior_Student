@@ -16,6 +16,7 @@ class StoreEmployeeRequest extends FormRequest
         return [
             'type' => ['required', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
+            'table_group' => ['required', 'integer', 'in:1,2'],
         ];
     }
 }

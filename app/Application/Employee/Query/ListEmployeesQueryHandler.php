@@ -21,7 +21,7 @@ final class ListEmployeesQueryHandler
         $employees = $this->repository->all();
 
         $dtoEmployees = array_map(
-            static fn($e) => new EmployeeDTO($e->id, $e->type, $e->name),
+            static fn($e) => new EmployeeDTO($e->id, $e->type, $e->name, $e->tableGroup),
             $employees
         );
 

@@ -1,58 +1,82 @@
 (function () {
-    const STORAGE_KEY = 'selected_employees';
-    const MAX_SELECTION = 2;
-    const sessionUrl = document.querySelector('meta[name="session-url"]') && document.querySelector('meta[name="session-url"]').getAttribute('content');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]') && document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    function getSignaturesUrl() {
+        var el = document.querySelector('.page-employees [data-signatures-url]');
+        if (el) {
+            var url = el.getAttribute('data-signatures-url');
+            if (url) return url;
+        }
+        var meta = document.querySelector('meta[name="employees-signatures-url"]');
+        return meta ? (meta.getAttribute('content') || '') : '';
+    }
 
-    function sendSelectedToSession(ids) {
-        if (!sessionUrl || !csrfToken || !ids.length) return;
-        fetch(sessionUrl, {
+    function getSelectedIds() {
+        var right = document.querySelector('input[name="right_signature"]:checked');
+        var left = document.querySelector('input[name="left_signature"]:checked');
+        return [
+            right && right.value ? right.value : '',
+            left && left.value ? left.value : ''
+        ];
+    }
+
+    function saveSignaturesAjax() {
+        var url = getSignaturesUrl();
+        if (!url) return;
+        var csrf = document.querySelector('meta[name="csrf-token"]');
+        var token = csrf ? csrf.getAttribute('content') : '';
+        var ids = getSelectedIds();
+        var body = new FormData();
+        body.append('_token', token);
+        body.append('right_signature', ids[0] || '');
+        body.append('left_signature', ids[1] || '');
+        fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ ids: ids })
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
+            body: body
         }).catch(function () {});
     }
 
-    function initEmployeeSelectionLimit() {
-        const checkboxes = document.querySelectorAll('.employee-select');
-        if (!checkboxes.length) return;
+    function init() {
+        var container = document.querySelector('.page-employees');
+        if (!container) return;
 
-        let saved;
-        try {
-            saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-            if (!Array.isArray(saved)) saved = [];
-        } catch (e) {
-            saved = [];
-        }
+        var url = getSignaturesUrl();
+        if (!url) return;
 
-        checkboxes.forEach(function (cb) {
-            if (saved.indexOf(cb.value) !== -1) cb.checked = true;
-        });
-        if (saved.length) sendSelectedToSession(saved.map(function (v) { return parseInt(v, 10); }));
+        var radiosRight = container.querySelectorAll('input[name="right_signature"]');
+        var radiosLeft = container.querySelectorAll('input[name="left_signature"]');
+        radiosRight.forEach(function (r) { r.addEventListener('change', saveSignaturesAjax); });
+        radiosLeft.forEach(function (r) { r.addEventListener('change', saveSignaturesAjax); });
 
-        function updateSelection(e) {
-            var selected = Array.from(checkboxes).filter(function (cb) { return cb.checked; }).map(function (cb) { return cb.value; });
-            if (selected.length > MAX_SELECTION) {
-                e.target.checked = false;
-                alert('مسموح باختيار موظفين فقط كحد أقصى.');
-                return;
-            }
-            try {
-                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
-            } catch (err) {}
-            sendSelectedToSession(selected.map(function (v) { return parseInt(v, 10); }));
-        }
-
-        checkboxes.forEach(function (cb) {
-            cb.addEventListener('change', updateSelection);
+        container.querySelectorAll('form[method="POST"]').forEach(function (form) {
+            var formAction = form.getAttribute('action') || form.action || '';
+            if (formAction.indexOf('signatures') !== -1) return;
+            form.addEventListener('submit', function () {
+                var ids = getSelectedIds();
+                if (ids[0]) {
+                    if (!form.querySelector('input[name="right_signature"]')) {
+                        var r = document.createElement('input');
+                        r.type = 'hidden';
+                        r.name = 'right_signature';
+                        r.value = ids[0];
+                        form.appendChild(r);
+                    }
+                }
+                if (ids[1]) {
+                    if (!form.querySelector('input[name="left_signature"]')) {
+                        var l = document.createElement('input');
+                        l.type = 'hidden';
+                        l.name = 'left_signature';
+                        l.value = ids[1];
+                        form.appendChild(l);
+                    }
+                }
+            });
         });
     }
 
-    document.addEventListener('DOMContentLoaded', initEmployeeSelectionLimit);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
-

@@ -14,12 +14,17 @@ final class MySQLEmployeeQueryRepository implements EmployeeQueryRepository
     public function all(): array
     {
         $rows = DB::table('employees')
-            ->select('id', 'type', 'name')
+            ->select('id', 'type', 'name', 'table_group')
             ->orderBy('id', 'asc')
             ->get();
 
         return $rows->map(
-            static fn($r) => new Employee((int) $r->id, (string) $r->type, (string) $r->name)
+            static fn($r) => new Employee(
+                (int) $r->id,
+                (string) $r->type,
+                (string) $r->name,
+                isset($r->table_group) ? (int) $r->table_group : 1
+            )
         )->all();
     }
 }
