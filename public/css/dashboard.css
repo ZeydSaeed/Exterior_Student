@@ -112,6 +112,9 @@ body.page-students .dashboard-main {
     max-width: calc(100vw - 1.5cm - 4cm);
 }
 .dashboard-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
     background: var(--color-dark-accent);
     padding: 0.5rem 1rem;
     display: flex;
@@ -961,6 +964,76 @@ body.grades-modal-open {
     margin: 0 0 0.5rem 0;
     font-weight: 600;
     color: var(--color-dark-accent);
+}
+
+/* زر إغلاق صفحة الموظفين — الركن العلوي الأيسر */
+.page-employees .employees-page-wrap {
+    position: relative;
+    min-height: 2rem;
+}
+.page-employees .employees-close-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    text-decoration: none;
+    font-weight: bold;
+}
+.page-employees .employees-page-wrap .employees-page-header {
+    padding-inline-start: 5rem;
+}
+
+/* صفحة وثائق الطالب — نفس تنسيقات الموظفين */
+.page-student-documents .employees-page-header { margin-bottom: 1rem; }
+.page-student-documents .employees-success { color: #0d7d0d; margin-bottom: 0.75rem; }
+.page-student-documents .employees-card-documents {
+    background: rgba(113, 121, 128, 0.12);
+    border: 2px solid var(--color-primary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.page-student-documents .employees-card-title { margin: 1rem 0 0.75rem 0; }
+.documents-student-info {
+    margin-bottom: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(74, 84, 94, 0.2);
+    text-align: start;
+    padding-inline-start: 0;
+}
+
+.documents-student-info p { margin: 0.25rem 0; }
+.document-add-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: start;
+}
+ 
+.document-add-fields input {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--color-dark-accent);
+    border-radius: 0.25rem;
+    min-width: 8rem;
+}
+.document-add-fields input[type="date"] { min-width: 10rem; }
+.documents-back-link { margin-top: 1rem; }
+
+/* زر إغلاق صفحة الوثائق — الركن العلوي الأيسر داخل المحتوى (ليس بالتول بار) */
+.page-student-documents .documents-page-wrap {
+    position: relative;
+    min-height: 2rem;
+}
+.page-student-documents .documents-close-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    text-decoration: none;
+    font-weight: bold;
+}
+.page-student-documents .documents-page-wrap .employees-page-header {
+    padding-inline-start: 5rem;
 }
 
 /* ========== Responsive ========== */

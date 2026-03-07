@@ -9,6 +9,9 @@
 @endsection
 
 @section('content')
+    <div class="employees-page-wrap">
+        <a href="{{ route('students.index') }}" class="btn-primary employees-close-btn" title="إغلاق">إغلاق</a>
+
     <div class="employees-page-header">
         <h1>إعدادات الموظفين</h1>
     </div>
@@ -156,6 +159,7 @@
                 </div>
             </div>
         </section>
+    </div>
     </div>
 @endsection
 

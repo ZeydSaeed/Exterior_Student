@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
+use App\Http\Controllers\StudentRecordsController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,15 @@ Route::get('/students/{id}/certificate', [StudentCertificateController::class, '
 
 Route::get('/students/{id}/certificate-with-grades', [StudentCertificateController::class, 'showWithGrades'])
     ->name('students.certificate-with-grades');
+
+Route::get('/students/{id}/documents', [StudentRecordsController::class, 'index'])
+    ->name('students.documents.index');
+Route::post('/students/{id}/documents', [StudentRecordsController::class, 'store'])
+    ->name('students.documents.store');
+Route::put('/students/{id}/documents/{recordId}', [StudentRecordsController::class, 'update'])
+    ->name('students.documents.update');
+Route::delete('/students/{id}/documents/{recordId}', [StudentRecordsController::class, 'destroy'])
+    ->name('students.documents.destroy');
 
 Route::get('/employees', [EmployeeController::class, 'index'])
     ->name('employees.index');

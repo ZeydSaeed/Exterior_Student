@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Application\Record\Query;
+
+use App\Application\Record\DTO\RecordDTO;
+use App\Application\Record\DTO\StudentDocumentsPageDTO;
+use App\Domain\Record\RecordQueryRepository;
+use App\Domain\Student\StudentQueryRepository;
+
+/**
+ * معالج استعلام صفحة وثائق الطالب (CQRS — Query).
+ */
+final class GetStudentDocumentsPageQueryHandler
+{
+    public function __construct(
+        private StudentQueryRepository $studentRepository,
+        private RecordQueryRepository $recordRepository
+    ) {}
+
+    public function handle(int $studentId): ?StudentDocumentsPageDTO
+    {
+        $student = $this->studentRepository->getStudentById($studentId);
+        if ($student === null) {
+            return null;
+        }
+
+        $records = $this->recordRepository->listByStudentId($studentId);
+        $recordDTOs = array_map(
+            static fn ($r) => new RecordDTO(
+                id: $r->id,
+                documentNumber: $r->documentNumber,
+                documentDate: $r->documentDate,
+                addressee: $r->addressee,
+                purpose: $r->purpose,
+            ),
+            $records
+        );
+
+        return new StudentDocumentsPageDTO(
+            studentId: $student->id,
+            examNumber: $student->exam_number,
+            studentName: $student->full_name,
+            records: $recordDTOs,
+        );
+    }
+}

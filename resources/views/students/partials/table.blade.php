@@ -62,12 +62,14 @@
                         </button>
                     </td>
                     <td>
-                        <button type="button" class="btn-primary btn-docs" title="الوثائق التي زود بها">
+                        <a href="{{ route('students.documents.index', ['id' => $student->id]) }}"
+                           class="btn-primary btn-docs"
+                           title="الوثائق التي زود بها">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 4h5l2 3h9v11H4z"/>
                             </svg>
-                            <span class="btn-label">وثائق</span>
-                        </button>
+                            <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">وثائق</span>
+                        </a>
                     </td>
                     <td>
                         <button type="button" class="btn-primary btn-profile" title="السجل الشخصي">
