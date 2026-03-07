@@ -261,6 +261,29 @@
     color: #0a0a0a;
 }
 
+.support-paper .cert-field-input {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: bold;
+    color: #0a0a0a;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    min-width: 80px;
+    direction: rtl;
+    font-size: inherit;
+}
+.support-paper .cert-field-input:focus {
+    outline: none;
+    border-bottom-color: #4a545e;
+}
+.support-paper .meta-line .cert-field-input {
+    display: inline-block;
+}
+.support-paper .meta-line.to-line .cert-field-issued-to {
+    min-width: 200px;
+    width: 60%;
+}
+
 .certificate-signatures-header {
     margin-top: 0px;
     margin-bottom: 0px;

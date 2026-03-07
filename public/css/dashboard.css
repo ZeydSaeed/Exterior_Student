@@ -983,7 +983,132 @@ body.grades-modal-open {
     padding-inline-start: 5rem;
 }
 
-/* صفحة وثائق الطالب — نفس تنسيقات الموظفين */
+/* صفحة السجل الشخصي للطالب — نفس تنسيقات الموظفين */
+.page-student-profile .employees-page-wrap {
+    position: relative;
+    min-height: 2rem;
+}
+.page-student-profile .employees-close-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    text-decoration: none;
+    font-weight: bold;
+}
+.page-student-profile .employees-page-wrap .employees-page-header {
+    padding-inline-start: 5rem;
+}
+.page-student-profile .profile-student-info {
+    margin-bottom: 0rem;
+    padding: 0rem;
+    border-bottom: 1px solid rgba(74, 84, 94, 0.2);
+}
+/* عنوان التأييدات والوثائق: للأعلى بدون خط فوق النص */
+.page-student-profile .employees-card {
+    padding-top: 0;
+}
+.page-student-profile .employees-card .employees-card-title {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    padding-top: 0;
+    border-top: none;
+    border-bottom: none;
+}
+.page-student-profile .employees-card-right,
+.page-student-profile .employees-card-left {
+    border-top: none;
+}
+
+/* جدول السجل الشخصي: النص يظهر كاملاً، والحقل يتوسع للأسفل عند طول النص (بدون قص) */
+.page-student-profile .students-layout {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.page-student-profile .employees-card {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.page-student-profile .students-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+.page-student-profile .students-table {
+    table-layout: fixed;
+    width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.page-student-profile .students-table th,
+.page-student-profile .students-table td {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+    height: auto;
+    vertical-align: middle;
+    text-align: center;
+}
+.page-student-profile .students-table input[type="text"] {
+    width: 100%;
+    min-width: 5rem;
+    box-sizing: border-box;
+    text-align: start;
+    direction: rtl;
+}
+.page-student-profile .students-table textarea {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: start;
+    direction: rtl;
+
+    resize: vertical;
+    min-height: 2.5em;
+
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-y: hidden;
+}
+.page-student-profile .students-table input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: start;
+    direction: rtl;
+    min-height: 40px;
+}
+.page-student-profile .students-table .profile-field-small {
+    max-width: 2.5rem;
+    min-width: 2.5rem;
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+}
+.page-student-profile .students-table .profile-field-date {
+    max-width: 7rem;
+    min-width: 4rem;
+    width: 100%;
+}
+/* عمود النوع أصغر */
+.page-student-profile .employees-card-right .students-table th:nth-child(1),
+.page-student-profile .employees-card-right .students-table td:nth-child(1) {
+    max-width: 9rem;
+    width: 8%;
+    white-space: normal;
+}
+/* عمود العدد أصغر */
+.page-student-profile .employees-card-right .students-table th:nth-child(3),
+.page-student-profile .employees-card-right .students-table td:nth-child(3) {
+    max-width: 2.5rem;
+    width: 6%;
+    white-space: normal;
+}
+
 .page-student-documents .employees-page-header { margin-bottom: 1rem; }
 .page-student-documents .employees-success { color: #0d7d0d; margin-bottom: 0.75rem; }
 .page-student-documents .employees-card-documents {

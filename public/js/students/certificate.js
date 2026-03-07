@@ -75,7 +75,7 @@
     }
 
     var printBtn = document.getElementById('certificate-btn-print');
-    if (printBtn) {
+    if (printBtn && !document.getElementById('certificate-save-form')) {
         printBtn.addEventListener('click', openPrintDialog);
     }
 
