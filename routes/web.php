@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
+use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordsController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,11 @@ Route::get('/dashboard', function () {
 
 Route::get('/students', [StudentController::class, 'index'])
     ->name('students.index');
+
+Route::get('/students/create', [StudentController::class, 'create'])
+    ->name('students.create');
+Route::post('/students', [StudentController::class, 'store'])
+    ->name('students.store');
 
 Route::get('/students/{id}/grades', [StudentController::class, 'grades'])
     ->name('students.grades');
@@ -40,6 +46,15 @@ Route::put('/students/{id}/documents/{recordId}', [StudentRecordsController::cla
     ->name('students.documents.update');
 Route::delete('/students/{id}/documents/{recordId}', [StudentRecordsController::class, 'destroy'])
     ->name('students.documents.destroy');
+
+Route::get('/students/{id}/profile', [StudentProfileController::class, 'show'])
+    ->name('students.profile.show');
+Route::post('/students/{id}/profile/attestations', [StudentProfileController::class, 'storeAttestation'])
+    ->name('students.profile.attestations.store');
+Route::put('/students/{id}/profile/attestations/{attestationId}', [StudentProfileController::class, 'updateAttestation'])
+    ->name('students.profile.attestations.update');
+Route::delete('/students/{id}/profile/attestations/{attestationId}', [StudentProfileController::class, 'destroyAttestation'])
+    ->name('students.profile.attestations.destroy');
 
 Route::get('/employees', [EmployeeController::class, 'index'])
     ->name('employees.index');

@@ -29,7 +29,7 @@
         <section class="students-table-area" aria-label="إعدادات الموظفين" data-signatures-url="{{ route('employees.signatures.store') }}">
             {{-- كارت الجدول الأول: العنوان الأيمن للتأييد --}}
             <div class="employees-card employees-card-right">
-                <h2 class="employees-card-title">العنوان الأيمن للتأييد</h2>
+                <h2 class="employees-card-title"> منظم التاييد</h2>
                 <div class="students-table-wrapper">
                     <table class="students-table">
                         <thead>
@@ -95,7 +95,7 @@
 
             {{-- كارت الجدول الثاني: العنوان الأيسر للتأييد --}}
             <div class="employees-card employees-card-left">
-                <h2 class="employees-card-title">العنوان الأيسر للتأييد</h2>
+                <h2 class="employees-card-title">المسؤول</h2>
                 <div class="students-table-wrapper">
                     <table class="students-table">
                         <thead>

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Domain\Employee\EmployeeCommandRepository;
 use App\Domain\Employee\EmployeeQueryRepository;
+use App\Domain\Attestation\AttestationCommandRepository;
+use App\Domain\Attestation\AttestationQueryRepository;
 use App\Domain\Certificate\CertificateSignatureRepository;
 use App\Domain\Record\RecordCommandRepository;
 use App\Domain\Record\RecordQueryRepository;
@@ -12,6 +14,8 @@ use App\Domain\Student\StudentQueryRepository;
 use App\Domain\Student\StudentReadRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
+use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
+use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
 use App\Infrastructure\Persistence\MySQLCertificateSignatureRepository;
 use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
 use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
@@ -44,6 +48,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Certificate signatures
         $this->app->bind(CertificateSignatureRepository::class, MySQLCertificateSignatureRepository::class);
+
+        // Attestations (certificate table)
+        $this->app->bind(AttestationQueryRepository::class, MySQLAttestationQueryRepository::class);
+        $this->app->bind(AttestationCommandRepository::class, MySQLAttestationCommandRepository::class);
 
         // Student records (documents)
         $this->app->bind(RecordQueryRepository::class, MySQLRecordQueryRepository::class);

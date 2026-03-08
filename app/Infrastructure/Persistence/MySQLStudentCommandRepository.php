@@ -27,6 +27,43 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         'round' => 'الدور',
     ];
 
+    private const CREATE_FIELDS_MAP = [
+        'exam_number' => 'الرقم الامتحاني',
+        'name_student' => 'اسم الطالب',
+        'name_father' => 'اسم الاب',
+        'name_grandfather' => 'اسم الجد',
+        'name_surname' => 'اللقب',
+        'birth_date' => 'التولد',
+        'birth_place' => 'محل الولادة',
+        'mother_full_name' => 'اسم الام الكامل',
+        'gender' => 'الجنس',
+        'branch' => 'الفرع',
+        'major' => 'الاختصاص',
+        'academic_year' => 'العام الدراسي',
+        'last_school' => 'اخر مدرسة كان فيها الطالب',
+        'middle_doc_number' => 'رقم الوثيقة المتوسطة',
+        'middle_doc_date' => 'تاريخها',
+        'issuing_authority' => 'جهة الاصدار',
+    ];
+
+    public function create(array $data): int
+    {
+        return DB::transaction(function () use ($data): int {
+            $row = [];
+            foreach (self::CREATE_FIELDS_MAP as $key => $column) {
+                $value = isset($data[$key]) ? trim((string) $data[$key]) : null;
+                $row[$column] = $value !== '' ? $value : null;
+            }
+            if (empty($row)) {
+                throw new \InvalidArgumentException('لا توجد بيانات طالب للإدراج.');
+            }
+            $nextId = (int) DB::table('main_table')->max('id') + 1;
+            $row['id'] = $nextId;
+            DB::table('main_table')->insert($row);
+            return $nextId;
+        });
+    }
+
     public function updateGrades(int $id, array $payload): bool
     {
         return DB::transaction(function () use ($id, $payload): bool {

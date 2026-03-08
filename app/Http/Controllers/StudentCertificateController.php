@@ -8,7 +8,8 @@ use App\Application\Student\Query\GetStudentCertificateWithGradesQueryHandler;
 use Illuminate\Http\Request;
 
 /**
- * عرض صفحة التأييد (تأييد بدون درجات) — طبقة العرض فقط
+ * عرض صفحة التأييد — طبقة العرض فقط.
+ * حقلَا العدد و "الى" يفتحان فارغين ويُدخلان يدوياً لكل تأييد؛ عند الطباعة تُقرأ قيمتهما وتُحفظ في قاعدة البيانات.
  */
 final class StudentCertificateController
 {
@@ -38,7 +39,7 @@ final class StudentCertificateController
             return response()->json($dto->toArray());
         }
 
-        return view('students.certificate', compact('dto'));
+        return view('students.certificate', ['dto' => $dto, 'studentId' => $id]);
     }
 
     public function showWithGrades(int $id, Request $request)
@@ -61,6 +62,6 @@ final class StudentCertificateController
             return response()->json($dto->toArray());
         }
 
-        return view('students.certificate-with-grades', compact('dto'));
+        return view('students.certificate-with-grades', ['dto' => $dto, 'studentId' => $id]);
     }
 }

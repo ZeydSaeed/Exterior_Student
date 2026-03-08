@@ -26,6 +26,17 @@
                             <button type="button" class="btn-primary btn-print" id="certificate-btn-print">طباعة</button>
                             <a href="{{ route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
                         </div>
+                        <form id="certificate-save-form" method="POST" action="{{ route('students.profile.attestations.store', $studentId) }}" style="display: none;">
+                            @csrf
+                            <input type="hidden" name="type" value="without_grades" />
+                            <input type="text" name="date" id="cert-save-date" />
+                            <input type="text" name="number" id="cert-save-number" />
+                            <input type="text" name="issued_to" id="cert-save-issued-to" />
+                            <input type="text" name="right_title" id="cert-save-right-title" />
+                            <input type="text" name="right_employee_name" id="cert-save-right-employee" />
+                            <input type="text" name="left_title" id="cert-save-left-title" />
+                            <input type="text" name="left_employee_name" id="cert-save-left-employee" />
+                        </form>
 
                         <div class="top-line">جمهورية العراق</div>
                         <div class="right-line">وزارة التربية</div>
@@ -34,15 +45,17 @@
 
                         <div class="photo-frame">@if($isFemale)صورة الطالبة@elseصورة الطالب@endif</div>
 
-                        <div class="meta-line">العدد: <span class="editable arabic-number" contenteditable="true"></span></div>
-                        <div class="meta-line">التاريخ: <span class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('d / m / Y') }}</span></div>
+                        {{-- العدد: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.number --}}
+                        <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-number" data-cert-db="number" placeholder="" /></div>
+                        <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('d / m / Y') }}</span></div>
                         <div class="meta-line">الرقم الامتحاني: <span class="arabic-number" data-number="{{ $dto->examNumber }}">{{ $dto->examNumber }}</span></div>
 
                         <br>
 
+                        {{-- الى: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.issued_to --}}
                         <div class="meta-line to-line">
                             <strong>الى /</strong>
-                            <span class="editable" contenteditable="true"></span>
+                            <input type="text" id="cert-field-issued-to" class="cert-field-input cert-field-issued-to" data-cert-db="issued_to" placeholder="" />
                         </div>
 
                         <div class="subject-line">
@@ -61,13 +74,13 @@
 
                         <div class="signature-columns">
                             <div class="signature-col">
-                                <div class="signature-title">{{ $organizerTitle }}</div>
-                                <div class="signature-name">{{ $organizer }}</div>
+                                <div id="cert-field-right-title" class="signature-title">{{ $organizerTitle }}</div>
+                                <div id="cert-field-right-name" class="signature-name">{{ $organizer }}</div>
                                 <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
                             </div>
                             <div class="signature-col">
-                                <div class="signature-title">{{ $managerTitle }}</div>
-                                <div class="signature-name">{{ $manager }}</div>
+                                <div id="cert-field-left-title" class="signature-title">{{ $managerTitle }}</div>
+                                <div id="cert-field-left-name" class="signature-name">{{ $manager }}</div>
                                 <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
                             </div>
                         </div>
@@ -85,4 +98,5 @@
 @section('scripts')
     <script src="{{ url('js/arabic-date.js') }}?v={{ file_exists(public_path('js/arabic-date.js')) ? filemtime(public_path('js/arabic-date.js')) : time() }}"></script>
     <script src="{{ url('js/students/certificate.js') }}?v={{ file_exists(public_path('js/students/certificate.js')) ? filemtime(public_path('js/students/certificate.js')) : time() }}"></script>
+    <script src="{{ url('js/students/certificate-save.js') }}?v={{ file_exists(public_path('js/students/certificate-save.js')) ? filemtime(public_path('js/students/certificate-save.js')) : time() }}"></script>
 @endsection

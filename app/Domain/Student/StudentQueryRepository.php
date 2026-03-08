@@ -17,4 +17,11 @@ interface StudentQueryRepository
 
     /** جلب كيان طالب واحد (لاستخدام قواعد الدومين مثل الحذف) */
     public function getStudentById(int $id): ?Student;
+
+    /**
+     * قائمة الأعوام الدراسية لاستخدامها في نموذج إضافة طالب (من main_table + السنة الحالية).
+     *
+     * @return list<string>
+     */
+    public function getAcademicYearsForForm(): array;
 }
