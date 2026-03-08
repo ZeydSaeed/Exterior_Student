@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Student\Command\CreateStudentCommandHandler;
 use App\Application\Student\Command\DeleteStudentCommandHandler;
-use App\Application\Student\Command\UpdateStudentGradesCommandHandler;
+use App\Application\Student\Query\GetCreateStudentFormQueryHandler;
 use App\Application\Student\Query\GetStudentGradesQueryHandler;
 use App\Application\Student\Query\ListStudentsQuery;
 use App\Application\Student\Query\ListStudentsQueryHandler;
+use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentGradesRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class StudentController extends Controller
 {
@@ -23,6 +27,20 @@ class StudentController extends Controller
             'flash_error'   => session('error'),
             'flash_status'  => session('status'),
         ]));
+    }
+
+    public function create(GetCreateStudentFormQueryHandler $formHandler): View
+    {
+        $form = $formHandler->handle();
+        return view('students.create', $form);
+    }
+
+    public function store(StoreStudentRequest $request, CreateStudentCommandHandler $handler): RedirectResponse
+    {
+        $id = $handler->handle($request->dataForCreate());
+        return redirect()
+            ->route('students.index')
+            ->with('status', 'تمت إضافة الطالب بنجاح.');
     }
 
     public function grades(int $id, GetStudentGradesQueryHandler $handler)

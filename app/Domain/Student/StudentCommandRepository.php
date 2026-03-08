@@ -29,6 +29,14 @@ interface StudentCommandRepository
     public function updateGrades(int $id, array $payload): bool;
 
     /**
+     * إدراج طالب جديد في مصدر البيانات.
+     *
+     * @param array<string, string|null> $data الخريطة: مفتاح إنجليزي => قيمة، يُحوّلها البنية التحتية إلى أعمدة main_table العربية
+     * @return int معرف السجل المُدرج (id)
+     */
+    public function create(array $data): int;
+
+    /**
      * حذف سجل الطالب بالكامل من مصدر البيانات.
      */
     public function deleteStudent(int $id): bool;

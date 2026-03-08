@@ -474,7 +474,7 @@ body.page-students .dashboard-main {
 .students-filter-card-options label input[type="radio"] {
     flex-shrink: 0;
     margin: 0;
-    accent-color: var(--color-dark-accent);
+    /* accent-color: var(--color-dark-accent); */
 }
 .students-table {
     width: auto;
@@ -982,6 +982,114 @@ body.grades-modal-open {
 .page-employees .employees-page-wrap .employees-page-header {
     padding-inline-start: 5rem;
 }
+
+/* صفحة إضافة طالب — نموذج بنفس تنسيق صفحة الموظفين */
+.page-add-student .employees-page-actions-top {
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    z-index: 2;
+}
+.page-add-student .employees-page-actions-top .btn-primary,
+.page-add-student .employees-page-actions-top .btn-close-top,
+.page-add-student .employees-page-actions-top .btn-save-top {
+    margin: 0;
+    font-weight: bold;
+    min-width: 5.5rem;
+    width: 5.5rem;
+    box-sizing: border-box;
+    text-align: center;
+}
+.page-add-student .employees-page-actions-top .btn-close-top {
+    text-decoration: none;
+}
+.page-add-student .employees-page-wrap .employees-page-header {
+    padding-inline-start: 0rem;
+    padding-inline-end: 11rem;
+    justify-content:flex-start;
+}
+.page-add-student .employees-page-wrap .employees-page-header h1 {
+    text-align: center;
+}
+.page-add-student .form-add-student {
+    max-width: 64rem;
+    margin-top: 1rem;
+    padding-top: 0.25rem;
+}
+.page-add-student .form-row {
+    display: grid;
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1rem;
+}
+.page-add-student .form-row-1 {
+    grid-template-columns: 1fr;
+}
+.page-add-student .form-row-2 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.page-add-student .form-row-3 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.page-add-student .form-row-4 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+.page-add-student .form-row-5 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.page-add-student .form-group label,
+.page-add-student .form-group .label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--color-dark-accent);
+}
+.page-add-student .form-group input[type="text"],
+.page-add-student .form-group input[type="date"],
+.page-add-student .form-group select {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--color-dark-accent);
+    border-radius: 0.25rem;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    direction: rtl;
+}
+.page-add-student .form-group-radio .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+}
+.page-add-student .form-group-radio .radio-group-branch {
+    flex-wrap: wrap;
+}
+.page-add-student .form-group-radio .radio-group-major {
+    flex-wrap: wrap;
+}
+.page-add-student .form-group-radio .radio-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: normal;
+    margin: 0;
+    cursor: pointer;
+}
+.page-add-student .form-group-radio .radio-group-years {
+    flex-direction: column;
+}
+.page-add-student .employees-error-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    color: #c63240;
+    font-size: 0.9rem;
+}
+.page-add-student .employees-error-list li { margin-bottom: 0.25rem; }
+.page-add-student .required { color: #c63240; }
 
 /* صفحة السجل الشخصي للطالب — نفس تنسيقات الموظفين */
 .page-student-profile .employees-page-wrap {

@@ -205,5 +205,28 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
         return Student::fromObject($row);
     }
+
+    public function getAcademicYearsForForm(): array
+    {
+        $currentYear = (int) date('Y');
+        $currentAcademicYear = ($currentYear - 1) . '-' . $currentYear;
+
+        $years = DB::table('main_table')
+            ->select('العام الدراسي')
+            ->distinct()
+            ->whereNotNull('العام الدراسي')
+            ->where('العام الدراسي', '!=', '')
+            ->orderByDesc('العام الدراسي')
+            ->pluck('العام الدراسي')
+            ->map(fn ($y) => (string) $y)
+            ->values()
+            ->all();
+
+        if (!in_array($currentAcademicYear, $years, true)) {
+            array_unshift($years, $currentAcademicYear);
+        }
+
+        return $years;
+    }
 }
 
