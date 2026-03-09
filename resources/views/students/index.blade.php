@@ -12,6 +12,17 @@
                 <button type="button" class="flash-close" onclick="this.closest('.flash-overlay').style.display='none'">&times;</button>
             </div>
         </div>
+        <script>
+            // إخفاء رسالة الحالة تلقائياً بعد ثانيتين
+            document.addEventListener('DOMContentLoaded', function () {
+                var overlay = document.querySelector('.flash-overlay');
+                if (overlay) {
+                    setTimeout(function () {
+                        overlay.style.display = 'none';
+                    }, 2000);
+                }
+            });
+        </script>
     @endif
 
     <script>

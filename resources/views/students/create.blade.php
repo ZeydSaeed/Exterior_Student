@@ -55,12 +55,12 @@
             {{-- السطر الثالث: محل الولادة، التولد، اسم الام الكامل، الجنس --}}
             <div class="form-row form-row-3">
                 <div class="form-group">
-                    <label for="birth_place">محل الولادة</label>
-                    <input type="text" id="birth_place" name="birth_place" value="{{ old('birth_place') }}" maxlength="255" />
+                    <label for="birth_place">محل الولادة <span class="required">*</span></label>
+                    <input type="text" id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required maxlength="255" />
                 </div>
                 <div class="form-group">
-                    <label for="birth_date">التولد</label>
-                    <input type="text" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" placeholder="مثال: 2008-05-15" maxlength="255" />
+                    <label for="birth_date">التولد <span class="required">*</span></label>
+                    <input type="date" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" required />
                 </div>
                 <div class="form-group">
                     <label for="mother_full_name">اسم الام الكامل</label>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="form-group">
                     <label for="middle_doc_date">تاريخها</label>
-                    <input type="text" id="middle_doc_date" name="middle_doc_date" value="{{ old('middle_doc_date') }}" placeholder="مثال: 2023-07-01" maxlength="255" />
+                    <input type="date" id="middle_doc_date" name="middle_doc_date" value="{{ old('middle_doc_date') }}" />
                 </div>
                 <div class="form-group">
                     <label for="issuing_authority">جهة الاصدار</label>
