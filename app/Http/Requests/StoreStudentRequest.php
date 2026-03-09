@@ -19,8 +19,8 @@ class StoreStudentRequest extends FormRequest
             'name_father' => ['required', 'string', 'max:255'],
             'name_grandfather' => ['nullable', 'string', 'max:255'],
             'name_surname' => ['required', 'string', 'max:255'],
-            'birth_date' => ['nullable', 'string', 'max:255'],
-            'birth_place' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['required', 'date'],
+            'birth_place' => ['required', 'string', 'max:255'],
             'mother_full_name' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', 'string', 'in:ذكر,أنثى,انثى'],
             'branch' => ['required', 'string', 'max:255'],
@@ -28,8 +28,18 @@ class StoreStudentRequest extends FormRequest
             'academic_year' => ['required', 'string', 'max:255'],
             'last_school' => ['nullable', 'string', 'max:500'],
             'middle_doc_number' => ['nullable', 'string', 'max:255'],
-            'middle_doc_date' => ['nullable', 'string', 'max:255'],
+            'middle_doc_date' => ['nullable', 'date'],
             'issuing_authority' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    /**
+     * رسائل التحقق المخصصة.
+     */
+    public function messages(): array
+    {
+        return [
+            'exam_number.required' => 'لا يمكن إدخال معلومات الطالب بدون رقم امتحاني. يجب إدخال رقم امتحاني صحيح.',
         ];
     }
 
