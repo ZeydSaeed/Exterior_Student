@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence;
 
 use App\Domain\Student\Student;
+use App\Domain\Student\StudentDocumentInfo;
 use App\Domain\Student\StudentGradesView;
 use App\Domain\Student\StudentListProjection;
 use App\Domain\Student\StudentQueryRepository;
@@ -204,6 +205,43 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         return Student::fromObject($row);
+    }
+
+    public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo
+    {
+        $row = DB::table('main_table')
+            ->where('id', $id)
+            ->first();
+
+        if (!$row) {
+            return null;
+        }
+
+        $trim = static fn ($v) => isset($v) ? trim((string) $v) : '';
+        $fullName = trim(implode(' ', array_filter([
+            $trim($row->{'اسم الطالب'}),
+            $trim($row->{'اسم الاب'}),
+            $trim($row->{'اسم الجد'}),
+            $trim($row->{'اللقب'}),
+        ])));
+
+        return new StudentDocumentInfo(
+            fullName: $fullName,
+            examNumber: $trim($row->{'الرقم الامتحاني'}),
+            birthDate: $trim($row->{'التولد'}),
+            birthPlace: $trim($row->{'محل الولادة'}),
+            motherName: $trim($row->{'اسم الام الكامل'}),
+            branch: $trim($row->{'الفرع'}),
+            specialization: $trim($row->{'الاختصاص'}),
+            lastSchool: $trim($row->{'اخر مدرسة كان فيها الطالب'}),
+            middleDocNumber: $trim($row->{'رقم الوثيقة المتوسطة'}),
+            middleDocDate: $trim($row->{'تاريخها'}),
+            issuingAuthority: $trim($row->{'جهة الاصدار'}),
+            academicYear: $trim($row->{'العام الدراسي'}),
+            result: $trim($row->{'النتيجة'}),
+            round: $trim($row->{'الدور'}),
+            gender: $trim($row->{'الجنس'}),
+        );
     }
 
     public function getAcademicYearsForForm(): array

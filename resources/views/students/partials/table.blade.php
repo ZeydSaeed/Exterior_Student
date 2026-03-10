@@ -58,8 +58,11 @@
                         </a>
                     </td>
                     <td>
-                        <button type="button" class="btn-primary btn-enroll" title="قيد الطالب">
-                        </button>
+                        <a href="{{ route('students.document', ['id' => $student->id]) }}"
+                           class="btn-primary btn-enroll"
+                           title="قيد الطالب">
+                            <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">قيد</span>
+                        </a>
                     </td>
                     <td>
                         <a href="{{ route('students.documents.index', ['id' => $student->id]) }}"

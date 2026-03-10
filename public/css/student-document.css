@@ -1,0 +1,370 @@
+/**
+ * تنسيقات صفحة سجل قيد الطالب (قيد الطالب)
+ * مطابقة لتخطيط سجل القيد الرسمي — RTL، حدود، جداول بخلفية رمادية للرأس.
+ */
+
+.page-student-document .dashboard-content {
+    padding: 1rem;
+    direction: rtl;
+}
+
+.student-document-layout {
+    max-width: 56rem;
+    margin: 0 auto;
+    font-family: "Times New Roman", Times, serif;
+    color: #0a0a0b;
+}
+
+.student-document-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    text-decoration: none;
+}
+
+.student-document-actions .btn-primary {
+    margin: 0;
+    text-decoration: none;
+}
+
+.student-document-paper {
+    background: #fff;
+    border: 1px solid #1e293b;
+    padding: 1.25rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    width: 42rem;
+}
+
+/* ========== الهيدر ========== */
+.doc-header {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    grid-template-rows: auto auto;
+    gap: 0.5rem 1rem;
+    align-items: start;
+    margin-bottom: 0;
+}
+
+.doc-title {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.doc-header-right {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: center;
+    justify-self: start;
+}
+
+.doc-org {
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+    display: block;
+}
+
+.doc-org:last-child {
+    margin-bottom: 0;
+}
+
+.doc-photo {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* ========== صفوف البيانات ========== */
+.doc-header + .doc-row {
+    margin-top: -1.8rem;
+}
+
+.doc-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin-bottom: 0.2rem;
+    padding: 0.2rem 0.4rem;
+    min-height: 1.6rem;
+}
+
+.doc-row-two .doc-label,
+.doc-row-two .doc-value,
+.doc-row-three .doc-label,
+.doc-row-three .doc-value {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.doc-row-wide .doc-value {
+    flex: 1;
+    min-width: 13rem;
+}
+
+.doc-label {
+    font-weight: 700;
+    background: #f1f5f9;
+    padding: 0.15rem 0.35rem;
+    border: 1px solid #94a3b8;
+    min-width: 10rem;
+}
+
+.doc-label-block {
+    min-width: 100%;
+    display: block;
+}
+
+.doc-label.doc-label-block {
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    }
+
+.doc-value {
+    padding: 0.15rem 0.35rem;
+    border: 1px solid #94a3b8;
+    min-width: 13rem;
+}
+
+/* عناوين بعرض 11rem: الفرع، رقم وثيقة المتوسطة، العام الدراسي */
+.doc-label.doc-w-11 {
+    width: 10rem;
+    min-width: 10rem;
+    flex: 0 0 10rem;
+    text-align: right;
+    font-size: 0.95rem;
+}
+
+
+/* قيم بعرض 13rem: الفرع، رقم وثيقة المتوسطة */
+.doc-value.doc-w-13 {
+    width: 13rem;
+    min-width: 13rem;
+    flex: 0 0 13rem;
+}
+.doc-label.doc-w-14 {
+    width: 7.4rem;
+    
+    text-align: right;
+    font-size: 0.95rem;
+}
+.doc-value.doc-w-15 {
+    width: 28.6rem;
+    /* min-width: 20rem; */
+    /* flex: 0 0 20rem; */
+}
+.doc-label.doc-w-16 {
+    width: 5rem;
+    
+    text-align: right;
+    font-size: 0.95rem;
+}
+.doc-label.doc-w-17 {
+    width: 5.3rem;
+}
+.doc-value.doc-w-18 {
+    width: 8.2rem;
+}
+/* ========== الجداول ========== */
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    border: 2px solid #1e293b;
+    font-size: 0.9rem;
+}
+
+.doc-table th,
+.doc-table td {
+    border: 1px solid #334155;
+    padding: 0.35rem 0.5rem;
+    text-align: right;
+}
+
+.doc-table th {
+    background: #e2e8f0;
+    font-weight: 700;
+    text-align: center;
+}
+
+.doc-grades-table td:first-child {
+    text-align: right;
+}
+
+.doc-grades-table .doc-grade-num,
+.doc-docs-table td:nth-child(2) {
+    text-align: center;
+}
+
+.doc-grade-subject {
+    min-width: 12rem;
+}
+
+.doc-grade-num {
+    width: 5rem;
+}
+
+.doc-total-row {
+    background: #e5e7eb;
+    font-weight: 700;
+}
+
+.doc-total-row td {
+    border-width: 2px;
+}
+
+.doc-section-title {
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+/* ========== التواقيع ========== */
+.doc-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.doc-sig-cell {
+    min-width: 12rem;
+    text-align: center;
+}
+
+.doc-sig-title {
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+}
+
+.doc-sig-name {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* ========== الطباعة ========== */
+@media print {
+    @page {
+        size: A4;
+        margin: 0.5cm;
+        margin-right: 1cm; /* هامش أيمن قليل */
+        
+    }
+
+    /* السماح بمواصلة المحتوى على أكثر من ورقة (عدم قصه بسبب overflow/height) */
+    html.dashboard-layout,
+    body.dashboard-layout {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        
+    }
+
+    .dashboard-wrap {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+    }
+
+    .dashboard-main,
+    .page-student-document .dashboard-content {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+
+    .student-document-layout {
+        max-width: none;
+        width: 100%;
+    }
+
+    .student-document-paper {
+        width: auto !important;
+        max-width: none;
+        overflow: visible !important;
+        page-break-inside: auto;
+        break-inside: auto;
+        
+    }
+
+    /* الجداول عبر الصفحات مع تكرار رأس الجدول */
+    .doc-table {
+        page-break-inside: auto;
+        break-inside: auto;
+    }
+
+    .doc-table thead {
+        display: table-header-group;
+    }
+
+    .doc-table tbody tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* خلفية بيضاء بالكامل — داخل المستند وخارجه (تجاوز ألوان الداشبورد والجداول) */
+    html,
+    html.dashboard-layout,
+    body,
+    body.dashboard-layout,
+    .dashboard-wrap,
+    .dashboard-main,
+    .page-student-document,
+    .page-student-document .dashboard-content,
+    .student-document-layout,
+    .student-document-paper,
+    .doc-header,
+    .doc-completed-row,
+    .doc-table th,
+    .doc-table td,
+    .doc-total-row,
+    .doc-label,
+    .doc-value {
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    /* ضمان عدم طباعة خلفيات ملونة في المتصفح */
+    * {
+        -webkit-print-color-adjust: economy;
+        print-color-adjust: economy;
+    }
+
+    .no-print,
+    .student-document-actions,
+    .dashboard-toolbar,
+    .dashboard-sidebar {
+        display: none !important;
+    }
+
+    .page-student-document .dashboard-content {
+        padding: 0;
+    }
+
+    .student-document-paper {
+        box-shadow: none;
+        border: none;
+        padding: 0.5rem;
+    }
+}

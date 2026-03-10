@@ -3,6 +3,7 @@
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,9 @@ Route::get('/students/{id}/certificate', [StudentCertificateController::class, '
 
 Route::get('/students/{id}/certificate-with-grades', [StudentCertificateController::class, 'showWithGrades'])
     ->name('students.certificate-with-grades');
+
+Route::get('/students/{id}/document', [StudentRecordPrintController::class, 'show'])
+    ->name('students.document');
 
 Route::get('/students/{id}/documents', [StudentRecordsController::class, 'index'])
     ->name('students.documents.index');
