@@ -10,34 +10,50 @@ use App\Application\Student\Query\ListStudentsQuery;
 use App\Application\Student\Query\ListStudentsQueryHandler;
 use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentGradesRequest;
+use App\Support\StudentListFiltersSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(ListStudentsQueryHandler $handler)
+    public function index(ListStudentsQueryHandler $handler): View|RedirectResponse
     {
-        $query = ListStudentsQuery::fromArray(
-            request()->only(['branch', 'major', 'gender', 'year', 'search'])
-        );
+        $request = request();
+        $merged = StudentListFiltersSession::mergeRequestWithSession($request);
+
+        if (StudentListFiltersSession::shouldRedirectToNormalize($request, $merged)) {
+            StudentListFiltersSession::persist($request, $merged);
+
+            return redirect()->route('students.index', array_filter($merged, static fn ($v) => $v !== '' && $v !== null));
+        }
+
+        $normalized = StudentListFiltersSession::normalizeForQuery($merged);
+        $query = ListStudentsQuery::fromArray(array_merge(
+            ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'search' => null],
+            $normalized
+        ));
 
         $response = $handler->handle($query);
 
+        StudentListFiltersSession::persist($request, $merged);
+
         return view('students.index', array_merge($response->toArray(), [
-            'flash_error'   => session('error'),
-            'flash_status'  => session('status'),
+            'flash_error' => session('error'),
+            'flash_status' => session('status'),
         ]));
     }
 
     public function create(GetCreateStudentFormQueryHandler $formHandler): View
     {
         $form = $formHandler->handle();
+
         return view('students.create', $form);
     }
 
     public function store(StoreStudentRequest $request, CreateStudentCommandHandler $handler): RedirectResponse
     {
         $id = $handler->handle($request->dataForCreate());
+
         return redirect()
             ->route('students.index')
             ->with('status', 'تمت إضافة الطالب بنجاح.');
@@ -59,12 +75,14 @@ class StudentController extends Controller
         try {
             $payload = $request->normalizedPayload();
             $ok = $handler->handle($id, $payload);
-            if (!$ok) {
+            if (! $ok) {
                 return response()->json(['error' => 'not_found'], 404);
             }
+
             return response()->json(['success' => true]);
         } catch (\Throwable $e) {
             report($e);
+
             return response()->json([
                 'error' => 'server_error',
                 'message' => config('app.debug') ? $e->getMessage() : 'تعذر حفظ التعديلات.',
@@ -76,7 +94,7 @@ class StudentController extends Controller
     {
         try {
             $ok = $handler->handle($id);
-            if (!$ok) {
+            if (! $ok) {
                 return redirect()
                     ->route('students.index')
                     ->with('error', 'لم يتم العثور على الطالب أو تعذر حذفه.');

@@ -30,6 +30,7 @@
         window.STUDENTS_GRADES_UPDATE_URL_TEMPLATE = "{{ route('students.grades.update', ['id' => '__ID__']) }}";
         window.STUDENTS_CERTIFICATE_URL_TEMPLATE = "{{ route('students.certificate', ['id' => '__ID__']) }}";
         window.STUDENTS_CSRF_TOKEN = "{{ csrf_token() }}";
+        window.STUDENTS_BULK_PRINT_URL = "{{ route('students.documents.bulk-print') }}";
     </script>
 
     @include('students.partials.filters')

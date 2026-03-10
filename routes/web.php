@@ -2,10 +2,11 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentDocumentsBulkPrintController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
-use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +19,9 @@ Route::get('/dashboard', function () {
 
 Route::get('/students', [StudentController::class, 'index'])
     ->name('students.index');
+
+Route::get('/students/documents/print', StudentDocumentsBulkPrintController::class)
+    ->name('students.documents.bulk-print');
 
 Route::get('/students/create', [StudentController::class, 'create'])
     ->name('students.create');

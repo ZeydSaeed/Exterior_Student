@@ -31,33 +31,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 TRIM(`الجنس`) AS gender
             ");
 
-        if (!empty($filters['branch'])) {
-            $query->whereRaw('TRIM(`الفرع`) = ?', [$filters['branch']]);
-        }
-
-        if (!empty($filters['major'])) {
-            $query->whereRaw('TRIM(`الاختصاص`) = ?', [$filters['major']]);
-        }
-
-        if (!empty($filters['gender'])) {
-            $query->whereRaw('TRIM(`الجنس`) = ?', [$filters['gender']]);
-        }
-
-        if (!empty($filters['year'])) {
-            $query->where('العام الدراسي', $filters['year']);
-        }
-
-        if (!empty($filters['search'])) {
-            $pattern = '%' . $filters['search'] . '%';
-            $normNum = "LOWER(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(`الرقم الامتحاني`), 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا'), 'ى', 'ي'))";
-            $nameExpr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT_WS(' ', TRIM(`اسم الطالب`), TRIM(`اسم الاب`), TRIM(`اسم الجد`), TRIM(`اللقب`)), '  ', ' '), 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا'), 'ى', 'ي')";
-            $normName = "LOWER({$nameExpr})";
-
-            $query->where(function ($q) use ($pattern, $normNum, $normName) {
-                $q->whereRaw("{$normNum} LIKE ?", [$pattern])
-                    ->orWhereRaw("{$normName} LIKE ?", [$pattern]);
-            });
-        }
+        $this->applyListFilters($query, $filters);
 
         /* ترتيب تصاعدي حسب الرقم الامتحاني (يدعم الأرقام النصية كأرقام) */
         $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
@@ -96,6 +70,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->pluck('gender')
             ->sortBy(function ($g) {
                 $order = ['ذكر' => 0, 'أنثى' => 1];
+
                 return $order[$g] ?? 2;
             })
             ->values();
@@ -107,6 +82,50 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             majors: $majors,
             genders: $genders,
         );
+    }
+
+    public function listIdsWithFilters(array $filters): array
+    {
+        $query = DB::table('main_table')->select('id');
+        $this->applyListFilters($query, $filters);
+        $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+
+        return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
+     */
+    private function applyListFilters($query, array $filters): void
+    {
+        if (! empty($filters['branch'])) {
+            $query->whereRaw('TRIM(`الفرع`) = ?', [$filters['branch']]);
+        }
+
+        if (! empty($filters['major'])) {
+            $query->whereRaw('TRIM(`الاختصاص`) = ?', [$filters['major']]);
+        }
+
+        if (! empty($filters['gender'])) {
+            $query->whereRaw('TRIM(`الجنس`) = ?', [$filters['gender']]);
+        }
+
+        if (! empty($filters['year'])) {
+            $query->where('العام الدراسي', $filters['year']);
+        }
+
+        if (! empty($filters['search'])) {
+            $pattern = '%'.$filters['search'].'%';
+            $normNum = "LOWER(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(`الرقم الامتحاني`), 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا'), 'ى', 'ي'))";
+            $nameExpr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT_WS(' ', TRIM(`اسم الطالب`), TRIM(`اسم الاب`), TRIM(`اسم الجد`), TRIM(`اللقب`)), '  ', ' '), 'أ', 'ا'), 'إ', 'ا'), 'آ', 'ا'), 'ى', 'ي')";
+            $normName = "LOWER({$nameExpr})";
+
+            $query->where(function ($q) use ($pattern, $normNum, $normName) {
+                $q->whereRaw("{$normNum} LIKE ?", [$pattern])
+                    ->orWhereRaw("{$normName} LIKE ?", [$pattern]);
+            });
+        }
     }
 
     public function getGradesById(int $id): ?StudentGradesView
@@ -133,11 +152,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
         $row = DB::table('main_table')->selectRaw(
             implode(', ', array_map(
-                fn(string $c) => '`' . str_replace('`', '``', $c) . '`',
+                fn (string $c) => '`'.str_replace('`', '``', $c).'`',
                 $select
             ))
         )->where('id', $id)->first();
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
@@ -200,7 +219,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->where('id', $id)
             ->first();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
@@ -213,7 +232,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->where('id', $id)
             ->first();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
@@ -247,7 +266,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function getAcademicYearsForForm(): array
     {
         $currentYear = (int) date('Y');
-        $currentAcademicYear = ($currentYear - 1) . '-' . $currentYear;
+        $currentAcademicYear = ($currentYear - 1).'-'.$currentYear;
 
         $years = DB::table('main_table')
             ->select('العام الدراسي')
@@ -260,11 +279,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->values()
             ->all();
 
-        if (!in_array($currentAcademicYear, $years, true)) {
+        if (! in_array($currentAcademicYear, $years, true)) {
             array_unshift($years, $currentAcademicYear);
         }
 
         return $years;
     }
 }
-

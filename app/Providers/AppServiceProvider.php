@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use App\Domain\Employee\EmployeeCommandRepository;
-use App\Domain\Employee\EmployeeQueryRepository;
 use App\Domain\Attestation\AttestationCommandRepository;
 use App\Domain\Attestation\AttestationQueryRepository;
 use App\Domain\Certificate\CertificateSignatureRepository;
+use App\Domain\Employee\EmployeeCommandRepository;
+use App\Domain\Employee\EmployeeQueryRepository;
 use App\Domain\Record\RecordCommandRepository;
 use App\Domain\Record\RecordQueryRepository;
 use App\Domain\Student\StudentCommandRepository;
@@ -17,16 +17,17 @@ use App\Infrastructure\Grades\ConfigSubjectCatalog;
 use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
 use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
 use App\Infrastructure\Persistence\MySQLCertificateSignatureRepository;
-use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
-use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeCommandRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeQueryRepository;
+use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
+use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
-use App\Support\Highlight;
+use App\Support\StudentListFiltersSession;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -65,8 +66,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFour();
 
+        View::composer('layouts.dashboard', function ($view) {
+            $query = StudentListFiltersSession::queryFromSession(request());
+            $view->with('students_index_url', route('students.index', $query));
+            $view->with('students_bulk_print_url', route('students.documents.bulk-print', $query));
+        });
+
         Blade::directive('highlight', function (string $expression) {
-            return "<?php echo \App\Support\Highlight::render(" . $expression . "); ?>";
+            return "<?php echo \App\Support\Highlight::render(".$expression.'); ?>';
         });
     }
 }

@@ -8,9 +8,17 @@ namespace App\Domain\Student;
 interface StudentQueryRepository
 {
     /**
-     * @param array{branch?: string, major?: string, gender?: string, year?: string, search?: string} $filters
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
      */
     public function listWithFilters(array $filters): StudentListProjection;
+
+    /**
+     * معرفات الطلاب المطابقة للفلاتر (لطباعة القيود دفعة واحدة، بدون تقسيم صفحات).
+     *
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
+     * @return list<int>
+     */
+    public function listIdsWithFilters(array $filters): array;
 
     /** بيانات درجات طالب واحد (للمودال) — يُرجع null إن لم يُوجَد */
     public function getGradesById(int $id): ?StudentGradesView;

@@ -28,7 +28,7 @@
                 <span>الصفحة الرئيسية</span>
             </a>
             {{-- بيانات الطلبة --}}
-            <a href="{{ route('students.index') }}" aria-label="بيانات الطلبة" style="margin-top: 0.9rem;">
+            <a href="{{ $students_index_url ?? route('students.index') }}" aria-label="بيانات الطلبة" style="margin-top: 0.9rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
@@ -36,6 +36,15 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
                 <span>بيانات الطلبة</span>
+            </a>
+            <a href="{{ $students_bulk_print_url ?? route('students.documents.bulk-print') }}" aria-label="طباعة القيود" id="sidebar-link-bulk-print">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span>القيود</span>
             </a>
             <a href="#" aria-label="ادخال النتائج">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -105,6 +114,20 @@
                             <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
                         <span>إضافة طالب</span>
+                    </a>
+                    <a href="{{ $students_bulk_print_url ?? route('students.documents.bulk-print') }}"
+                       class="dashboard-toolbar-btn"
+                       id="toolbar-link-bulk-print"
+                       aria-label="طباعة القيود"
+                       title="طباعة القيود حسب الفلاتر (الفرع، الاختصاص، العام، الجنس)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <rect x="8" y="2" width="8" height="4" rx="1"/>
+                        </svg>
+                        <span>القيود</span>
                     </a>
                 </div>
             </header>

@@ -368,4 +368,40 @@
         }
         window.addEventListener('resize', fitCertificate);
     })();
+
+    /** ربط رابط «القيود» بفلاتر النموذج (الفرع/الاختصاص/العام/الجنس/بحث) */
+    (function syncBulkPrintLinks() {
+        var base = window.STUDENTS_BULK_PRINT_URL;
+        if (!base) return;
+        var filterForm = document.getElementById('students-filter-form');
+        function buildQuery() {
+            if (!filterForm) return '';
+            var params = new URLSearchParams();
+            ['branch', 'major', 'gender', 'year'].forEach(function (name) {
+                var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+                if (el) params.set(name, el.value);
+            });
+            var searchHidden = document.getElementById('students-filter-search-hidden');
+            if (searchHidden && searchHidden.value) params.set('search', searchHidden.value);
+            var s = params.toString();
+            return s ? '?' + s : '';
+        }
+        function updateLinks() {
+            var q = buildQuery();
+            var href = base + q;
+            var toolbar = document.getElementById('toolbar-link-bulk-print');
+            var sidebar = document.getElementById('sidebar-link-bulk-print');
+            /* فتح صفحة القيود (تنسيق الموظفين) بدون طباعة تلقائية */
+            if (toolbar) toolbar.setAttribute('href', href);
+            if (sidebar) sidebar.setAttribute('href', href);
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateLinks);
+        } else {
+            updateLinks();
+        }
+        if (filterForm) {
+            filterForm.addEventListener('change', updateLinks);
+        }
+    })();
 })();
