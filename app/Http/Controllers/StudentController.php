@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Student\Command\CreateStudentCommandHandler;
 use App\Application\Student\Command\DeleteStudentCommandHandler;
+use App\Application\Student\Command\UpdateStudentGradesCommandHandler;
 use App\Application\Student\Query\GetCreateStudentFormQueryHandler;
 use App\Application\Student\Query\GetStudentGradesQueryHandler;
 use App\Application\Student\Query\ListStudentsQuery;

@@ -31,6 +31,7 @@
         window.STUDENTS_CERTIFICATE_URL_TEMPLATE = "{{ route('students.certificate', ['id' => '__ID__']) }}";
         window.STUDENTS_CSRF_TOKEN = "{{ csrf_token() }}";
         window.STUDENTS_BULK_PRINT_URL = "{{ route('students.documents.bulk-print') }}";
+        window.STUDENTS_DELETE_FAILED_URL = "{{ route('students.failures.destroy') }}";
     </script>
 
     @include('students.partials.filters')
@@ -44,6 +45,7 @@
 
     @include('students.partials.grades-modal')
     @include('students.partials.certificate-modal')
+    @include('students.partials.failures-modal')
 @endsection
 
 @section('scripts')

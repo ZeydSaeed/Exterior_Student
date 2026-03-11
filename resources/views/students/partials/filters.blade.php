@@ -4,6 +4,13 @@
             <input type="hidden" name="search" value="{{ request('search') }}" id="students-filter-search-hidden">
         @endif
         <div class="students-filter-cards">
+            <div class="students-filter">
+                <div class="students-filter-card-options" style="display:flex; justify-content:flex-end; margin-bottom:0; margin-top:0.5rem;">
+                    <button type="button" id="students-filter-clear-all" class="btn-primary" style="margin:0;">
+                        إلغاء الكل
+                    </button>
+                </div>
+            </div>
             <div class="students-filter-card">
                 <h3 class="students-filter-card-title">الفرع</h3>
                 <div class="students-filter-card-options">
@@ -65,6 +72,18 @@
             form.querySelectorAll('.students-filter-radio').forEach(function (radio) {
                 radio.addEventListener('change', function () { applyFilters(); });
             });
+            var clearBtn = document.getElementById('students-filter-clear-all');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    ['branch', 'major', 'gender', 'year'].forEach(function (name) {
+                        var firstAll = form.querySelector('input[name="' + name + '"][value=""]');
+                        if (firstAll) {
+                            firstAll.checked = true;
+                        }
+                    });
+                    applyFilters();
+                });
+            }
         })();
     </script>
 </aside>

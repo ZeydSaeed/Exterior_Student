@@ -404,4 +404,97 @@
             filterForm.addEventListener('change', updateLinks);
         }
     })();
+
+    /** حذف الطلبة الراسبين/المعيدين بحسب فلاتر السايدبار */
+    (function failuresBulkDelete() {
+        var link = document.getElementById('sidebar-link-failures');
+        var modal = document.getElementById('failures-modal');
+        if (!link || !modal) return;
+
+        var confirmBtn = document.getElementById('failures-btn-confirm');
+        var closeButtons = modal.querySelectorAll('[data-failures-modal-close]');
+        var filterForm = document.getElementById('students-filter-form');
+
+        function getFilterLabel(name) {
+            if (!filterForm) return 'الكل';
+            var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+            if (!el) return 'الكل';
+            var label = el.closest('label');
+            if (!label) return 'الكل';
+            var txt = label.textContent || '';
+            txt = txt.replace(/\s+/g, ' ').trim();
+            return txt || 'الكل';
+        }
+
+        function openModalFailures() {
+            document.getElementById('failures-filter-branch').textContent = getFilterLabel('branch');
+            document.getElementById('failures-filter-major').textContent = getFilterLabel('major');
+            document.getElementById('failures-filter-gender').textContent = getFilterLabel('gender');
+            document.getElementById('failures-filter-year').textContent = getFilterLabel('year');
+            modal.classList.add('is-visible');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeModalFailures() {
+            modal.classList.remove('is-visible');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            openModalFailures();
+        });
+
+        closeButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                closeModalFailures();
+            });
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeModalFailures();
+            }
+        });
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function () {
+                var base = window.STUDENTS_DELETE_FAILED_URL || '/students/failures';
+                var params = new URLSearchParams();
+                if (filterForm) {
+                    ['branch', 'major', 'gender', 'year'].forEach(function (name) {
+                        var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+                        if (el) params.set(name, el.value);
+                    });
+                }
+
+                var href = base + (params.toString() ? '?' + params.toString() : '');
+                var csrf = window.STUDENTS_CSRF_TOKEN || (document.querySelector('meta[name=\"csrf-token\"]') && document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content')) || '';
+
+                fetch(href, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf
+                    }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        closeModalFailures();
+                        var deleted = data && typeof data.deleted === 'number' ? data.deleted : 0;
+                        if (deleted > 0) {
+                            alert('تم حذف ' + deleted + ' من الطلبة الراسبين/المعيدين بنجاح.');
+                        } else {
+                            alert('لم يتم العثور على طلبة راسبين/معيدين للفلاتر المحددة.');
+                        }
+                        window.location.reload();
+                    })
+                    .catch(function () {
+                        closeModalFailures();
+                        alert('تعذر تنفيذ عملية الحذف. يرجى المحاولة مرة أخرى.');
+                    });
+            });
+        }
+    })();
 })();

@@ -4,6 +4,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentsBulkPrintController;
+use App\Http\Controllers\StudentFailuresBulkDeleteController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
@@ -22,6 +23,9 @@ Route::get('/students', [StudentController::class, 'index'])
 
 Route::get('/students/documents/print', StudentDocumentsBulkPrintController::class)
     ->name('students.documents.bulk-print');
+
+Route::delete('/students/failures', StudentFailuresBulkDeleteController::class)
+    ->name('students.failures.destroy');
 
 Route::get('/students/create', [StudentController::class, 'create'])
     ->name('students.create');
