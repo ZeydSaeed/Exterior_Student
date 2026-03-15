@@ -44,7 +44,7 @@ final class GetStudentCertificateWithGradesQueryHandler
             $totalNumeric += $scoreInt;
             $gradesTable[] = [
                 'subject'      => $subjectName,
-                'score'        => $score,
+                'score'        => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : $score,
                 'score_words'  => $scoreTrim !== '' && is_numeric($scoreTrim) ? $this->numberToWords->convert($scoreInt) : '',
             ];
         }

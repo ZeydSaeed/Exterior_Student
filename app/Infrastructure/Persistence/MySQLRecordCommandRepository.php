@@ -4,10 +4,11 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Record\RecordCommandRepository;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ كتابة وثائق الطلاب على MySQL (CQRS — Command side).
- * الجدول records يستخدم أعمدة عربية والربط بالطالب عبر الرقم الامتحاني.
+ * يدعم البنية الحالية: إن وُجد student_id يُستخدم؛ وإلا الرقم الامتحاني مع أعمدة عربية.
  */
 final class MySQLRecordCommandRepository implements RecordCommandRepository
 {
@@ -18,28 +19,38 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
         ?string $addressee,
         ?string $purpose
     ): void {
-        $examNumber = DB::table('main_table')
-            ->where('id', $studentId)
-            ->value('الرقم الامتحاني');
-
+        $examNumber = Schema::hasTable('students')
+            ? DB::table('students')->where('id', $studentId)->value('exam_number')
+            : DB::table('main_table')->where('id', $studentId)->value('الرقم الامتحاني');
         if ($examNumber === null) {
             throw new \RuntimeException('Student not found for record.', 404);
         }
 
         $docNum = $this->normalizeDocumentNumber($documentNumber);
 
-        DB::transaction(function () use ($examNumber, $docNum, $documentDate, $addressee, $purpose): void {
-            $nextId = (int) DB::table('records')->max('id') + 1;
-
-            DB::table('records')->insert([
-                'id' => $nextId,
-                'الرقم الامتحاني' => $examNumber,
-                'رقم الوثيقة' => $docNum,
-                'تاريخها' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
-                'الجهه المعنونه اليها' => $addressee,
-                'الغرض من الوثيقة' => $purpose,
-            ]);
-        });
+        if (Schema::hasColumn('records', 'student_id')) {
+            DB::transaction(function () use ($studentId, $docNum, $documentDate, $addressee, $purpose): void {
+                DB::table('records')->insert([
+                    'student_id' => $studentId,
+                    'document_number' => $docNum,
+                    'document_date' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
+                    'addressee' => $addressee ?? '',
+                    'purpose' => $purpose ?? '',
+                ]);
+            });
+        } else {
+            DB::transaction(function () use ($examNumber, $docNum, $documentDate, $addressee, $purpose): void {
+                $nextId = (int) DB::table('records')->max('id') + 1;
+                DB::table('records')->insert([
+                    'id' => $nextId,
+                    'الرقم الامتحاني' => $examNumber,
+                    'رقم الوثيقة' => $docNum,
+                    'تاريخها' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
+                    'الجهه المعنونه اليها' => $addressee ?? '',
+                    'الغرض من الوثيقة' => $purpose ?? '',
+                ]);
+            });
+        }
     }
 
     /**
@@ -66,16 +77,29 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
     ): void {
         $docNum = $this->normalizeDocumentNumber($documentNumber);
 
-        DB::transaction(function () use ($recordId, $docNum, $documentDate, $addressee, $purpose): void {
-            DB::table('records')
-                ->where('id', $recordId)
-                ->update([
-                    'رقم الوثيقة' => $docNum,
-                    'تاريخها' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
-                    'الجهه المعنونه اليها' => $addressee,
-                    'الغرض من الوثيقة' => $purpose,
-                ]);
-        });
+        if (Schema::hasColumn('records', 'document_number')) {
+            DB::transaction(function () use ($recordId, $docNum, $documentDate, $addressee, $purpose): void {
+                DB::table('records')
+                    ->where('id', $recordId)
+                    ->update([
+                        'document_number' => $docNum,
+                        'document_date' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
+                        'addressee' => $addressee ?? '',
+                        'purpose' => $purpose ?? '',
+                    ]);
+            });
+        } else {
+            DB::transaction(function () use ($recordId, $docNum, $documentDate, $addressee, $purpose): void {
+                DB::table('records')
+                    ->where('id', $recordId)
+                    ->update([
+                        'رقم الوثيقة' => $docNum,
+                        'تاريخها' => $documentDate !== null && $documentDate !== '' ? $documentDate : null,
+                        'الجهه المعنونه اليها' => $addressee ?? '',
+                        'الغرض من الوثيقة' => $purpose ?? '',
+                    ]);
+            });
+        }
     }
 
     public function delete(int $recordId): void

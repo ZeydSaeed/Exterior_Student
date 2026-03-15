@@ -40,4 +40,12 @@ interface StudentCommandRepository
      * حذف سجل الطالب بالكامل من مصدر البيانات.
      */
     public function deleteStudent(int $id): bool;
+
+    /**
+     * حذف عدة طلاب دفعة واحدة (لتحسين الأداء عند الحذف الجماعي).
+     *
+     * @param  list<int>  $ids
+     * @return int عدد السجلات المحذوفة
+     */
+    public function deleteStudentsByIds(array $ids): int;
 }

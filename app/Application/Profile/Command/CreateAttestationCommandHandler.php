@@ -3,7 +3,6 @@
 namespace App\Application\Profile\Command;
 
 use App\Domain\Attestation\AttestationCommandRepository;
-use Illuminate\Support\Facades\DB;
 
 /**
  * أمر إنشاء تأييد (حفظ من صفحة التأييد).
@@ -15,6 +14,7 @@ final class CreateAttestationCommandHandler
     ) {}
 
     public function handle(
+        int $studentId,
         string $examNumber,
         string $type,
         ?string $date,
@@ -26,6 +26,7 @@ final class CreateAttestationCommandHandler
         ?string $leftEmployeeName
     ): void {
         $this->repository->create(
+            studentId: $studentId,
             examNumber: $examNumber,
             type: $type,
             date: $this->normalizeDate($date),

@@ -20,6 +20,14 @@ interface StudentQueryRepository
      */
     public function listIdsWithFilters(array $filters): array;
 
+    /**
+     * معرفات الطلاب الراسبين/المعيدين المطابقة للفلاتر (لحذف جماعي).
+     *
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
+     * @return list<int>
+     */
+    public function listFailedIdsWithFilters(array $filters): array;
+
     /** بيانات درجات طالب واحد (للمودال) — يُرجع null إن لم يُوجَد */
     public function getGradesById(int $id): ?StudentGradesView;
 

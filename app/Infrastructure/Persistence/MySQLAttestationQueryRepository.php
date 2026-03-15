@@ -11,16 +11,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class MySQLAttestationQueryRepository implements AttestationQueryRepository
 {
+    private const MAX_ATTESTATIONS_PER_STUDENT = 500;
+
     public function listByStudentId(int $studentId): array
     {
-        $examNumber = DB::table('main_table')
-            ->where('id', $studentId)
-            ->value('الرقم الامتحاني');
-
-        if ($examNumber === null || $examNumber === '') {
-            return [];
-        }
-
         $rows = DB::table('certificate')
             ->select([
                 'id',
@@ -34,9 +28,10 @@ final class MySQLAttestationQueryRepository implements AttestationQueryRepositor
                 'left_title',
                 'left_employee_name',
             ])
-            ->where('exam_number', (string) $examNumber)
+            ->where('student_id', $studentId)
             ->orderByRaw('`date` DESC')
             ->orderBy('id', 'desc')
+            ->limit(self::MAX_ATTESTATIONS_PER_STUDENT)
             ->get();
 
         $list = [];

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 final class MySQLAttestationCommandRepository implements AttestationCommandRepository
 {
     public function create(
+        int $studentId,
         string $examNumber,
         string $type,
         ?string $date,
@@ -21,9 +22,10 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
         ?string $leftTitle,
         ?string $leftEmployeeName
     ): void {
-        DB::transaction(function () use ($examNumber, $type, $date, $number, $issuedTo, $rightTitle, $rightEmployeeName, $leftTitle, $leftEmployeeName): void {
+        DB::transaction(function () use ($studentId, $examNumber, $type, $date, $number, $issuedTo, $rightTitle, $rightEmployeeName, $leftTitle, $leftEmployeeName): void {
             $now = now();
             DB::table('certificate')->insert([
+                'student_id' => $studentId,
                 'exam_number' => $examNumber,
                 'type' => $type,
                 'date' => $date ?: null,

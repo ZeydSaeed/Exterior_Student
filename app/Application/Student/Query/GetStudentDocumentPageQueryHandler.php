@@ -49,7 +49,7 @@ final class GetStudentDocumentPageQueryHandler
             }
             $gradesTable[] = [
                 'subject'     => $subjectName,
-                'score'       => $scoreTrim !== '' ? $scoreTrim : '0',
+                'score'       => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : ($scoreTrim !== '' ? $scoreTrim : '0'),
                 'score_words' => $scoreTrim !== '' && is_numeric($scoreTrim)
                     ? $this->numberToWords->convert((int) round((float) $scoreTrim))
                     : 'صفر',

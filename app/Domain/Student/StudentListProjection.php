@@ -17,6 +17,8 @@ final class StudentListProjection
         public readonly Collection $branches,
         public readonly Collection $majors,
         public readonly Collection $genders,
+        public readonly Collection $resultOptions,
+        public readonly Collection $roundOptions,
     ) {}
 }
 

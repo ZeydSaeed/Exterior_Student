@@ -16,6 +16,8 @@ final class ListStudentsResponseDTO
         public readonly Collection $branches,
         public readonly Collection $majors,
         public readonly Collection $genders,
+        public readonly Collection $resultOptions,
+        public readonly Collection $roundOptions,
         public readonly ?string $searchPattern = null,
     ) {}
 
@@ -23,12 +25,14 @@ final class ListStudentsResponseDTO
     public function toArray(): array
     {
         return [
-            'students'      => $this->students,
-            'academicYears' => $this->academicYears,
-            'branches'      => $this->branches,
-            'majors'        => $this->majors,
-            'genders'       => $this->genders,
-            'searchPattern' => $this->searchPattern,
+            'students'       => $this->students,
+            'academicYears'  => $this->academicYears,
+            'branches'       => $this->branches,
+            'majors'         => $this->majors,
+            'genders'        => $this->genders,
+            'resultOptions'  => $this->resultOptions,
+            'roundOptions'   => $this->roundOptions,
+            'searchPattern'  => $this->searchPattern,
         ];
     }
 }

@@ -7,7 +7,12 @@ namespace App\Domain\Attestation;
  */
 interface AttestationCommandRepository
 {
+    /**
+     * @param int $studentId معرف الطالب (FK)
+     * @param string $examNumber الرقم الامتحاني للعرض/التوثيق فقط
+     */
     public function create(
+        int $studentId,
         string $examNumber,
         string $type,
         ?string $date,

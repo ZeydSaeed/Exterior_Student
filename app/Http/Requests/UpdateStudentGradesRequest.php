@@ -3,10 +3,11 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * FormRequest لتحديث بيانات الطالب ودرجاته من مودال الدرجات.
- * مسؤولة عن التحقق البسيط + تطبيع البايلود للـ Command Handler.
+ * النتيجة والدور: لا يُقبل إلا الخيارات المعرّفة في config/grades_catalog.
  */
 class UpdateStudentGradesRequest extends FormRequest
 {
@@ -28,10 +29,10 @@ class UpdateStudentGradesRequest extends FormRequest
             'branch'            => ['nullable', 'string', 'max:255'],
             'major'             => ['nullable', 'string', 'max:255'],
             'academic_year'     => ['nullable', 'string', 'max:255'],
-            'result'            => ['nullable', 'string', 'max:255'],
+            'result'            => ['nullable', 'string', Rule::in(config('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده']))],
             'total'             => ['nullable', 'string', 'max:255'],
             'average'           => ['nullable', 'string', 'max:255'],
-            'round'             => ['nullable', 'string', 'max:255'],
+            'round'             => ['nullable', 'string', Rule::in(config('grades_catalog.round_options', ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي']))],
             'grades'            => ['nullable', 'array'],
             'grades.*.subject'  => ['nullable', 'string', 'max:255'],
             'grades.*.score'    => ['nullable', 'string', 'max:255'],

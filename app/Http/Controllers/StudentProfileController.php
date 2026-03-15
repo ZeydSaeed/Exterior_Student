@@ -48,6 +48,7 @@ final class StudentProfileController
 
         $validated = $request->validated();
         $this->createAttestationHandler->handle(
+            studentId: $id,
             examNumber: (string) $examNumber,
             type: (string) $validated['type'],
             date: isset($validated['date']) && $validated['date'] !== '' ? (string) $validated['date'] : null,

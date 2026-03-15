@@ -27,6 +27,8 @@ use App\Infrastructure\Persistence\MySQLStudentReadRepository;
 use App\Support\StudentListFiltersSession;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -64,6 +66,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.debug') && class_exists(DB::class)) {
+            DB::listen(function ($query): void {
+                $time = $query->time;
+                if ($time > 1000) {
+                    Log::warning('Slow query', [
+                        'sql' => $query->sql,
+                        'bindings' => $query->bindings,
+                        'time_ms' => $time,
+                    ]);
+                }
+            });
+        }
+
         Paginator::useBootstrapFour();
 
         View::composer('layouts.dashboard', function ($view) {

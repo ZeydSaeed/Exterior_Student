@@ -3,14 +3,22 @@
 namespace App\Infrastructure\Persistence;
 
 use App\Domain\Student\StudentCommandRepository;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
- * تنفيذ كتابة الطلاب على MySQL (CQRS — Command side)
+ * تنفيذ كتابة الطلاب على MySQL (CQRS — Command side).
+ * يدعم الجداول المُطبّعة عند وجودها، وإلا main_table.
  */
 final class MySQLStudentCommandRepository implements StudentCommandRepository
 {
+    private function useNormalizedSchema(): bool
+    {
+        return Schema::hasTable('students');
+    }
+
     private const BASIC_FIELDS = [
         'name_student' => 'اسم الطالب',
         'name_father' => 'اسم الاب',
@@ -48,6 +56,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
 
     public function create(array $data): int
     {
+        if ($this->useNormalizedSchema()) {
+            return $this->createNormalized($data);
+        }
         return DB::transaction(function () use ($data): int {
             $row = [];
             foreach (self::CREATE_FIELDS_MAP as $key => $column) {
@@ -111,62 +122,229 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $nextId = (int) DB::table('main_table')->max('id') + 1;
             $row['id'] = $nextId;
             DB::table('main_table')->insert($row);
+            Cache::forget('student_filters.lists');
             return $nextId;
+        });
+    }
+
+    private function createNormalized(array $data): int
+    {
+        return (int) DB::transaction(function () use ($data): int {
+            $examNumber = isset($data['exam_number']) && trim((string) $data['exam_number']) !== '' ? trim((string) $data['exam_number']) : '0';
+            $birthDate = isset($data['birth_date']) && trim((string) $data['birth_date']) !== '' ? trim((string) $data['birth_date']) : null;
+            $middleDocDate = isset($data['middle_doc_date']) && trim((string) $data['middle_doc_date']) !== '' ? trim((string) $data['middle_doc_date']) : null;
+
+            $now = now();
+            $studentId = (int) DB::table('students')->insertGetId([
+                'exam_number' => $examNumber,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $trim = fn ($k) => isset($data[$k]) ? trim((string) $data[$k]) : '';
+            DB::table('student_personal')->insert([
+                'student_id' => $studentId,
+                'first_name' => $trim('name_student'),
+                'father_name' => $trim('name_father'),
+                'grandfather_name' => $trim('name_grandfather'),
+                'surname' => $trim('name_surname'),
+                'gender' => $trim('gender'),
+                'birth_date' => $birthDate,
+                'birth_place' => $trim('birth_place'),
+                'mother_full_name' => $trim('mother_full_name'),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $branchId = DB::table('branches')->where('name_ar', $trim('branch'))->value('id');
+            $majorId = DB::table('majors')->where('name_ar', $trim('major'))->value('id');
+            $yearId = DB::table('academic_years')->where('year_label', $trim('academic_year'))->value('id');
+            $resultId = DB::table('result_types')->where('name_ar', 'ناجح')->value('id');
+
+            DB::table('student_academic')->insert([
+                'student_id' => $studentId,
+                'branch_id' => $branchId,
+                'major_id' => $majorId,
+                'academic_year_id' => $yearId,
+                'result_type_id' => $resultId,
+                'last_school' => $trim('last_school'),
+                'middle_doc_number' => $trim('middle_doc_number'),
+                'middle_doc_date' => $middleDocDate,
+                'issuing_authority' => $trim('issuing_authority'),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $subjectIds = DB::table('subjects')->pluck('id');
+            foreach ($subjectIds as $subjectId) {
+                DB::table('student_grades')->insert([
+                    'student_id' => $studentId,
+                    'subject_id' => $subjectId,
+                    'score' => 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            Cache::forget('student_filters.lists');
+            return $studentId;
         });
     }
 
     public function updateGrades(int $id, array $payload): bool
     {
+        if ($this->useNormalizedSchema()) {
+            return $this->updateGradesNormalized($id, $payload);
+        }
         return DB::transaction(function () use ($id, $payload): bool {
             $data = [];
-
-            // الحقول الأساسية (الاسم، الرقم، الفرع، ... إلخ)
+            $allowedResults = Config::get('grades_catalog.result_options', []);
+            $allowedRounds = Config::get('grades_catalog.round_options', []);
             foreach (self::BASIC_FIELDS as $key => $column) {
                 if (array_key_exists($key, $payload)) {
-                    $value = trim((string) $payload[$key]);
-                    $data[$column] = $value;
+                    $v = trim((string) $payload[$key]);
+                    if ($key === 'total' && $v !== '' && is_numeric($v)) {
+                        $data[$column] = (string) (int) round((float) $v);
+                    } elseif ($key === 'result' && ($v === '' || in_array($v, $allowedResults, true))) {
+                        $data[$column] = $v;
+                    } elseif ($key === 'round' && ($v === '' || in_array($v, $allowedRounds, true))) {
+                        $data[$column] = $v;
+                    } elseif ($key !== 'result' && $key !== 'round') {
+                        $data[$column] = $v;
+                    }
                 }
             }
-
-            // أعمدة الدرجات (المواد)
             $gradeColumns = Config::get('grades_catalog.grade_columns', []);
             $allowedGrades = array_fill_keys($gradeColumns, true);
-            $grades = $payload['grades'] ?? [];
-            if (is_array($grades)) {
-                foreach ($grades as $row) {
-                    if (!is_array($row)) {
-                        continue;
-                    }
-                    $subject = trim((string) ($row['subject'] ?? ''));
-                    $score = trim((string) ($row['score'] ?? ''));
-                    if ($subject !== '' && isset($allowedGrades[$subject])) {
-                        // اسم العمود هو اسم المادة من الكتالوج
-                        $data[$subject] = $score;
-                    }
+            foreach ($payload['grades'] ?? [] as $row) {
+                if (! is_array($row)) {
+                    continue;
                 }
+                $subject = trim((string) ($row['subject'] ?? ''));
+                $score = trim((string) ($row['score'] ?? ''));
+                    if ($subject !== '' && isset($allowedGrades[$subject])) {
+                        $data[$subject] = is_numeric($score) ? (string) (int) round((float) $score) : '0';
+                    }
             }
-
             if (empty($data)) {
-                // لا يوجد شيء لتحديثه
                 return false;
             }
-
-            $affected = DB::table('main_table')
-                ->where('id', $id)
-                ->update($data);
-
+            $affected = DB::table('main_table')->where('id', $id)->update($data);
+            if ($affected > 0) {
+                Cache::forget('student_filters.lists');
+            }
             return $affected > 0;
+        });
+    }
+
+    private function updateGradesNormalized(int $id, array $payload): bool
+    {
+        return DB::transaction(function () use ($id, $payload): bool {
+            $any = false;
+            if (array_intersect_key($payload, array_flip(['name_student', 'name_father', 'name_grandfather', 'name_surname', 'gender'])) !== []) {
+                $up = [];
+                if (array_key_exists('name_student', $payload)) {
+                    $up['first_name'] = trim((string) $payload['name_student']);
+                }
+                if (array_key_exists('name_father', $payload)) {
+                    $up['father_name'] = trim((string) $payload['name_father']);
+                }
+                if (array_key_exists('name_grandfather', $payload)) {
+                    $up['grandfather_name'] = trim((string) $payload['name_grandfather']);
+                }
+                if (array_key_exists('name_surname', $payload)) {
+                    $up['surname'] = trim((string) $payload['name_surname']);
+                }
+                if (array_key_exists('gender', $payload)) {
+                    $up['gender'] = trim((string) $payload['gender']);
+                }
+                if ($up !== []) {
+                    $up['updated_at'] = now();
+                    DB::table('student_personal')->where('student_id', $id)->update($up);
+                    $any = true;
+                }
+            }
+            if (array_key_exists('exam_number', $payload)) {
+                DB::table('students')->where('id', $id)->update(['exam_number' => trim((string) $payload['exam_number']), 'updated_at' => now()]);
+                $any = true;
+            }
+            $acUp = [];
+            if (array_key_exists('branch', $payload)) {
+                $acUp['branch_id'] = DB::table('branches')->where('name_ar', trim((string) $payload['branch']))->value('id');
+            }
+            if (array_key_exists('major', $payload)) {
+                $acUp['major_id'] = DB::table('majors')->where('name_ar', trim((string) $payload['major']))->value('id');
+            }
+            if (array_key_exists('academic_year', $payload)) {
+                $acUp['academic_year_id'] = DB::table('academic_years')->where('year_label', trim((string) $payload['academic_year']))->value('id');
+            }
+            if (array_key_exists('result', $payload)) {
+                $resultName = trim((string) $payload['result']);
+                $allowedResults = Config::get('grades_catalog.result_options', []);
+                if ($resultName !== '' && in_array($resultName, $allowedResults, true)) {
+                    $acUp['result_type_id'] = DB::table('result_types')->where('name_ar', $resultName)->value('id');
+                }
+            }
+            foreach (['total', 'average', 'round'] as $k) {
+                if (array_key_exists($k, $payload)) {
+                    $v = trim((string) $payload[$k]);
+                    $acUp[$k] = ($k === 'total' && $v !== '' && is_numeric($v))
+                        ? (int) round((float) $v)
+                        : $v;
+                }
+            }
+            if ($acUp !== []) {
+                $acUp['updated_at'] = now();
+                DB::table('student_academic')->where('student_id', $id)->update($acUp);
+                $any = true;
+            }
+            $gradeColumns = Config::get('grades_catalog.grade_columns', []);
+            $subjectIds = DB::table('subjects')->pluck('id', 'name_ar');
+            foreach ($payload['grades'] ?? [] as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $subject = trim((string) ($row['subject'] ?? ''));
+                $score = trim((string) ($row['score'] ?? ''));
+                if ($subject !== '' && isset($subjectIds[$subject])) {
+                    DB::table('student_grades')->updateOrInsert(
+                        ['student_id' => $id, 'subject_id' => $subjectIds[$subject]],
+                        ['score' => is_numeric($score) ? (int) round((float) $score) : 0, 'updated_at' => now()]
+                    );
+                    $any = true;
+                }
+            }
+            if ($any) {
+                Cache::forget('student_filters.lists');
+            }
+            return $any;
         });
     }
 
     public function deleteStudent(int $id): bool
     {
-        return DB::transaction(function () use ($id): bool {
-            $affected = DB::table('main_table')
-                ->where('id', $id)
-                ->delete();
-
+        $table = $this->useNormalizedSchema() ? 'students' : 'main_table';
+        return DB::transaction(function () use ($id, $table): bool {
+            $affected = DB::table($table)->where('id', $id)->delete();
+            if ($affected > 0) {
+                Cache::forget('student_filters.lists');
+            }
             return $affected > 0;
+        });
+    }
+
+    public function deleteStudentsByIds(array $ids): int
+    {
+        if ($ids === []) {
+            return 0;
+        }
+        $table = $this->useNormalizedSchema() ? 'students' : 'main_table';
+        return (int) DB::transaction(function () use ($ids, $table): int {
+            $affected = DB::table($table)->whereIn('id', $ids)->delete();
+            if ($affected > 0) {
+                Cache::forget('student_filters.lists');
+            }
+            return $affected;
         });
     }
 }

@@ -24,6 +24,8 @@ final class ListStudentsQueryHandler
             branches: $projection->branches,
             majors: $projection->majors,
             genders: $projection->genders,
+            resultOptions: $projection->resultOptions,
+            roundOptions: $projection->roundOptions,
             searchPattern: $this->buildHighlightPattern($query->search ?? ''),
         );
     }
