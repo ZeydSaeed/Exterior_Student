@@ -29,6 +29,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         return Schema::hasTable('students');
     }
 
+    private function studentGradesUsesMajorSubject(): bool
+    {
+        return Schema::hasColumn('student_grades', 'major_subject_id');
+    }
+
     /** المجموع يعرض كعدد صحيح فقط (بدون كسور). */
     private function formatTotal(mixed $value): string
     {
@@ -334,18 +339,37 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
             ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
             ->where('s.id', $id)
-            ->selectRaw("s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, b.name_ar AS branch, m.name_ar AS major, y.year_label AS academic_year, rt.name_ar AS result, a.total, a.average, a.round")
+            ->selectRaw("s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round")
             ->first();
         if (! $row) {
             return null;
         }
         $fullName = trim(implode(' ', [$row->first_name ?? '', $row->father_name ?? '', $row->grandfather_name ?? '', $row->surname ?? '']));
-        $gradeColumns = Config::get('grades_catalog.grade_columns', []);
-        $scoreMap = DB::table('student_grades as g')
-            ->join('subjects as sub', 'sub.id', '=', 'g.subject_id')
-            ->where('g.student_id', $id)
-            ->pluck('g.score', 'sub.name_ar')
-            ->all();
+        $majorId = $row->major_id ?? null;
+        $academicYearId = $row->academic_year_id ?? null;
+
+        if ($this->studentGradesUsesMajorSubject() && $majorId !== null && $academicYearId !== null) {
+            $gradeColumns = DB::table('major_subjects as ms')
+                ->join('subjects as sub', 'sub.id', '=', 'ms.subject_id')
+                ->where('ms.major_id', $majorId)
+                ->orderBy('ms.sort_order')
+                ->pluck('sub.name_ar');
+            $scoreMap = DB::table('student_grades as g')
+                ->join('major_subjects as ms', 'ms.id', '=', 'g.major_subject_id')
+                ->join('subjects as sub', 'sub.id', '=', 'ms.subject_id')
+                ->where('g.student_id', $id)
+                ->where('g.academic_year_id', $academicYearId)
+                ->pluck('g.score', 'sub.name_ar')
+                ->all();
+        } else {
+            $gradeColumns = Config::get('grades_catalog.grade_columns', []);
+            $scoreMap = DB::table('student_grades as g')
+                ->join('subjects as sub', 'sub.id', '=', 'g.subject_id')
+                ->where('g.student_id', $id)
+                ->pluck('g.score', 'sub.name_ar')
+                ->all();
+        }
+
         $grades = [];
         foreach ($gradeColumns as $name) {
             $raw = $scoreMap[$name] ?? null;

@@ -24,7 +24,7 @@ class UpdateStudentGradesRequest extends FormRequest
             'name_father'       => ['nullable', 'string', 'max:255'],
             'name_grandfather'  => ['nullable', 'string', 'max:255'],
             'name_surname'      => ['nullable', 'string', 'max:255'],
-            'exam_number'       => ['nullable', 'string', 'max:255'],
+            'exam_number'       => ['required', 'string', 'max:255'],
             'gender'            => ['nullable', 'string', 'max:255'],
             'branch'            => ['nullable', 'string', 'max:255'],
             'major'             => ['nullable', 'string', 'max:255'],
@@ -36,6 +36,13 @@ class UpdateStudentGradesRequest extends FormRequest
             'grades'            => ['nullable', 'array'],
             'grades.*.subject'  => ['nullable', 'string', 'max:255'],
             'grades.*.score'    => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'exam_number.required' => 'الرقم الامتحاني مطلوب في فورم الدرجات.',
         ];
     }
 

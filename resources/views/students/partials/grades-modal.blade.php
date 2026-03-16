@@ -32,15 +32,20 @@
                     <span class="grades-readonly" id="grades-name-surname"></span>
                     <input type="text" name="name_surname" id="grades-name-surname-input" class="grades-edit grades-edit-hidden" aria-label="اللقب">
                 </div>
-                <div class="grades-field">
-                    <label>الرقم الامتحاني</label>
+                <div class="grades-field grades-field-exam-number">
+                    <label for="grades-exam-number-input">الرقم الامتحاني <span class="grades-required" aria-hidden="true">*</span></label>
                     <span class="grades-readonly" id="grades-exam-number"></span>
-                    <input type="text" name="exam_number" id="grades-exam-number-input" class="grades-edit grades-edit-hidden" aria-label="الرقم الامتحاني">
+                    <input type="text" name="exam_number" id="grades-exam-number-input" class="grades-edit grades-edit-hidden" aria-label="الرقم الامتحاني (مطلوب)" required maxlength="255">
                 </div>
                 <div class="grades-field">
                     <label>الجنس</label>
                     <span class="grades-readonly" id="grades-gender"></span>
-                    <input type="text" name="gender" id="grades-gender-input" class="grades-edit grades-edit-hidden" aria-label="الجنس">
+                    <select name="gender" id="grades-gender-input" class="grades-edit grades-edit-hidden grades-select" aria-label="الجنس">
+                        <!-- <option value="">— اختر —</option> -->
+                        @foreach($genders ?? [] as $opt)
+                            <option value="{{ $opt }}">{{ $opt }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="grades-field">
                     <label>الفرع</label>
@@ -88,7 +93,7 @@
                     <label>النتيجة</label>
                     <span class="grades-readonly" id="grades-result"></span>
                     <select name="result" id="grades-result-input" class="grades-edit grades-edit-hidden grades-select" aria-label="النتيجة">
-                        <option value="">— اختر —</option>
+                        <!-- <option value="">— اختر —</option> -->
                         @foreach($resultOptions ?? [] as $opt)
                             <option value="{{ $opt }}">{{ $opt }}</option>
                         @endforeach
@@ -98,7 +103,7 @@
                     <label>الدور</label>
                     <span class="grades-readonly" id="grades-round"></span>
                     <select name="round" id="grades-round-input" class="grades-edit grades-edit-hidden grades-select" aria-label="الدور">
-                        <option value="">— اختر —</option>
+                        <!-- <option value="">— اختر —</option> -->
                         @foreach($roundOptions ?? [] as $opt)
                             <option value="{{ $opt }}">{{ $opt }}</option>
                         @endforeach

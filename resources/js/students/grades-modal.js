@@ -259,7 +259,18 @@
                 round: (document.getElementById('grades-round-input') || {}).value || '',
                 grades: grades
             };
-            const updateUrl = (window.STUDENTS_GRADES_UPDATE_URL_TEMPLATE || '/students/__ID__/grades').replace('__ID__', currentData.id);
+            const examNumber = String(payload.exam_number || '').trim();
+            if (!examNumber) {
+                var examInput = document.getElementById('grades-exam-number-input');
+                if (examInput) {
+                    examInput.focus();
+                    examInput.classList.add('grades-input-error');
+                    setTimeout(function () { examInput.classList.remove('grades-input-error'); }, 2000);
+                }
+                alert('الرقم الامتحاني مطلوب. يرجى إدخاله قبل الحفظ.');
+                return;
+            }
+            const updateUrl = (window.STUDENTS_GRADES_UPDATE_URL_TEMPLATE || '/students/__ID__/grades').replace('__ID__', String(currentData.id));
             const csrf = window.STUDENTS_CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             fetch(updateUrl, {
                 method: 'PUT',

@@ -56,14 +56,7 @@
                 </svg>
                 <span>ادخال النتائج</span>
             </a>
-            <a href="#" aria-label="عرض النتائج">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <line x1="18" y1="20" x2="18" y2="10"/>
-                    <line x1="12" y1="20" x2="12" y2="4"/>
-                    <line x1="6" y1="20" x2="6" y2="14"/>
-                </svg>
-                <span>عرض النتائج</span>
-            </a>
+           
            
             <a href="#" aria-label="الراسبين" id="sidebar-link-failures">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -118,6 +111,25 @@
     </div>
 
     @yield('scripts')
+    <script>
+        (function () {
+            var link = document.getElementById('sidebar-link-bulk-print');
+            if (!link || typeof link.href !== 'string') return;
+            link.addEventListener('click', function (e) {
+                try {
+                    var url = new URL(link.href, window.location.origin);
+                    var branch = (url.searchParams.get('branch') || '').trim();
+                    var major = (url.searchParams.get('major') || '').trim();
+                    var year = (url.searchParams.get('year') || '').trim();
+                    var onBulkPage = window.location.pathname.indexOf('/documents/print') !== -1;
+                    if (!onBulkPage && (branch === '' || major === '' || year === '')) {
+                        e.preventDefault();
+                        alert('يرجى تحديد الفرع والاختصاص والعام الدراسي من الفلاتر أولاً، ثم النقر على «القيود».');
+                    }
+                } catch (err) {}
+            });
+        })();
+    </script>
 </body>
 </html>
 

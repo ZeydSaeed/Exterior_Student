@@ -68,7 +68,46 @@
             break-after: auto;
         }
 
+        .documents-bulk-filters-required {
+            max-width: 28rem;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: #f8f4f0;
+            border: 1px solid #d6d2cd;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .documents-bulk-filters-required-text {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #4a545e;
+        }
+
         @media print {
+            /* خلفية بيضاء بالكامل عند الطباعة */
+            html,
+            body.page-documents-bulk,
+            body.page-documents-bulk .dashboard-wrap,
+            body.page-documents-bulk .dashboard-main,
+            body.page-documents-bulk .dashboard-content,
+            body.page-documents-bulk .employees-page-wrap,
+            body.page-documents-bulk .students-layout,
+            body.page-documents-bulk .students-table-area,
+            body.page-documents-bulk .student-document-layout,
+            body.page-documents-bulk .student-document-paper,
+            body.page-documents-bulk .doc-bulk-page-break,
+            body.page-documents-bulk .doc-header,
+            body.page-documents-bulk .doc-row,
+            body.page-documents-bulk .doc-table th,
+            body.page-documents-bulk .doc-table td,
+            body.page-documents-bulk .doc-label,
+            body.page-documents-bulk .doc-value {
+                background: #fff !important;
+                box-shadow: none !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
             .page-documents-bulk .documents-bulk-top-bar,
             .page-documents-bulk .employees-close-btn,
             .page-documents-bulk .students-filter-sidebar,
@@ -91,24 +130,27 @@
     </div>
 
     <div class="employees-page-wrap">
-        <div class="employees-page-header">
-            <h1>القيود</h1>
-        </div>
+        
 
         @include('students.partials.filters')
 
         <div class="students-layout">
             <section class="students-table-area" aria-label="معاينة القيود وطباعتها">
-
-                <div class="student-document-layout">
-                    @forelse($dtos as $dto)
-                        <div class="doc-bulk-page-break">
-                            @include('students.partials.document-paper', ['dto' => $dto])
-                        </div>
-                    @empty
-                        <p class="employees-success" style="text-align:center;">لا يوجد طلاب مطابقون للفلاتر المحددة.</p>
-                    @endforelse
-                </div>
+                @if(!empty($filtersRequired))
+                    <div class="documents-bulk-filters-required" role="alert">
+                        <p class="documents-bulk-filters-required-text">يرجى تحديد <strong>الفرع</strong> و<strong>الاختصاص</strong> و<strong>العام الدراسي</strong> من الفلاتر في القائمة الجانبية، ثم النقر على «تطبيق» أو اختيار القيم لعرض القيود.</p>
+                    </div>
+                @else
+                    <div class="student-document-layout">
+                        @forelse($dtos as $dto)
+                            <div class="doc-bulk-page-break">
+                                @include('students.partials.document-paper', ['dto' => $dto])
+                            </div>
+                        @empty
+                            <p class="employees-success" style="text-align:center;">لا يوجد طلاب مطابقون للفلاتر المحددة.</p>
+                        @endforelse
+                    </div>
+                @endif
             </section>
         </div>
     </div>

@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Attestation\AttestationCommandRepository;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * كتابة التأييدات في جدول certificate (CQRS — Command).
@@ -24,7 +25,7 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
     ): void {
         DB::transaction(function () use ($studentId, $examNumber, $type, $date, $number, $issuedTo, $rightTitle, $rightEmployeeName, $leftTitle, $leftEmployeeName): void {
             $now = now();
-            DB::table('certificate')->insert([
+            $certId = DB::table('certificate')->insertGetId([
                 'student_id' => $studentId,
                 'exam_number' => $examNumber,
                 'type' => $type,
@@ -32,12 +33,11 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
                 'number' => $number,
                 'issued_to' => $issuedTo,
                 'right_title' => $rightTitle,
-                'right_employee_name' => $rightEmployeeName,
                 'left_title' => $leftTitle,
-                'left_employee_name' => $leftEmployeeName,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+            $this->syncSigners((int) $certId, $rightEmployeeName, $leftEmployeeName);
         });
     }
 
@@ -57,18 +57,35 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
                 'number' => $number,
                 'issued_to' => $issuedTo,
                 'right_title' => $rightTitle,
-                'right_employee_name' => $rightEmployeeName,
                 'left_title' => $leftTitle,
-                'left_employee_name' => $leftEmployeeName,
                 'updated_at' => now(),
             ]);
+            $this->syncSigners($id, $rightEmployeeName, $leftEmployeeName);
         });
     }
 
     public function delete(int $id): void
     {
         DB::transaction(function () use ($id): void {
+            DB::table('certificate_signers')->where('certificate_id', $id)->delete();
             DB::table('certificate')->where('id', $id)->delete();
         });
+    }
+
+    private function syncSigners(int $certificateId, ?string $rightEmployeeName, ?string $leftEmployeeName): void
+    {
+        if (! Schema::hasTable('certificate_signers')) {
+            return;
+        }
+        DB::table('certificate_signers')->where('certificate_id', $certificateId)->delete();
+        $now = now();
+        $rightId = $rightEmployeeName !== null && $rightEmployeeName !== '' ? DB::table('employees')->where('name', $rightEmployeeName)->value('id') : null;
+        $leftId = $leftEmployeeName !== null && $leftEmployeeName !== '' ? DB::table('employees')->where('name', $leftEmployeeName)->value('id') : null;
+        if ($rightId !== null) {
+            DB::table('certificate_signers')->insert(['certificate_id' => $certificateId, 'employee_id' => $rightId, 'position' => 'right', 'created_at' => $now, 'updated_at' => $now]);
+        }
+        if ($leftId !== null) {
+            DB::table('certificate_signers')->insert(['certificate_id' => $certificateId, 'employee_id' => $leftId, 'position' => 'left', 'created_at' => $now, 'updated_at' => $now]);
+        }
     }
 }

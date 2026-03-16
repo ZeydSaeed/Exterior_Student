@@ -19,6 +19,109 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return Schema::hasTable('students');
     }
 
+    private function studentGradesUsesMajorSubject(): bool
+    {
+        return Schema::hasColumn('student_grades', 'major_subject_id');
+    }
+
+    /**
+     * إرجاع معرف الفرع من name_ar؛ إن لم يُوجَد يُدرَج سطر جديد ويُرجع معرفه.
+     */
+    private function resolveBranchId(string $nameAr): ?int
+    {
+        $nameAr = trim($nameAr);
+        if ($nameAr === '') {
+            return null;
+        }
+        $id = DB::table('branches')->where('name_ar', $nameAr)->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
+        $now = now();
+        DB::table('branches')->insert([
+            'name_ar' => $nameAr,
+            'sort_order' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return (int) DB::table('branches')->where('name_ar', $nameAr)->value('id');
+    }
+
+    /**
+     * إرجاع معرف الاختصاص من name_ar واختيارياً branch_id؛ إن لم يُوجَد يُدرَج سطر جديد.
+     */
+    private function resolveMajorId(string $nameAr, ?int $branchId): ?int
+    {
+        $nameAr = trim($nameAr);
+        if ($nameAr === '') {
+            return null;
+        }
+        $query = DB::table('majors')->where('name_ar', $nameAr);
+        if ($branchId !== null) {
+            $query->where('branch_id', $branchId);
+        } else {
+            $query->whereNull('branch_id');
+        }
+        $id = $query->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
+        $now = now();
+        DB::table('majors')->insert([
+            'name_ar' => $nameAr,
+            'branch_id' => $branchId,
+            'sort_order' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $q = DB::table('majors')->where('name_ar', $nameAr);
+        if ($branchId !== null) {
+            $q->where('branch_id', $branchId);
+        } else {
+            $q->whereNull('branch_id');
+        }
+
+        return (int) $q->value('id');
+    }
+
+    /**
+     * إرجاع معرف العام الدراسي من year_label؛ إن لم يُوجَد يُدرَج سطر جديد.
+     */
+    private function resolveAcademicYearId(string $yearLabel): ?int
+    {
+        $yearLabel = trim($yearLabel);
+        if ($yearLabel === '') {
+            return null;
+        }
+        $id = DB::table('academic_years')->where('year_label', $yearLabel)->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
+        $years = $this->parseAcademicYearLabel($yearLabel);
+        $now = now();
+        DB::table('academic_years')->insert([
+            'year_label' => $yearLabel,
+            'start_year' => $years['start'],
+            'end_year' => $years['end'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return (int) DB::table('academic_years')->where('year_label', $yearLabel)->value('id');
+    }
+
+    /** @return array{start: ?int, end: ?int} */
+    private function parseAcademicYearLabel(string $label): array
+    {
+        if (preg_match('/^(\d{4})\s*[-–]\s*(\d{4})$/', trim($label), $m)) {
+            return ['start' => (int) $m[1], 'end' => (int) $m[2]];
+        }
+
+        return ['start' => null, 'end' => null];
+    }
+
     private const BASIC_FIELDS = [
         'name_student' => 'اسم الطالب',
         'name_father' => 'اسم الاب',
@@ -156,9 +259,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'updated_at' => $now,
             ]);
 
-            $branchId = DB::table('branches')->where('name_ar', $trim('branch'))->value('id');
-            $majorId = DB::table('majors')->where('name_ar', $trim('major'))->value('id');
-            $yearId = DB::table('academic_years')->where('year_label', $trim('academic_year'))->value('id');
+            $branchId = $this->resolveBranchId($trim('branch'));
+            $majorId = $this->resolveMajorId($trim('major'), $branchId);
+            $yearId = $this->resolveAcademicYearId($trim('academic_year'));
             $resultId = DB::table('result_types')->where('name_ar', 'ناجح')->value('id');
 
             DB::table('student_academic')->insert([
@@ -175,15 +278,29 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'updated_at' => $now,
             ]);
 
-            $subjectIds = DB::table('subjects')->pluck('id');
-            foreach ($subjectIds as $subjectId) {
-                DB::table('student_grades')->insert([
-                    'student_id' => $studentId,
-                    'subject_id' => $subjectId,
-                    'score' => 0,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
+            if ($this->studentGradesUsesMajorSubject()) {
+                $majorSubjectIds = DB::table('major_subjects')->where('major_id', $majorId)->orderBy('sort_order')->pluck('id');
+                foreach ($majorSubjectIds as $msId) {
+                    DB::table('student_grades')->insert([
+                        'student_id' => $studentId,
+                        'major_subject_id' => $msId,
+                        'academic_year_id' => $yearId,
+                        'score' => 0,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            } else {
+                $subjectIds = DB::table('subjects')->pluck('id');
+                foreach ($subjectIds as $subjectId) {
+                    DB::table('student_grades')->insert([
+                        'student_id' => $studentId,
+                        'subject_id' => $subjectId,
+                        'score' => 0,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
             }
 
             Cache::forget('student_filters.lists');
@@ -270,13 +387,18 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             }
             $acUp = [];
             if (array_key_exists('branch', $payload)) {
-                $acUp['branch_id'] = DB::table('branches')->where('name_ar', trim((string) $payload['branch']))->value('id');
+                $acUp['branch_id'] = $this->resolveBranchId((string) $payload['branch']);
+            }
+            $effectiveBranchId = $acUp['branch_id'] ?? null;
+            if ($effectiveBranchId === null && array_key_exists('major', $payload)) {
+                $existing = DB::table('student_academic')->where('student_id', $id)->value('branch_id');
+                $effectiveBranchId = $existing;
             }
             if (array_key_exists('major', $payload)) {
-                $acUp['major_id'] = DB::table('majors')->where('name_ar', trim((string) $payload['major']))->value('id');
+                $acUp['major_id'] = $this->resolveMajorId((string) $payload['major'], $effectiveBranchId);
             }
             if (array_key_exists('academic_year', $payload)) {
-                $acUp['academic_year_id'] = DB::table('academic_years')->where('year_label', trim((string) $payload['academic_year']))->value('id');
+                $acUp['academic_year_id'] = $this->resolveAcademicYearId((string) $payload['academic_year']);
             }
             if (array_key_exists('result', $payload)) {
                 $resultName = trim((string) $payload['result']);
@@ -298,20 +420,49 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 DB::table('student_academic')->where('student_id', $id)->update($acUp);
                 $any = true;
             }
-            $gradeColumns = Config::get('grades_catalog.grade_columns', []);
-            $subjectIds = DB::table('subjects')->pluck('id', 'name_ar');
-            foreach ($payload['grades'] ?? [] as $row) {
-                if (! is_array($row)) {
-                    continue;
+            if ($this->studentGradesUsesMajorSubject()) {
+                $ac = DB::table('student_academic')->where('student_id', $id)->first();
+                $majorId = $ac->major_id ?? null;
+                $academicYearId = $ac->academic_year_id ?? null;
+                if ($majorId !== null && $academicYearId !== null) {
+                    $subjectToMajorSubject = DB::table('major_subjects as ms')
+                        ->join('subjects as sub', 'sub.id', '=', 'ms.subject_id')
+                        ->where('ms.major_id', $majorId)
+                        ->pluck('ms.id', 'sub.name_ar');
+                    foreach ($payload['grades'] ?? [] as $row) {
+                        if (! is_array($row)) {
+                            continue;
+                        }
+                        $subject = trim((string) ($row['subject'] ?? ''));
+                        $score = trim((string) ($row['score'] ?? ''));
+                        $majorSubjectId = $subject !== '' ? ($subjectToMajorSubject[$subject] ?? null) : null;
+                        if ($majorSubjectId !== null) {
+                            $scoreInt = is_numeric($score) ? (int) round((float) $score) : 0;
+                            $scoreInt = max(0, min(100, $scoreInt));
+                            DB::table('student_grades')->updateOrInsert(
+                                ['student_id' => $id, 'major_subject_id' => $majorSubjectId, 'academic_year_id' => $academicYearId],
+                                ['score' => $scoreInt, 'updated_at' => now()]
+                            );
+                            $any = true;
+                        }
+                    }
                 }
-                $subject = trim((string) ($row['subject'] ?? ''));
-                $score = trim((string) ($row['score'] ?? ''));
-                if ($subject !== '' && isset($subjectIds[$subject])) {
-                    DB::table('student_grades')->updateOrInsert(
-                        ['student_id' => $id, 'subject_id' => $subjectIds[$subject]],
-                        ['score' => is_numeric($score) ? (int) round((float) $score) : 0, 'updated_at' => now()]
-                    );
-                    $any = true;
+            } else {
+                $gradeColumns = Config::get('grades_catalog.grade_columns', []);
+                $subjectIds = DB::table('subjects')->pluck('id', 'name_ar');
+                foreach ($payload['grades'] ?? [] as $row) {
+                    if (! is_array($row)) {
+                        continue;
+                    }
+                    $subject = trim((string) ($row['subject'] ?? ''));
+                    $score = trim((string) ($row['score'] ?? ''));
+                    if ($subject !== '' && isset($subjectIds[$subject])) {
+                        DB::table('student_grades')->updateOrInsert(
+                            ['student_id' => $id, 'subject_id' => $subjectIds[$subject]],
+                            ['score' => is_numeric($score) ? (int) round((float) $score) : 0, 'updated_at' => now()]
+                        );
+                        $any = true;
+                    }
                 }
             }
             if ($any) {

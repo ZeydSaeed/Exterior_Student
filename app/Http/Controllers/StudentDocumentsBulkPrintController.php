@@ -23,16 +23,35 @@ final class StudentDocumentsBulkPrintController extends Controller
     {
         $merged = StudentListFiltersSession::mergeRequestWithSession($request);
         $normalized = StudentListFiltersSession::normalizeForQuery($merged);
+
+        $branch = isset($merged['branch']) ? trim((string) $merged['branch']) : '';
+        $major = isset($merged['major']) ? trim((string) $merged['major']) : '';
+        $year = isset($merged['year']) ? trim((string) $merged['year']) : '';
+        $filtersRequired = ($branch === '' || $major === '' || $year === '');
+
         $query = ListStudentsQuery::fromArray(array_merge(
             ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'search' => null],
             $normalized
         ));
 
-        $dtos = $this->handler->handle($query);
         $listResponse = $this->listHandler->handle($query);
+
+        if ($filtersRequired) {
+            return view('students.documents-bulk-print', [
+                'dtos' => [],
+                'filtersRequired' => true,
+                'branches' => $listResponse->branches,
+                'majors' => $listResponse->majors,
+                'genders' => $listResponse->genders,
+                'academicYears' => $listResponse->academicYears,
+            ]);
+        }
+
+        $dtos = $this->handler->handle($query);
 
         return view('students.documents-bulk-print', [
             'dtos' => $dtos,
+            'filtersRequired' => false,
             'branches' => $listResponse->branches,
             'majors' => $listResponse->majors,
             'genders' => $listResponse->genders,

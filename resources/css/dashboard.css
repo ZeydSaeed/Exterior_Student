@@ -816,6 +816,16 @@ body.grades-modal-open {
     font-weight: 600;
     color: #0d0d0d;
 }
+.grades-field .grades-required {
+    color: #c00;
+    font-weight: 700;
+}
+/* إشارة مطلوب في نماذج الداشبورد (مثل إضافة طالب) */
+.form-add-student .required,
+.dashboard-wrap label .required {
+    color: #c00;
+    font-weight: 700;
+}
 /* تنسيق موحد: عرض وتعديل نفس الشكل والحجم */
 .grades-readonly,
 .grades-modal .grades-edit {
@@ -836,6 +846,10 @@ body.grades-modal-open {
 }
 .grades-modal .grades-edit {
     width: 100%;
+}
+.grades-modal .grades-edit.grades-input-error {
+    border-color: #c00;
+    box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.2);
 }
 .grades-modal .grades-edit:focus {
     outline: none;

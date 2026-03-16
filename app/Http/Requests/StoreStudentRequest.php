@@ -39,7 +39,7 @@ class StoreStudentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'exam_number.required' => 'لا يمكن إدخال معلومات الطالب بدون رقم امتحاني. يجب إدخال رقم امتحاني صحيح.',
+            'exam_number.required' => 'الرقم الامتحاني مطلوب.',
         ];
     }
 

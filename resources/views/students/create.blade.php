@@ -26,11 +26,11 @@
 
         <form method="POST" action="{{ route('students.store') }}" id="form-add-student" class="form-add-student">
             @csrf
-            {{-- السطر الأول: الرقم الامتحاني --}}
+            {{-- السطر الأول: الرقم الامتحاني (مطلوب) --}}
             <div class="form-row form-row-1">
                 <div class="form-group">
-                    <label for="exam_number">الرقم الامتحاني <span class="required">*</span></label>
-                    <input type="text" id="exam_number" name="exam_number" value="{{ old('exam_number') }}" required maxlength="255" />
+                    <label for="exam_number">الرقم الامتحاني <span class="required" aria-hidden="true">*</span></label>
+                    <input type="text" id="exam_number" name="exam_number" value="{{ old('exam_number') }}" required maxlength="255" aria-label="الرقم الامتحاني (مطلوب)" />
                 </div>
             </div>
             {{-- السطر الثاني: اسم الطالب، اسم الاب، اسم الجد، اللقب --}}
