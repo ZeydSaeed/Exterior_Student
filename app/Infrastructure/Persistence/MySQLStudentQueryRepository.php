@@ -437,6 +437,45 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         return DB::table('main_table')->where('الرقم الامتحاني', $examNumber)->exists();
     }
 
+    public function findByExamNumber(string $examNumber): ?object
+    {
+        $examNumber = trim($examNumber);
+        if ($examNumber === '') {
+            return null;
+        }
+        if ($this->useNormalizedSchema()) {
+            $row = DB::table('students as s')
+                ->join('student_personal as p', 'p.student_id', '=', 's.id')
+                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
+                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
+                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
+                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+                ->where('s.exam_number', $examNumber)
+                ->selectRaw("s.id, s.exam_number, CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) AS full_name, COALESCE(b.name_ar, '') AS branch, COALESCE(m.name_ar, '') AS major, COALESCE(y.year_label, '') AS academic_year")
+                ->first();
+            return $row ? (object) [
+                'id' => (int) $row->id,
+                'exam_number' => (string) $row->exam_number,
+                'full_name' => trim((string) $row->full_name),
+                'branch' => trim((string) $row->branch),
+                'major' => trim((string) $row->major),
+                'academic_year' => trim((string) $row->academic_year),
+            ] : null;
+        }
+        $row = DB::table('main_table')
+            ->where('الرقم الامتحاني', $examNumber)
+            ->selectRaw("id, `الرقم الامتحاني` AS exam_number, CONCAT_WS(' ', `اسم الطالب`, `اسم الاب`, `اسم الجد`, `اللقب`) AS full_name, TRIM(`الفرع`) AS branch, TRIM(`الاختصاص`) AS major, `العام الدراسي` AS academic_year")
+            ->first();
+        return $row ? (object) [
+            'id' => (int) $row->id,
+            'exam_number' => (string) $row->exam_number,
+            'full_name' => trim((string) $row->full_name),
+            'branch' => trim((string) $row->branch),
+            'major' => trim((string) $row->major),
+            'academic_year' => trim((string) $row->academic_year),
+        ] : null;
+    }
+
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo
     {
         if ($this->useNormalizedSchema()) {

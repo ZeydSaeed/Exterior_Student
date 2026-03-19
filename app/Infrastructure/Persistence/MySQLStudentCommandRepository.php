@@ -353,7 +353,8 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $branchId = $this->resolveBranchId($trim('branch'));
             $majorId = $this->resolveMajorId($trim('major'), $branchId);
             $yearId = $this->resolveAcademicYearId($trim('academic_year'));
-            $resultId = DB::table('result_types')->where('name_ar', 'ناجح')->value('id');
+            // افتراضياً: النتيجة تكون فارغة حتى لا تظهر "ناجح" قبل إدخال درجات حقيقية.
+            $resultId = null;
 
             DB::table('student_academic')->insert([
                 'student_id' => $studentId,

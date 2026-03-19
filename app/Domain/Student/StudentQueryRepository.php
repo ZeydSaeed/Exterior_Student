@@ -37,6 +37,14 @@ interface StudentQueryRepository
     /** هل يوجد طالب بالرقم الامتحاني (لاستخدامه في التحقق من التكرار عند الاستيراد) */
     public function existsExamNumber(string $examNumber): bool;
 
+    /**
+     * جلب بيانات الطالب الأساسية من الرقم الامتحاني (لاستيراد النتائج).
+     * يعيد null إذا لم يوجد.
+     *
+     * @return object{id:int, exam_number:string, full_name:string, branch:string, major:string, academic_year:string}|null
+     */
+    public function findByExamNumber(string $examNumber): ?object;
+
     /** بيانات طالب كاملة لصفحة سجل القيد (قيد الطالب) */
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo;
 

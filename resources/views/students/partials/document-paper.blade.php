@@ -17,7 +17,7 @@
 
     <div class="doc-row">
         <span class="doc-label">رقم الصفحة</span>
-        <span class="doc-value">{{ $ad(1) }}</span>
+        <span class="doc-value doc-value-page-number">&nbsp;</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">الرقم الامتحاني</span>

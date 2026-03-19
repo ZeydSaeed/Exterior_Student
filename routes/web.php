@@ -6,6 +6,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentsBulkPrintController;
 use App\Http\Controllers\StudentExcelImportController;
 use App\Http\Controllers\StudentFailuresBulkDeleteController;
+use App\Http\Controllers\StudentResultsExcelImportController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
@@ -41,6 +42,15 @@ Route::get('/students/import-excel/preview', [StudentExcelImportController::clas
     ->name('students.import-excel.preview');
 Route::post('/students/import-excel/process', [StudentExcelImportController::class, 'process'])
     ->name('students.import-excel.process');
+
+Route::get('/students/results-import-excel', [StudentResultsExcelImportController::class, 'show'])
+    ->name('students.results-import-excel');
+Route::post('/students/results-import-excel', [StudentResultsExcelImportController::class, 'upload'])
+    ->name('students.results-import-excel.upload');
+Route::get('/students/results-import-excel/preview', [StudentResultsExcelImportController::class, 'preview'])
+    ->name('students.results-import-excel.preview');
+Route::post('/students/results-import-excel/process', [StudentResultsExcelImportController::class, 'process'])
+    ->name('students.results-import-excel.process');
 
 Route::get('/students/{id}/grades', [StudentController::class, 'grades'])
     ->name('students.grades');

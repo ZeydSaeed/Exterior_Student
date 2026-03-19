@@ -13,6 +13,7 @@ use App\Domain\Student\BranchMajorCatalogInterface;
 use App\Domain\Student\StudentCommandRepository;
 use App\Domain\Student\StudentImportTempRepository;
 use App\Domain\Student\StudentQueryRepository;
+use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\StudentReadRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
@@ -27,6 +28,7 @@ use App\Infrastructure\Persistence\MySQLBranchMajorCatalog;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
 use App\Infrastructure\Persistence\MySQLStudentImportTempRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
+use App\Infrastructure\Persistence\MySQLStudentResultsImportTempRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
 use App\Support\StudentListFiltersSession;
 use Illuminate\Pagination\Paginator;
@@ -49,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StudentCommandRepository::class, MySQLStudentCommandRepository::class);
         $this->app->bind(SubjectCatalogInterface::class, ConfigSubjectCatalog::class);
         $this->app->bind(StudentImportTempRepository::class, MySQLStudentImportTempRepository::class);
+        $this->app->bind(StudentResultsImportTempRepository::class, MySQLStudentResultsImportTempRepository::class);
         $this->app->bind(BranchMajorCatalogInterface::class, MySQLBranchMajorCatalog::class);
 
         // Employees
