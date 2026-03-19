@@ -34,6 +34,9 @@ interface StudentQueryRepository
     /** جلب كيان طالب واحد (لاستخدام قواعد الدومين مثل الحذف) */
     public function getStudentById(int $id): ?Student;
 
+    /** هل يوجد طالب بالرقم الامتحاني (لاستخدامه في التحقق من التكرار عند الاستيراد) */
+    public function existsExamNumber(string $examNumber): bool;
+
     /** بيانات طالب كاملة لصفحة سجل القيد (قيد الطالب) */
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo;
 

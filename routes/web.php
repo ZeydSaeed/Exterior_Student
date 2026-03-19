@@ -4,6 +4,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentsBulkPrintController;
+use App\Http\Controllers\StudentExcelImportController;
 use App\Http\Controllers\StudentFailuresBulkDeleteController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordPrintController;
@@ -31,6 +32,15 @@ Route::get('/students/create', [StudentController::class, 'create'])
     ->name('students.create');
 Route::post('/students', [StudentController::class, 'store'])
     ->name('students.store');
+
+Route::get('/students/import-excel', [StudentExcelImportController::class, 'show'])
+    ->name('students.import-excel');
+Route::post('/students/import-excel', [StudentExcelImportController::class, 'upload'])
+    ->name('students.import-excel.upload');
+Route::get('/students/import-excel/preview', [StudentExcelImportController::class, 'preview'])
+    ->name('students.import-excel.preview');
+Route::post('/students/import-excel/process', [StudentExcelImportController::class, 'process'])
+    ->name('students.import-excel.process');
 
 Route::get('/students/{id}/grades', [StudentController::class, 'grades'])
     ->name('students.grades');

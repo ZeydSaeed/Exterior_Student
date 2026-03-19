@@ -26,7 +26,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
     private function useNormalizedSchema(): bool
     {
-        return Schema::hasTable('students');
+        return Schema::hasTable('students') || ! Schema::hasTable('main_table');
     }
 
     private function studentGradesUsesMajorSubject(): bool
@@ -423,6 +423,18 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             return null;
         }
         return Student::fromObject($row);
+    }
+
+    public function existsExamNumber(string $examNumber): bool
+    {
+        $examNumber = trim($examNumber);
+        if ($examNumber === '') {
+            return false;
+        }
+        if ($this->useNormalizedSchema()) {
+            return DB::table('students')->where('exam_number', $examNumber)->exists();
+        }
+        return DB::table('main_table')->where('الرقم الامتحاني', $examNumber)->exists();
     }
 
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo

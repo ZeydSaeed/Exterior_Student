@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ كتابة الطلاب على MySQL (CQRS — Command side).
- * يدعم الجداول المُطبّعة عند وجودها، وإلا main_table.
+ * عند وجود جدول students يُستخدم المسار المُطبّع (students، student_personal، student_academic، إلخ).
+ * عند حذف main_table وتجزئته لا يُستخدم main_table أبداً.
  */
 final class MySQLStudentCommandRepository implements StudentCommandRepository
 {
     private function useNormalizedSchema(): bool
     {
-        return Schema::hasTable('students');
+        return Schema::hasTable('students') || ! Schema::hasTable('main_table');
     }
 
     private function studentGradesUsesMajorSubject(): bool
@@ -82,8 +83,70 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         } else {
             $q->whereNull('branch_id');
         }
+        $newMajorId = (int) $q->value('id');
+        if (Schema::hasTable('major_subjects') && Schema::hasTable('subjects')) {
+            $this->seedMajorSubjectsForNewMajor($newMajorId, $nameAr, $branchId);
+        }
+        return $newMajorId;
+    }
 
-        return (int) $q->value('id');
+    /**
+     * عند إدراج اختصاص جديد: ملء major_subjects من config/grades_catalog إن وُجد تطابق.
+     */
+    private function seedMajorSubjectsForNewMajor(int $majorId, string $majorNameAr, ?int $branchId): void
+    {
+        if ($branchId === null) {
+            return;
+        }
+        $branchNameAr = DB::table('branches')->where('id', $branchId)->value('name_ar');
+        if ($branchNameAr === null) {
+            return;
+        }
+        $catalog = Config::get('grades_catalog.catalog', []);
+        if (! is_array($catalog)) {
+            return;
+        }
+        $branchNameAr = trim($branchNameAr);
+        $majorNameAr = trim($majorNameAr);
+        $groupKey = $catalog[$branchNameAr][$majorNameAr] ?? null;
+        if (! is_string($groupKey) || $groupKey === '') {
+            return;
+        }
+        $subjectGroups = [
+            'subjects_industrial' => Config::get('grades_catalog.subjects_industrial', []),
+            'subjects_management' => Config::get('grades_catalog.subjects_management', []),
+            'subjects_account' => Config::get('grades_catalog.subjects_account', []),
+            'subjects_agricultral' => Config::get('grades_catalog.subjects_agricultral', []),
+            'subjects_computer' => Config::get('grades_catalog.subjects_computer', []),
+            'subjects_art' => Config::get('grades_catalog.subjects_art', []),
+            'subjects_hotel' => Config::get('grades_catalog.subjects_hotel', []),
+        ];
+        $subjectNames = $subjectGroups[$groupKey] ?? [];
+        if (! is_array($subjectNames) || empty($subjectNames)) {
+            return;
+        }
+        $subjects = DB::table('subjects')->pluck('id', 'name_ar')->all();
+        $now = now();
+        foreach ($subjectNames as $sortOrder => $subjectNameAr) {
+            $subjectNameAr = is_string($subjectNameAr) ? trim($subjectNameAr) : '';
+            if ($subjectNameAr === '') {
+                continue;
+            }
+            $subjectId = $subjects[$subjectNameAr] ?? null;
+            if ($subjectId === null) {
+                continue;
+            }
+            if (DB::table('major_subjects')->where('major_id', $majorId)->where('subject_id', $subjectId)->exists()) {
+                continue;
+            }
+            DB::table('major_subjects')->insert([
+                'major_id' => $majorId,
+                'subject_id' => $subjectId,
+                'sort_order' => $sortOrder,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
     }
 
     /**
@@ -120,6 +183,29 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         }
 
         return ['start' => null, 'end' => null];
+    }
+
+    /**
+     * إرجاع معرف الجنس من name_ar (ذكر، أنثى، انثى)؛ إن وُجد جدول genders.
+     */
+    private function resolveGenderId(string $nameAr): ?int
+    {
+        if (! Schema::hasTable('genders')) {
+            return null;
+        }
+        $nameAr = trim($nameAr);
+        if ($nameAr === '') {
+            return null;
+        }
+        $id = DB::table('genders')->where('name_ar', $nameAr)->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
+        if ($nameAr === 'انثى') {
+            $id = DB::table('genders')->where('name_ar', 'أنثى')->value('id');
+            return $id !== null ? (int) $id : null;
+        }
+        return null;
     }
 
     private const BASIC_FIELDS = [
@@ -245,7 +331,8 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             ]);
 
             $trim = fn ($k) => isset($data[$k]) ? trim((string) $data[$k]) : '';
-            DB::table('student_personal')->insert([
+            $genderId = $this->resolveGenderId($trim('gender'));
+            $personalRow = [
                 'student_id' => $studentId,
                 'first_name' => $trim('name_student'),
                 'father_name' => $trim('name_father'),
@@ -257,7 +344,11 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'mother_full_name' => $trim('mother_full_name'),
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
+            ];
+            if (Schema::hasColumn('student_personal', 'gender_id')) {
+                $personalRow['gender_id'] = $genderId;
+            }
+            DB::table('student_personal')->insert($personalRow);
 
             $branchId = $this->resolveBranchId($trim('branch'));
             $majorId = $this->resolveMajorId($trim('major'), $branchId);

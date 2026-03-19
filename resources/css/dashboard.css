@@ -960,3 +960,141 @@ body.grades-modal-open {
         font-size: 0.875rem;
     }
 }
+
+/* ========== استيراد Excel ========== */
+.import-excel-wrap {
+    padding: 1rem 1.5rem;
+    max-width: 56rem;
+}
+.import-excel-header h1 {
+    font-size: 1.25rem;
+    margin: 0 0 1rem 0;
+    color: var(--color-primary);
+}
+.import-excel-error {
+    background: #fee;
+    border: 1px solid #c00;
+    color: #c00;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+.import-excel-desc {
+    margin-bottom: 1.25rem;
+    color: var(--color-dark-accent);
+    font-size: 0.9rem;
+}
+.import-excel-form .form-group {
+    margin-bottom: 1rem;
+}
+.import-excel-form .form-group.import-excel-file-group {
+    margin-bottom: 2.5rem;
+}
+.import-excel-form .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+.import-excel-file-wrap {
+    position: relative;
+    display: inline-block;
+    min-height: 2.5rem;
+}
+.import-excel-form input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.import-excel-file-label {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    background: var(--color-light-accent);
+    color: var(--color-primary);
+    pointer-events: none;
+}
+.import-excel-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.import-excel-actions .import-excel-btn-cancel {
+    text-decoration: none;
+}
+.import-excel-actions .import-excel-btn-cancel:hover {
+    text-decoration: none;
+}
+.import-excel-actions a.import-excel-btn-cancel {
+    text-decoration: none !important;
+    border: none;
+    outline: none;
+}
+.import-excel-actions a.import-excel-btn-cancel:hover,
+.import-excel-actions a.import-excel-btn-cancel:focus {
+    text-decoration: none !important;
+}
+.import-excel-stats {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+.import-excel-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.import-excel-preview-actions a,
+.import-excel-preview-actions a:hover,
+.import-excel-preview-actions a:focus,
+.import-excel-preview-actions a:active {
+    text-decoration: none !important;
+}
+.import-excel-preview-actions .btn-primary[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.import-excel-table-wrap {
+    overflow-x: auto;
+}
+.import-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.import-excel-table th,
+.import-excel-table td {
+    padding: 0.5rem 0.6rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    text-align: right;
+}
+.import-excel-table th {
+    background: var(--color-dark-accent);
+    color: #fff;
+}
+.import-excel-row.status-failed {
+    background: #fff5f5;
+}
+.import-excel-row.status-valid {
+    background: #f5fff5;
+}
+.error-cell {
+    color: #c00;
+    max-width: 18rem;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 0.75rem;
+}
+.status-badge.status-valid { background: #2e7d32; color: #fff; }
+.status-badge.status-failed { background: #c62828; color: #fff; }
+.btn-secondary { background: var(--color-secondary); color: #1a1a1a; }
+.btn-secondary:hover { background: #8a9baa; }

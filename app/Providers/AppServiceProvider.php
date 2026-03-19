@@ -9,7 +9,9 @@ use App\Domain\Employee\EmployeeCommandRepository;
 use App\Domain\Employee\EmployeeQueryRepository;
 use App\Domain\Record\RecordCommandRepository;
 use App\Domain\Record\RecordQueryRepository;
+use App\Domain\Student\BranchMajorCatalogInterface;
 use App\Domain\Student\StudentCommandRepository;
+use App\Domain\Student\StudentImportTempRepository;
 use App\Domain\Student\StudentQueryRepository;
 use App\Domain\Student\StudentReadRepository;
 use App\Domain\Student\SubjectCatalogInterface;
@@ -21,7 +23,9 @@ use App\Infrastructure\Persistence\MySQLEmployeeCommandRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeQueryRepository;
 use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
 use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
+use App\Infrastructure\Persistence\MySQLBranchMajorCatalog;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
+use App\Infrastructure\Persistence\MySQLStudentImportTempRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
 use App\Support\StudentListFiltersSession;
@@ -44,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StudentReadRepository::class, MySQLStudentReadRepository::class);
         $this->app->bind(StudentCommandRepository::class, MySQLStudentCommandRepository::class);
         $this->app->bind(SubjectCatalogInterface::class, ConfigSubjectCatalog::class);
+        $this->app->bind(StudentImportTempRepository::class, MySQLStudentImportTempRepository::class);
+        $this->app->bind(BranchMajorCatalogInterface::class, MySQLBranchMajorCatalog::class);
 
         // Employees
         $this->app->bind(EmployeeQueryRepository::class, MySQLEmployeeQueryRepository::class);
