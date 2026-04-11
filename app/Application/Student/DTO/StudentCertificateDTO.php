@@ -9,7 +9,7 @@ namespace App\Application\Student\DTO;
 final class StudentCertificateDTO
 {
     /**
-     * @param array<int, array{type: string, name: string}> $employees الموظفون المختارون من الجلسة
+     * @param  array<int, array{type: string, name: string}>  $employees  الموظفون المختارون من الجلسة
      */
     public function __construct(
         public string $fullName,
@@ -20,6 +20,7 @@ final class StudentCertificateDTO
         public string $academicYear,
         public string $result,
         public string $round,
+        public string $average,
         public string $gender,
         public array $employees,
     ) {}
@@ -30,16 +31,17 @@ final class StudentCertificateDTO
     public function toArray(): array
     {
         return [
-            'full_name'       => $this->fullName,
-            'exam_number'     => $this->examNumber,
-            'birth_date'      => $this->birthDate,
-            'branch'          => $this->branch,
-            'specialization'  => $this->specialization,
-            'academic_year'   => $this->academicYear,
-            'result'          => $this->result,
-            'round'           => $this->round,
-            'gender'          => $this->gender,
-            'employees'       => $this->employees,
+            'full_name' => $this->fullName,
+            'exam_number' => $this->examNumber,
+            'birth_date' => $this->birthDate,
+            'branch' => $this->branch,
+            'specialization' => $this->specialization,
+            'academic_year' => $this->academicYear,
+            'result' => $this->result,
+            'round' => $this->round,
+            'average' => $this->average,
+            'gender' => $this->gender,
+            'employees' => $this->employees,
         ];
     }
 }

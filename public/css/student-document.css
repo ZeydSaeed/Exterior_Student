@@ -88,6 +88,8 @@
     color: #64748b;
     font-weight: 700;
     font-size: 0.9rem;
+    margin-top: -0.9rem;
+    margin-bottom: 0.9rem;
 }
 
 /* ========== صفوف البيانات ========== */
@@ -98,32 +100,57 @@
 .doc-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 0.5rem;
-    margin-bottom: 0.2rem;
-    padding: 0.2rem 0.4rem;
-    min-height: 1.6rem;
+    align-items: stretch;
+    gap: 0.2rem 0.45rem;
+    margin-bottom: 0.12rem;
+    padding: 0.1rem 0.35rem;
+    min-height: 1.38rem;
 }
 
+/* صفوف من عمودين/ثلاثة: العناوين بحجمها، القيم مساحات ثابتة لا تنكمش عند الفراغ */
 .doc-row-two .doc-label,
-.doc-row-two .doc-value,
-.doc-row-three .doc-label,
-.doc-row-three .doc-value {
-    flex: 1 1 auto;
-    min-width: 0;
+.doc-row-three .doc-label {
+    flex: 0 0 auto;
+    align-self: center;
+}
+
+.doc-row-two .doc-value:not(.doc-value-specialization):not(.doc-value-branch):not(.doc-w-18):not(.doc-value-birth-place),
+.doc-row-three .doc-value:not(.doc-value-middle-doc-date):not(.doc-value-academic-year):not(.doc-value-round) {
+    flex: 1 0 11rem;
+    min-width: 11rem;
+    min-height: 1.28rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    align-self: stretch;
+}
+
+.doc-row:not(.doc-row-two):not(.doc-row-three):not(.doc-row-wide) .doc-value:not(.doc-value-page-number) {
+    flex: 1 0 14rem;
+    min-width: 14rem;
+    min-height: 1.28rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .doc-row-wide .doc-value {
-    flex: 1;
-    min-width: 13rem;
+    flex: 1 0 18rem;
+    min-width: 18rem;
+    min-height: 1.28rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .doc-label {
     font-weight: 700;
     background: #f1f5f9;
-    padding: 0.15rem 0.35rem;
+    padding: 0.08rem 0.28rem;
     border: 1px solid #94a3b8;
     min-width: 10rem;
+    min-height: 1.28rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
 }
 
 .doc-label-block {
@@ -138,45 +165,96 @@
     }
 
 .doc-value {
-    padding: 0.15rem 0.35rem;
+    padding: 0.08rem 0.28rem;
     border: 1px solid #94a3b8;
     min-width: 13rem;
+    min-height: 1.28rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
 }
 
-/* رقم الصفحة: يبقى فارغاً مع ثبات القياس وعدم الانكماش */
+/* رقم الصفحة: مربع ضيق ثابت */
 .doc-value.doc-value-page-number {
-    width: 13rem;
-    min-width: 13rem;
-    flex: 0 0 13rem;
-    min-height: 1.6rem;
+    width: 5.5rem;
+    min-width: 5.5rem;
+    flex: 0 0 5.5rem;
+    min-height: 1.28rem;
 }
 
-/* عناوين بعرض 11rem: الفرع، رقم وثيقة المتوسطة، العام الدراسي */
-.doc-label.doc-w-11 {
-    width: 10rem;
-    min-width: 10rem;
-    flex: 0 0 10rem;
-    text-align: right;
-    font-size: 0.95rem;
+/* قيمة الفرع: عرض أقل من رقم وثيقة المتوسطة */
+.doc-value.doc-value-branch {
+    width: 9rem;
+    min-width: 9rem;
+    flex: 0 0 9rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
-
-/* قيم بعرض 13rem: الفرع، رقم وثيقة المتوسطة */
+/* قيم بعرض 13rem: رقم وثيقة المتوسطة */
 .doc-value.doc-w-13 {
     width: 13rem;
     min-width: 13rem;
     flex: 0 0 13rem;
+    min-height: 1.28rem;
+}
+
+/* الاختصاص بجانب الفرع: عرض أقل وثابت */
+.doc-row-two .doc-value.doc-value-specialization {
+    flex: 0 0 8.5rem;
+    width: 10.7rem;
+    min-width: 10.7rem;
+    max-width: 10.7rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .doc-label.doc-w-14 {
     width: 7.4rem;
-    
+
     text-align: right;
     font-size: 0.95rem;
 }
+
+/* تاريخ وثيقة المتوسطة: عرض أقل */
+.doc-row-three .doc-value.doc-value-middle-doc-date {
+    flex: 0 0 7.25rem;
+    width: 7.25rem;
+    min-width: 7.25rem;
+    max-width: 7.25rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* العام الدراسي والدور (صف الملخص): عرض أقل */
+.doc-row-three .doc-value.doc-value-academic-year {
+    flex: 0 0 8rem;
+    width: 8rem;
+    min-width: 8rem;
+    max-width: 8rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.doc-row-three .doc-value.doc-value-round {
+    flex: 0 0 6.5rem;
+    width: 10.5rem;
+    min-width: 11.7rem;
+    max-width: 10.5rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 .doc-value.doc-w-15 {
     width: 28.6rem;
-    /* min-width: 20rem; */
-    /* flex: 0 0 20rem; */
+    min-width: 28.6rem;
+    flex: 0 0 28.6rem;
+    min-height: 1.28rem;
 }
 .doc-label.doc-w-16 {
     width: 5rem;
@@ -187,8 +265,25 @@
 .doc-label.doc-w-17 {
     width: 5.3rem;
 }
+/* التولد: عرض أقل */
 .doc-value.doc-w-18 {
-    width: 8.2rem;
+    width: 6.75rem;
+    min-width: 6.75rem;
+    flex: 0 0 6.75rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* محل الولادة بجانب التولد: عرض أقل */
+.doc-row-two .doc-value.doc-value-birth-place {
+    flex: 0 0 8.75rem;
+    width: 9.75rem;
+    min-width: 12.85rem;
+    max-width: 9.75rem;
+    min-height: 1.28rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 /* ========== الجداول ========== */
 .doc-table {
@@ -196,14 +291,19 @@
     border-collapse: collapse;
     margin-top: 0.75rem;
     border: 2px solid #1e293b;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    line-height: 1.25;
 }
 
 .doc-table th,
 .doc-table td {
     border: 1px solid #334155;
-    padding: 0.35rem 0.5rem;
+    padding: 0.15rem 0.4rem;
     text-align: right;
+    min-height: 1.15rem;
+    box-sizing: border-box;
+    vertical-align: middle;
+    line-height: 1.25;
 }
 
 .doc-table th {
@@ -243,6 +343,15 @@
     margin-top: 1rem;
     margin-bottom: 0.35rem;
     font-size: 0.95rem;
+}
+
+/* تباعد ضيق بين «الدروس التي أكمل بها» و«الوثائق التي زود بها» */
+.doc-completed-row {
+    margin-bottom: 0.02rem;
+}
+
+.doc-completed-row + .doc-section-title {
+    margin-top: 0.02rem;
 }
 
 /* ========== التواقيع ========== */
@@ -296,10 +405,31 @@
     }
 
     .dashboard-main,
-    .page-student-document .dashboard-content {
+    .page-student-document .dashboard-content,
+    .page-documents-bulk .dashboard-content {
         overflow: visible !important;
         height: auto !important;
         max-height: none !important;
+    }
+
+    /**
+     * إلغاء هوامش الداشبورد عند الطباعة (@page يحدد الهوامش) — صفحة قيد واحد + القيود الدفعية.
+     * صفحة القيود تستخدم page-students فتُضاف هوامش جانبية للمعاينة؛ تُزال عند الطباعة.
+     */
+    .page-student-document .dashboard-main,
+    body.page-documents-bulk .dashboard-main {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: none !important;
+    }
+
+    .page-documents-bulk .employees-page-wrap,
+    .page-documents-bulk .students-layout,
+    .page-documents-bulk .students-table-area {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
     }
 
     .student-document-layout {
@@ -320,6 +450,7 @@
     .doc-table {
         page-break-inside: auto;
         break-inside: auto;
+        line-height: 1.38 !important;
     }
 
     .doc-table thead {
@@ -340,6 +471,12 @@
     .dashboard-main,
     .page-student-document,
     .page-student-document .dashboard-content,
+    .page-documents-bulk,
+    .page-documents-bulk .dashboard-content,
+    .page-documents-bulk .employees-page-wrap,
+    .page-documents-bulk .students-layout,
+    .page-documents-bulk .students-table-area,
+    .page-documents-bulk .doc-bulk-page-break,
     .student-document-layout,
     .student-document-paper,
     .doc-header,
@@ -366,13 +503,123 @@
         display: none !important;
     }
 
-    .page-student-document .dashboard-content {
-        padding: 0;
+    .page-student-document .dashboard-content,
+    .page-documents-bulk .dashboard-content {
+        padding: 0 !important;
     }
 
     .student-document-paper {
         box-shadow: none;
         border: none;
         padding: 0.5rem;
+        line-height: 1.4 !important;
+    }
+
+    .doc-title {
+        line-height: 1.38 !important;
+    }
+
+    .doc-org {
+        line-height: 1.35 !important;
+    }
+
+    .doc-row {
+        margin-bottom: 0.18rem !important;
+    }
+
+    /* ثبات أبعاد خلايا القيد عند الطباعة (لا انكماش للحقول الفارغة) */
+    .doc-value,
+    .doc-label {
+        min-height: 1.28rem !important;
+        line-height: 1.38 !important;
+        box-sizing: border-box !important;
+    }
+
+    .doc-value.doc-value-page-number,
+    .doc-value.doc-value-branch,
+    .doc-value.doc-w-13,
+    .doc-value.doc-w-15,
+    .doc-value.doc-w-18,
+    .doc-value.doc-value-middle-doc-date,
+    .doc-value.doc-value-academic-year,
+    .doc-value.doc-value-round {
+        flex-shrink: 0 !important;
+    }
+
+    .doc-row-two .doc-value:not(.doc-value-specialization):not(.doc-value-branch):not(.doc-w-18):not(.doc-value-birth-place),
+    .doc-row-three .doc-value:not(.doc-value-middle-doc-date):not(.doc-value-academic-year):not(.doc-value-round) {
+        min-width: 11rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    .doc-value.doc-value-academic-year {
+        width: 8rem !important;
+        min-width: 8rem !important;
+        max-width: 8rem !important;
+        flex: 0 0 8rem !important;
+    }
+
+    .doc-value.doc-value-round {
+        width: 13.5rem !important;
+        min-width: 13.5rem !important;
+        max-width: 13.5rem !important;
+        flex: 0 0 6.5rem !important;
+    }
+
+    .doc-value.doc-value-middle-doc-date {
+        width: 7.25rem !important;
+        min-width: 7.25rem !important;
+        max-width: 7.25rem !important;
+        flex: 0 0 7.25rem !important;
+    }
+
+    .doc-value.doc-w-18 {
+        width: 6.75rem !important;
+        min-width: 6.75rem !important;
+        flex: 0 0 6.75rem !important;
+    }
+
+    .doc-value.doc-value-birth-place {
+        width: 14.75rem !important;
+        min-width: 14.75rem !important;
+        max-width: 14.75rem !important;
+        flex: 0 0 8.75rem !important;
+    }
+
+    .doc-value.doc-value-branch {
+        width: 9rem !important;
+        min-width: 9rem !important;
+        flex: 0 0 9rem !important;
+    }
+
+    .doc-value.doc-value-specialization {
+        width: 12.5rem !important;
+        min-width: 12.5rem !important;
+        max-width: 12.5rem !important;
+        flex: 0 0 8.5rem !important;
+    }
+
+    .doc-row:not(.doc-row-two):not(.doc-row-three):not(.doc-row-wide) .doc-value:not(.doc-value-page-number) {
+        min-width: 14rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    .doc-value.doc-value-page-number {
+        width: 5.5rem !important;
+        min-width: 5.5rem !important;
+        flex: 0 0 5.5rem !important;
+    }
+
+    .doc-row-wide .doc-value {
+        min-width: 18rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    .doc-table td,
+    .doc-table th {
+        min-height: 1.22rem !important;
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
+        line-height: 1.35 !important;
     }
 }

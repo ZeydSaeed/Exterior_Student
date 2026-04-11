@@ -7,6 +7,7 @@ use App\Domain\Student\StudentDocumentInfo;
 use App\Domain\Student\StudentGradesView;
 use App\Domain\Student\StudentListProjection;
 use App\Domain\Student\StudentQueryRepository;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,23 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     private const CACHE_KEY_FILTER_LISTS = 'student_filters.lists';
 
     private const CACHE_TTL_SECONDS = 600;
+
+    private function formatBirthDateForInput(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        try {
+            $formatted = Carbon::parse($value)->format('Y-m-d');
+            if ($formatted === '1000-01-01') {
+                return '';
+            }
+
+            return $formatted;
+        } catch (\Throwable) {
+            return trim((string) $value);
+        }
+    }
 
     private function useNormalizedSchema(): bool
     {
@@ -41,6 +59,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if ($v === '' || ! is_numeric($v)) {
             return $v;
         }
+
         return (string) (int) round((float) $v);
     }
 
@@ -49,6 +68,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     {
         $v = $value === null ? '' : trim((string) $value);
         $allowed = Config::get('grades_catalog.result_options', []);
+
         return $v !== '' && in_array($v, $allowed, true) ? $v : '';
     }
 
@@ -56,6 +76,27 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     {
         if ($this->useNormalizedSchema()) {
             return $this->listWithFiltersNormalized($filters);
+        }
+
+        $withoutExpr = '0';
+        $withExpr = '0';
+        if (Schema::hasTable('certificate')) {
+            if (Schema::hasColumn('certificate', 'student_id')) {
+                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = id AND c.type = 'without_grades')";
+                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = id AND c.type = 'with_grades')";
+            } else {
+                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = `الرقم الامتحاني` AND c.type = 'without_grades')";
+                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = `الرقم الامتحاني` AND c.type = 'with_grades')";
+            }
+        }
+        $docsExpr = '0';
+        if (Schema::hasTable('records')) {
+            if (Schema::hasColumn('records', 'student_id')) {
+                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.student_id = id)';
+            } else {
+                // في البنية القديمة بدون student_id لا نحسب الوثائق بدقة هنا لتفادي التباس الأعمدة.
+                $docsExpr = '0';
+            }
         }
 
         $query = DB::table('main_table')
@@ -67,7 +108,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 `النتيجة` AS result,
                 TRIM(`الفرع`) AS branch,
                 TRIM(`الاختصاص`) AS major,
-                TRIM(`الجنس`) AS gender
+                TRIM(`الجنس`) AS gender,
+                {$withoutExpr} AS attest_without_count,
+                {$withExpr} AS attest_with_count,
+                {$docsExpr} AS docs_count,
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count
             ");
 
         $this->applyListFilters($query, $filters);
@@ -92,6 +137,26 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
     private function listWithFiltersNormalized(array $filters): StudentListProjection
     {
+        $withoutExpr = '0';
+        $withExpr = '0';
+        if (Schema::hasTable('certificate')) {
+            if (Schema::hasColumn('certificate', 'student_id')) {
+                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = s.id AND c.type = 'without_grades')";
+                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = s.id AND c.type = 'with_grades')";
+            } else {
+                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = s.exam_number AND c.type = 'without_grades')";
+                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = s.exam_number AND c.type = 'with_grades')";
+            }
+        }
+        $docsExpr = '0';
+        if (Schema::hasTable('records')) {
+            if (Schema::hasColumn('records', 'student_id')) {
+                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.student_id = s.id)';
+            } else {
+                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.`الرقم الامتحاني` = s.exam_number)';
+            }
+        }
+
         $query = DB::table('students as s')
             ->join('student_personal as p', 'p.student_id', '=', 's.id')
             ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
@@ -107,7 +172,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 rt.name_ar AS result,
                 b.name_ar AS branch,
                 m.name_ar AS major,
-                p.gender
+                p.gender,
+                {$withoutExpr} AS attest_without_count,
+                {$withExpr} AS attest_with_count,
+                {$docsExpr} AS docs_count,
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count
             ");
 
         $this->applyListFiltersNormalized($query, $filters);
@@ -219,11 +288,13 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->select('s.id');
             $this->applyListFiltersNormalized($query, $filters);
             $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
         }
         $query = DB::table('main_table')->select('id');
         $this->applyListFilters($query, $filters);
         $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
     }
 
@@ -241,12 +312,14 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->whereIn('rt.name_ar', ['راسب', 'راسبة', 'معيد', 'معيده']);
             $this->applyListFiltersNormalized($query, $filters);
             $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
         }
         $query = DB::table('main_table')->select('id');
         $this->applyListFilters($query, $filters);
         $query->whereIn('النتيجة', ['راسب', 'راسبة', 'معيد', 'معيده']);
         $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
     }
 
@@ -292,7 +365,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         $gradeColumns = Config::get('grades_catalog.grade_columns', []);
-        $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'الفرع', 'الاختصاص', 'العام الدراسي', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
+        $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'التولد', 'محل الولادة', 'اسم الام الكامل', 'الفرع', 'الاختصاص', 'العام الدراسي', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
         foreach ($gradeColumns as $col) {
             $select[] = $col;
         }
@@ -309,6 +382,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if (empty($grades)) {
             $grades = [['subject' => '', 'score' => ''], ['subject' => '', 'score' => ''], ['subject' => '', 'score' => '']];
         }
+
         return new StudentGradesView(
             id: (int) $row->id,
             fullName: $fullName,
@@ -317,6 +391,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             nameGrandfather: trim((string) ($row->{'اسم الجد'} ?? '')),
             nameSurname: trim((string) ($row->{'اللقب'} ?? '')),
             examNumber: (string) ($row->{'الرقم الامتحاني'} ?? ''),
+            birthDate: $this->formatBirthDateForInput($row->{'التولد'} ?? null),
+            birthPlace: trim((string) ($row->{'محل الولادة'} ?? '')),
+            motherFullName: trim((string) ($row->{'اسم الام الكامل'} ?? '')),
             gender: trim((string) ($row->{'الجنس'} ?? '')),
             branch: isset($row->{'الفرع'}) ? trim((string) $row->{'الفرع'}) : '',
             major: isset($row->{'الاختصاص'}) ? trim((string) $row->{'الاختصاص'}) : '',
@@ -339,7 +416,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
             ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
             ->where('s.id', $id)
-            ->selectRaw("s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round")
+            ->selectRaw('s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round')
             ->first();
         if (! $row) {
             return null;
@@ -381,6 +458,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if (empty($grades)) {
             $grades = [['subject' => '', 'score' => ''], ['subject' => '', 'score' => ''], ['subject' => '', 'score' => '']];
         }
+
         return new StudentGradesView(
             id: (int) $row->id,
             fullName: $fullName,
@@ -389,6 +467,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             nameGrandfather: trim((string) ($row->grandfather_name ?? '')),
             nameSurname: trim((string) ($row->surname ?? '')),
             examNumber: (string) ($row->exam_number ?? ''),
+            birthDate: $this->formatBirthDateForInput($row->birth_date ?? null),
+            birthPlace: trim((string) ($row->birth_place ?? '')),
+            motherFullName: trim((string) ($row->mother_full_name ?? '')),
             gender: trim((string) ($row->gender ?? '')),
             branch: trim((string) ($row->branch ?? '')),
             major: trim((string) ($row->major ?? '')),
@@ -422,6 +503,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if (! $row) {
             return null;
         }
+
         return Student::fromObject($row);
     }
 
@@ -434,6 +516,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if ($this->useNormalizedSchema()) {
             return DB::table('students')->where('exam_number', $examNumber)->exists();
         }
+
         return DB::table('main_table')->where('الرقم الامتحاني', $examNumber)->exists();
     }
 
@@ -453,6 +536,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->where('s.exam_number', $examNumber)
                 ->selectRaw("s.id, s.exam_number, CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) AS full_name, COALESCE(b.name_ar, '') AS branch, COALESCE(m.name_ar, '') AS major, COALESCE(y.year_label, '') AS academic_year")
                 ->first();
+
             return $row ? (object) [
                 'id' => (int) $row->id,
                 'exam_number' => (string) $row->exam_number,
@@ -466,6 +550,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->where('الرقم الامتحاني', $examNumber)
             ->selectRaw("id, `الرقم الامتحاني` AS exam_number, CONCAT_WS(' ', `اسم الطالب`, `اسم الاب`, `اسم الجد`, `اللقب`) AS full_name, TRIM(`الفرع`) AS branch, TRIM(`الاختصاص`) AS major, `العام الدراسي` AS academic_year")
             ->first();
+
         return $row ? (object) [
             'id' => (int) $row->id,
             'exam_number' => (string) $row->exam_number,
@@ -474,6 +559,187 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             'major' => trim((string) $row->major),
             'academic_year' => trim((string) $row->academic_year),
         ] : null;
+    }
+
+    public function listRepeatersReport(array $filters): array
+    {
+        $filterLists = $this->getFilterListsFromCache();
+        if (empty($filters['year'])) {
+            return [
+                'groups' => [],
+                'stats' => ['total_repeaters' => 0],
+                'filters' => [
+                    'academicYears' => $filterLists['academicYears'],
+                    'branches' => $filterLists['branches'],
+                    'majors' => $filterLists['majors'],
+                    'genders' => $filterLists['genders'],
+                ],
+            ];
+        }
+
+        $groups = $this->useNormalizedSchema()
+            ? $this->listRepeatersReportNormalized($filters)
+            : $this->listRepeatersReportLegacy($filters);
+
+        $total = 0;
+        foreach ($groups as $group) {
+            $total += (int) ($group['count'] ?? 0);
+        }
+
+        return [
+            'groups' => $groups,
+            'stats' => ['total_repeaters' => $total],
+            'filters' => [
+                'academicYears' => $filterLists['academicYears'],
+                'branches' => $filterLists['branches'],
+                'majors' => $filterLists['majors'],
+                'genders' => $filterLists['genders'],
+            ],
+        ];
+    }
+
+    /** @return list<array{branch:string,major:string,students:list<array{id:int,exam_number:string,full_name:string,subjects:list<array{subject:string,score:string}>,total:string,average:string,result:string}>,count:int}> */
+    private function listRepeatersReportNormalized(array $filters): array
+    {
+        $base = DB::table('students as s')
+            ->join('student_personal as p', 'p.student_id', '=', 's.id')
+            ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
+            ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
+            ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
+            ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+            ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
+            ->whereIn('rt.name_ar', ['معيد', 'معيده']);
+        $this->applyListFiltersNormalized($base, $filters);
+
+        $rows = $base
+            ->selectRaw("
+                s.id,
+                s.exam_number,
+                CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) AS full_name,
+                b.name_ar AS branch,
+                m.name_ar AS major,
+                rt.name_ar AS result,
+                a.total,
+                a.average
+            ")
+            ->orderBy('b.name_ar')
+            ->orderBy('m.name_ar')
+            ->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')
+            ->orderBy('s.exam_number', 'asc')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $studentIds = $rows->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
+        $subjectRows = DB::table('student_grades as g')
+            ->join('major_subjects as ms', 'ms.id', '=', 'g.major_subject_id')
+            ->join('subjects as sub', 'sub.id', '=', 'ms.subject_id')
+            ->whereIn('g.student_id', $studentIds)
+            ->orderBy('ms.sort_order')
+            ->selectRaw('g.student_id, sub.name_ar AS subject_name, g.score')
+            ->get();
+
+        $subjectsByStudent = [];
+        foreach ($subjectRows as $sr) {
+            $sid = (int) $sr->student_id;
+            $subjectsByStudent[$sid] ??= [];
+            $subjectsByStudent[$sid][] = [
+                'subject' => trim((string) ($sr->subject_name ?? '')),
+                'score' => $sr->score !== null && $sr->score !== '' ? (string) $sr->score : '',
+            ];
+        }
+
+        $groupByAll = empty($filters['branch']) && empty($filters['major']);
+        $grouped = [];
+        foreach ($rows as $row) {
+            $id = (int) $row->id;
+            $branch = trim((string) ($row->branch ?? ''));
+            $major = trim((string) ($row->major ?? ''));
+            $key = $groupByAll ? ($branch.'||'.$major) : '__single__';
+            $grouped[$key] ??= [
+                'branch' => $groupByAll ? $branch : trim((string) ($filters['branch'] ?? $branch)),
+                'major' => $groupByAll ? $major : trim((string) ($filters['major'] ?? $major)),
+                'students' => [],
+                'count' => 0,
+            ];
+            $grouped[$key]['students'][] = [
+                'id' => $id,
+                'exam_number' => trim((string) ($row->exam_number ?? '')),
+                'full_name' => trim((string) ($row->full_name ?? '')),
+                'subjects' => $subjectsByStudent[$id] ?? [],
+                'total' => $this->formatTotal($row->total ?? ''),
+                'average' => trim((string) ($row->average ?? '')),
+                'result' => trim((string) ($row->result ?? '')),
+            ];
+            $grouped[$key]['count']++;
+        }
+
+        return array_values($grouped);
+    }
+
+    /** @return list<array{branch:string,major:string,students:list<array{id:int,exam_number:string,full_name:string,subjects:list<array{subject:string,score:string}>,total:string,average:string,result:string}>,count:int}> */
+    private function listRepeatersReportLegacy(array $filters): array
+    {
+        $base = DB::table('main_table')->whereIn('النتيجة', ['معيد', 'معيده']);
+        $this->applyListFilters($base, $filters);
+
+        $rows = $base
+            ->select('*')
+            ->selectRaw("
+                id,
+                `الرقم الامتحاني` AS exam_number,
+                CONCAT_WS(' ', `اسم الطالب`, `اسم الاب`, `اسم الجد`, `اللقب`) AS full_name,
+                TRIM(`الفرع`) AS branch,
+                TRIM(`الاختصاص`) AS major,
+                `النتيجة` AS result,
+                `المجموع` AS total,
+                `المعدل` AS average
+            ")
+            ->orderByRaw('TRIM(`الفرع`) ASC, TRIM(`الاختصاص`) ASC')
+            ->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')
+            ->orderBy('الرقم الامتحاني', 'asc')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $gradeColumns = Config::get('grades_catalog.grade_columns', []);
+        $groupByAll = empty($filters['branch']) && empty($filters['major']);
+        $grouped = [];
+        foreach ($rows as $row) {
+            $branch = trim((string) ($row->branch ?? ''));
+            $major = trim((string) ($row->major ?? ''));
+            $key = $groupByAll ? ($branch.'||'.$major) : '__single__';
+            $subjects = [];
+            foreach ($gradeColumns as $col) {
+                $v = $row->{$col} ?? null;
+                if ($v === null || $v === '') {
+                    continue;
+                }
+                $subjects[] = ['subject' => (string) $col, 'score' => is_numeric($v) ? (string) (int) round((float) $v) : trim((string) $v)];
+            }
+            $grouped[$key] ??= [
+                'branch' => $groupByAll ? $branch : trim((string) ($filters['branch'] ?? $branch)),
+                'major' => $groupByAll ? $major : trim((string) ($filters['major'] ?? $major)),
+                'students' => [],
+                'count' => 0,
+            ];
+            $grouped[$key]['students'][] = [
+                'id' => (int) $row->id,
+                'exam_number' => trim((string) ($row->exam_number ?? '')),
+                'full_name' => trim((string) ($row->full_name ?? '')),
+                'subjects' => $subjects,
+                'total' => $this->formatTotal($row->total ?? ''),
+                'average' => trim((string) ($row->average ?? '')),
+                'result' => trim((string) ($row->result ?? '')),
+            ];
+            $grouped[$key]['count']++;
+        }
+
+        return array_values($grouped);
     }
 
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo
@@ -487,13 +753,14 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->where('s.id', $id)
-                ->selectRaw("s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority")
+                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority')
                 ->first();
             if (! $row) {
                 return null;
             }
             $trim = static fn ($v) => isset($v) ? trim((string) $v) : '';
             $fullName = trim(implode(' ', array_filter([$trim($row->first_name), $trim($row->father_name), $trim($row->grandfather_name), $trim($row->surname)])));
+
             return new StudentDocumentInfo(
                 fullName: $fullName,
                 examNumber: $trim($row->exam_number),
@@ -518,6 +785,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
         $trim = static fn ($v) => isset($v) ? trim((string) $v) : '';
         $fullName = trim(implode(' ', array_filter([$trim($row->{'اسم الطالب'}), $trim($row->{'اسم الاب'}), $trim($row->{'اسم الجد'}), $trim($row->{'اللقب'})])));
+
         return new StudentDocumentInfo(
             fullName: $fullName,
             examNumber: $trim($row->{'الرقم الامتحاني'}),

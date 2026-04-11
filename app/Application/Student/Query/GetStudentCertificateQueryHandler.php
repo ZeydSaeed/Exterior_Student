@@ -15,7 +15,7 @@ final class GetStudentCertificateQueryHandler
     ) {}
 
     /**
-     * @param array<int, array{type: string, name: string}> $employees الموظفون من الجلسة
+     * @param  array<int, array{type: string, name: string}>  $employees  الموظفون من الجلسة
      */
     public function handle(int $id, array $employees): StudentCertificateDTO
     {
@@ -34,6 +34,7 @@ final class GetStudentCertificateQueryHandler
             academicYear: $student->academicYear(),
             result: $student->result(),
             round: $student->round(),
+            average: $student->average(),
             gender: $student->gender(),
             employees: $employees,
         );

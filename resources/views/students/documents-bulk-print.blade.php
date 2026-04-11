@@ -4,6 +4,10 @@
 @section('icon', asset('favicon-students.svg'))
 @section('body_class', 'page-students page-documents-bulk')
 
+@section('toolbar_center')
+    @include('students.partials.toolbar-filter-summary', ['useStudentListSessionMerge' => true])
+@endsection
+
 @section('styles')
     <link rel="stylesheet" href="{{ url('css/student-document.css') }}?v={{ file_exists(public_path('css/student-document.css')) ? filemtime(public_path('css/student-document.css')) : time() }}">
     <style>
@@ -85,37 +89,18 @@
         }
 
         @media print {
-            /* خلفية بيضاء بالكامل عند الطباعة */
-            html,
-            body.page-documents-bulk,
-            body.page-documents-bulk .dashboard-wrap,
-            body.page-documents-bulk .dashboard-main,
-            body.page-documents-bulk .dashboard-content,
-            body.page-documents-bulk .employees-page-wrap,
-            body.page-documents-bulk .students-layout,
-            body.page-documents-bulk .students-table-area,
-            body.page-documents-bulk .student-document-layout,
-            body.page-documents-bulk .student-document-paper,
-            body.page-documents-bulk .doc-bulk-page-break,
-            body.page-documents-bulk .doc-header,
-            body.page-documents-bulk .doc-row,
-            body.page-documents-bulk .doc-table th,
-            body.page-documents-bulk .doc-table td,
-            body.page-documents-bulk .doc-label,
-            body.page-documents-bulk .doc-value {
-                background: #fff !important;
-                box-shadow: none !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+            /* إخفاء واجهة الداشبورد؛ تنسيق القيد والهوامش والحقول من student-document.css (مثل صفحة document) */
             .page-documents-bulk .documents-bulk-top-bar,
             .page-documents-bulk .employees-close-btn,
             .page-documents-bulk .students-filter-sidebar,
             .page-documents-bulk .dashboard-toolbar,
             .page-documents-bulk .dashboard-sidebar,
-            .no-print { display: none !important; }
-            .page-documents-bulk .dashboard-content { padding: 0; }
-            .page-documents-bulk .employees-page-wrap { padding-top: 0; }
+            .no-print {
+                display: none !important;
+            }
+            .page-documents-bulk .employees-page-wrap {
+                padding-top: 0 !important;
+            }
         }
     </style>
 @endsection

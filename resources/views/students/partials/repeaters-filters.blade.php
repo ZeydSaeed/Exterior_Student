@@ -7,16 +7,16 @@
         $reqMajorVal = '';
     }
 @endphp
-<aside class="students-filter-sidebar" aria-label="فلاتر البحث">
-    <script type="application/json" id="student-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
-    <form method="GET" action="{{ $students_filter_form_action ?? route('students.index') }}" id="students-filter-form" class="students-filter-form">
+<aside class="students-filter-sidebar" aria-label="فلاتر المعيدين">
+    <script type="application/json" id="repeaters-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
+    <form method="GET" action="{{ route('students.repeaters.index') }}" id="repeaters-filter-form" class="students-filter-form">
         @if(request()->filled('search'))
-            <input type="hidden" name="search" value="{{ request('search') }}" id="students-filter-search-hidden">
+            <input type="hidden" name="search" value="{{ request('search') }}" id="repeaters-filter-search-hidden">
         @endif
         <div class="students-filter-cards">
             <div class="students-filter">
                 <div class="students-filter-card-options" style="display:flex; justify-content:flex-end; margin-bottom:0; margin-top:0.5rem;">
-                    <button type="button" id="students-filter-clear-all" class="btn-primary" style="margin:0;">
+                    <button type="button" id="repeaters-filter-clear-all" class="btn-primary" style="margin:0;">
                         إلغاء الكل
                     </button>
                 </div>
@@ -24,36 +24,35 @@
             <div class="students-filter-card">
                 <h3 class="students-filter-card-title">الفرع</h3>
                 <div class="students-filter-card-options">
-                    <label><input type="radio" name="branch" value="" {{ $filterBranchVal === '' ? 'checked' : '' }} class="students-filter-radio"> الكل</label>
+                    <label><input type="radio" name="branch" value="" {{ $filterBranchVal === '' ? 'checked' : '' }} class="repeaters-filter-radio"> الكل</label>
                     @foreach($branches ?? [] as $b)
-                        <label><input type="radio" name="branch" value="{{ $b }}" {{ $filterBranchVal !== '' && request('branch') === $b ? 'checked' : '' }} class="students-filter-radio"> {{ $b }}</label>
+                        <label><input type="radio" name="branch" value="{{ $b }}" {{ $filterBranchVal !== '' && request('branch') === $b ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $b }}</label>
                     @endforeach
                 </div>
             </div>
             <div class="students-filter-card">
                 <h3 class="students-filter-card-title">الاختصاص</h3>
-                <div class="students-filter-card-options" id="students-filter-major-options">
-                    <label><input type="radio" name="major" value="" {{ $reqMajorVal === '' ? 'checked' : '' }} class="students-filter-radio"> الكل</label>
+                <div class="students-filter-card-options" id="repeaters-filter-major-options">
+                    <label><input type="radio" name="major" value="" {{ $reqMajorVal === '' ? 'checked' : '' }} class="repeaters-filter-radio"> الكل</label>
                     @foreach($filterMajorsForBranch as $m)
-                        <label><input type="radio" name="major" value="{{ $m }}" {{ $reqMajorVal !== '' && $reqMajorVal === $m ? 'checked' : '' }} class="students-filter-radio"> {{ $m }}</label>
+                        <label><input type="radio" name="major" value="{{ $m }}" {{ $reqMajorVal !== '' && $reqMajorVal === $m ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $m }}</label>
                     @endforeach
                 </div>
             </div>
             <div class="students-filter-card">
                 <h3 class="students-filter-card-title">الجنس</h3>
                 <div class="students-filter-card-options">
-                    <label><input type="radio" name="gender" value="" {{ trim((string) request('gender', '')) === '' ? 'checked' : '' }} class="students-filter-radio"> الكل</label>
+                    <label><input type="radio" name="gender" value="" {{ trim((string) request('gender', '')) === '' ? 'checked' : '' }} class="repeaters-filter-radio"> الكل</label>
                     @foreach($genders ?? [] as $g)
-                        <label><input type="radio" name="gender" value="{{ $g }}" {{ trim((string) request('gender', '')) !== '' && request('gender') === $g ? 'checked' : '' }} class="students-filter-radio"> {{ $g }}</label>
+                        <label><input type="radio" name="gender" value="{{ $g }}" {{ trim((string) request('gender', '')) !== '' && request('gender') === $g ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $g }}</label>
                     @endforeach
                 </div>
             </div>
             <div class="students-filter-card">
-                <h3 class="students-filter-card-title">العام الدراسي</h3>
+                <h3 class="students-filter-card-title">العام الدراسي (مطلوب)</h3>
                 <div class="students-filter-card-options">
-                    <label><input type="radio" name="year" value="" {{ trim((string) request('year', '')) === '' ? 'checked' : '' }} class="students-filter-radio"> الكل</label>
                     @foreach($academicYears ?? [] as $year)
-                        <label><input type="radio" name="year" value="{{ $year }}" {{ trim((string) request('year', '')) !== '' && request('year') === $year ? 'checked' : '' }} class="students-filter-radio"> {{ $year }}</label>
+                        <label><input type="radio" name="year" value="{{ $year }}" {{ request('year') === $year ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $year }}</label>
                     @endforeach
                 </div>
             </div>
@@ -61,12 +60,12 @@
     </form>
     <script>
         (function () {
-            var form = document.getElementById('students-filter-form');
+            var form = document.getElementById('repeaters-filter-form');
             if (!form) return;
             var action = form.getAttribute('action') || '';
 
             function parseBranchMajorsMap() {
-                var el = document.getElementById('student-branch-majors-json');
+                var el = document.getElementById('repeaters-branch-majors-json');
                 if (!el || !el.textContent) return {};
                 try {
                     return JSON.parse(el.textContent);
@@ -78,7 +77,7 @@
             var branchMajorsMap = parseBranchMajorsMap();
 
             function syncMajorRadiosFromBranch() {
-                var container = document.getElementById('students-filter-major-options');
+                var container = document.getElementById('repeaters-filter-major-options');
                 if (!container) return;
                 var branchEl = form.querySelector('input[name="branch"]:checked');
                 var branch = branchEl ? branchEl.value : '';
@@ -108,7 +107,7 @@
                     radio.type = 'radio';
                     radio.name = 'major';
                     radio.value = value;
-                    radio.className = 'students-filter-radio';
+                    radio.className = 'repeaters-filter-radio';
                     if (checked) radio.checked = true;
                     label.appendChild(radio);
                     label.appendChild(document.createTextNode(' ' + labelText));
@@ -123,31 +122,35 @@
 
             function currentParams() {
                 var params = new URLSearchParams();
-                /* إرسال كل المفاتيح الأربعة دائماً: «الكل» = قيمة فارغة تُزيل الفلتر من الجلسة */
                 ['branch', 'major', 'gender', 'year'].forEach(function (name) {
                     var el = form.querySelector('input[name="' + name + '"]:checked');
                     if (el) params.set(name, el.value);
                 });
-                var searchHidden = document.getElementById('students-filter-search-hidden');
+                var searchHidden = document.getElementById('repeaters-filter-search-hidden');
                 if (searchHidden && searchHidden.value) params.set('search', searchHidden.value);
                 return params;
             }
             function applyFilters() {
+                var yearEl = form.querySelector('input[name="year"]:checked');
+                if (!yearEl || !yearEl.value) {
+                    alert('العام الدراسي مطلوب.');
+                    return;
+                }
                 var q = currentParams().toString();
                 window.location = action + (q ? '?' + q : '');
             }
             form.addEventListener('change', function (e) {
                 var t = e.target;
-                if (!t || t.tagName !== 'INPUT' || t.type !== 'radio' || !t.classList.contains('students-filter-radio')) return;
+                if (!t || t.tagName !== 'INPUT' || t.type !== 'radio' || !t.classList.contains('repeaters-filter-radio')) return;
                 if (t.name === 'branch') {
                     syncMajorRadiosFromBranch();
                 }
                 applyFilters();
             });
-            var clearBtn = document.getElementById('students-filter-clear-all');
+            var clearBtn = document.getElementById('repeaters-filter-clear-all');
             if (clearBtn) {
                 clearBtn.addEventListener('click', function () {
-                    ['branch', 'major', 'gender', 'year'].forEach(function (name) {
+                    ['branch', 'major', 'gender'].forEach(function (name) {
                         var firstAll = form.querySelector('input[name="' + name + '"][value=""]');
                         if (firstAll) {
                             firstAll.checked = true;

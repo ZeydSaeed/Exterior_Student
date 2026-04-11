@@ -35,7 +35,7 @@
                     اشترك بالامتحانات الوزارية للعام الدراسي
                     <span class="nowrap arabic-number" id="certificate-academic-year"></span>
                     وكانت النتيجة (<span id="certificate-result"></span>)
-                    في الدور (<span id="certificate-round"></span>)،
+                    في الدور (<span id="certificate-round"></span>) وبمعدل (<span class="nowrap arabic-number" id="certificate-average" data-number=""></span>)،
                     وبناءً على طلبه زُوِّد بهذا التأييد.
                 </div>
 

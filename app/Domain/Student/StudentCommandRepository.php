@@ -16,6 +16,9 @@ interface StudentCommandRepository
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   birth_date?: string,
+     *   birth_place?: string,
+     *   mother_full_name?: string,
      *   branch?: string,
      *   major?: string,
      *   academic_year?: string,
@@ -31,7 +34,7 @@ interface StudentCommandRepository
     /**
      * إدراج طالب جديد في مصدر البيانات.
      *
-     * @param array<string, string|null> $data الخريطة: مفتاح إنجليزي => قيمة، يُحوّلها البنية التحتية إلى أعمدة main_table العربية
+     * @param  array<string, string|null>  $data  الخريطة: مفتاح إنجليزي => قيمة، يُحوّلها البنية التحتية إلى أعمدة main_table العربية
      * @return int معرف السجل المُدرج (id)
      */
     public function create(array $data): int;

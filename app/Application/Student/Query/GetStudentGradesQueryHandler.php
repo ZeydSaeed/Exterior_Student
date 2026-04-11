@@ -26,6 +26,7 @@ final class GetStudentGradesQueryHandler
         }
 
         $grades = $this->mergeGradesWithCatalog($view);
+
         return $this->toDTO($view, $grades);
     }
 
@@ -52,20 +53,21 @@ final class GetStudentGradesQueryHandler
             $score = $this->findScoreForSubject($subject, $scoreBySubject);
             $merged[] = ['subject' => $subject, 'score' => $score];
         }
+
         return $merged;
     }
 
     /**
      * بناء خريطة اسم المادة => الدرجة من بيانات قاعدة البيانات
      *
-     * @param array<int, array{subject: string, score: string}> $dbGrades
+     * @param  array<int, array{subject: string, score: string}>  $dbGrades
      * @return array<string, string> مفتاحها اسم المادة مُنظّف
      */
     private function buildScoreMapFromDb(array $dbGrades): array
     {
         $map = [];
         foreach ($dbGrades as $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $name = $this->normalizeSubjectName((string) ($row['subject'] ?? ''));
@@ -74,6 +76,7 @@ final class GetStudentGradesQueryHandler
                 $map[$name] = $score;
             }
         }
+
         return $map;
     }
 
@@ -81,6 +84,7 @@ final class GetStudentGradesQueryHandler
     {
         $t = trim(preg_replace('/\s+/u', ' ', $name));
         $t = str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $t);
+
         return $t;
     }
 
@@ -98,6 +102,7 @@ final class GetStudentGradesQueryHandler
                 return $score;
             }
         }
+
         return '';
     }
 
@@ -116,6 +121,9 @@ final class GetStudentGradesQueryHandler
             name_grandfather: $view->nameGrandfather,
             name_surname: $view->nameSurname,
             exam_number: $view->examNumber,
+            birth_date: $view->birthDate,
+            birth_place: $view->birthPlace,
+            mother_full_name: $view->motherFullName,
             gender: $view->gender,
             branch: $view->branch,
             major: $view->major,

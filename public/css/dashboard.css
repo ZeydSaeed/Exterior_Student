@@ -24,6 +24,12 @@ body.dashboard-layout::-webkit-scrollbar {
     --color-secondary: #a0b0bf;
     --color-light-accent: rgb(245, 242, 237);
     --color-dark-accent: #4a545e;
+    /* أيقونات السايدبار والشريط: خطوط ونص أبيض؛ التمييز بالخلفية عند التفعيل */
+    --dashboard-icon-stroke: #fff;
+    --dashboard-icon-stroke-hover: #fff;
+    --dashboard-icon-active: #fff;
+    --dashboard-nav-active-bg: rgba(214, 210, 205, 0.22);
+    --dashboard-nav-active-border: rgba(160, 176, 191, 0.5);
 }
 body {
     background: var(--color-light-accent);
@@ -64,7 +70,7 @@ body {
     z-index: 50;
     flex-shrink: 0;
 }
-.dashboard-sidebar a {
+.dashboard-sidebar .dashboard-sidebar-link {
     display: flex;
     margin-top: 0.9rem;
     flex-direction: column;
@@ -72,29 +78,45 @@ body {
     justify-content: center;
     width: 100%;
     padding: 0.35rem 0;
-    color: #fff;
+    color: var(--dashboard-icon-stroke);
     border-radius: 0.25rem;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     text-decoration: none;
 }
-.dashboard-sidebar a:hover {
-    background: var(--color-primary);
-    color: #fff;
+.dashboard-sidebar .dashboard-sidebar-link:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--dashboard-icon-stroke-hover);
 }
-.dashboard-sidebar a svg {
+.dashboard-sidebar .dashboard-sidebar-link:hover svg,
+.dashboard-sidebar .dashboard-sidebar-link:hover span {
+    color: var(--dashboard-icon-stroke-hover);
+}
+.dashboard-sidebar .dashboard-sidebar-link.is-active,
+.dashboard-sidebar .dashboard-sidebar-link[aria-current="page"] {
+    background: var(--dashboard-nav-active-bg);
+    box-shadow: inset 0 0 0 1px var(--dashboard-nav-active-border);
+    color: var(--dashboard-icon-active);
+}
+.dashboard-sidebar .dashboard-sidebar-link.is-active svg,
+.dashboard-sidebar .dashboard-sidebar-link.is-active span,
+.dashboard-sidebar .dashboard-sidebar-link[aria-current="page"] svg,
+.dashboard-sidebar .dashboard-sidebar-link[aria-current="page"] span {
+    color: var(--dashboard-icon-active);
+}
+.dashboard-sidebar .dashboard-sidebar-link svg {
     width: 1.1rem;
     height: 1.1rem;
     flex-shrink: 0;
-    color: #fff;
+    color: inherit;
 }
-.dashboard-sidebar a span {
+.dashboard-sidebar .dashboard-sidebar-link span {
     font-size: 0.6rem;
     line-height: 1.2;
     text-align: center;
     margin-top: 0.2rem;
     max-width: 100%;
     word-break: break-word;
-    color: #fff;
+    color: inherit;
 }
 .dashboard-main {
     margin-right: 1.5cm;
@@ -121,6 +143,51 @@ body.page-students .dashboard-main {
     align-items: center;
     flex-shrink: 0;
     margin-bottom: 0.05rem;
+}
+.dashboard-toolbar-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+}
+.dashboard-toolbar-slot-start {
+    justify-self: start;
+    min-width: 0;
+}
+.dashboard-toolbar-slot-center {
+    justify-self: center;
+    text-align: center;
+    max-width: min(52vw, 36rem);
+    min-width: 0;
+}
+.dashboard-toolbar-slot-end {
+    justify-self: end;
+    min-width: 0;
+}
+.dashboard-toolbar-filters-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--dashboard-icon-active);
+}
+.dashboard-toolbar-filter-key {
+    color: var(--color-secondary);
+    font-weight: 600;
+    margin-inline-end: 0.15em;
+}
+.dashboard-toolbar-filter-sep {
+    color: rgba(255, 255, 255, 0.35);
+    user-select: none;
+    margin-inline: 0.1rem;
+}
+.dashboard-toolbar-filter-item {
+    white-space: nowrap;
 }
 .dashboard-toolbar-group {
     display: flex;
@@ -156,43 +223,57 @@ body.page-students .dashboard-main {
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    color: #fff;
+    color: var(--dashboard-icon-stroke);
     text-decoration: none;
     font-size: 0.875rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    transition: background 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 .dashboard-toolbar-employees:hover {
-    background: var(--color-primary);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--dashboard-icon-stroke-hover);
+}
+.dashboard-toolbar-employees.is-active,
+.dashboard-toolbar-employees[aria-current="page"] {
+    background: var(--dashboard-nav-active-bg);
+    box-shadow: inset 0 0 0 1px var(--dashboard-nav-active-border);
+    color: var(--dashboard-icon-active);
 }
 .dashboard-toolbar-employees svg {
     width: 1.25rem;
     height: 1.25rem;
+    color: inherit;
 }
 .dashboard-toolbar-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: #fff;
+    color: var(--dashboard-icon-stroke);
     text-decoration: none;
     font-size: 0.875rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    transition: background 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     border: none;
     background: transparent;
     cursor: pointer;
     font-family: inherit;
 }
 .dashboard-toolbar-btn:hover {
-    background: var(--color-primary);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--dashboard-icon-stroke-hover);
+}
+.dashboard-toolbar-btn.is-active,
+.dashboard-toolbar-btn[aria-current="page"] {
+    background: var(--dashboard-nav-active-bg);
+    box-shadow: inset 0 0 0 1px var(--dashboard-nav-active-border);
+    color: var(--dashboard-icon-active);
 }
 .dashboard-toolbar-btn svg {
     width: 1.25rem;
     height: 1.25rem;
+    color: inherit;
 }
 .dashboard-content {
     padding: 0.5rem;

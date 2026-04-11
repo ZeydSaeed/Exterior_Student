@@ -20,6 +20,7 @@ final class StudentCertificate
         private string $academicYear,
         private string $result,
         private string $round,
+        private string $average,
         private string $gender,
     ) {}
 
@@ -61,6 +62,14 @@ final class StudentCertificate
     public function round(): string
     {
         return $this->round;
+    }
+
+    /**
+     * المعدل كنص للعرض (من المعدل / average في قاعدة البيانات).
+     */
+    public function average(): string
+    {
+        return $this->average;
     }
 
     public function gender(): string

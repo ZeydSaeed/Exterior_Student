@@ -15,6 +15,8 @@
         $managerTitle = $dto->employees[1]['type'] ?? 'مسؤول شعبة شؤون الطلبة';
         $genderTrim = trim($dto->gender ?? '');
         $isFemale = in_array($genderTrim, ['انثى', 'أنثى'], true);
+        $avgRaw = trim($dto->average ?? '');
+        $avgInParens = $avgRaw !== '' ? \App\Support\ArabicDigits::toArabic($avgRaw) : '—';
     @endphp
 
     <div class="students-layout">
@@ -64,9 +66,9 @@
 
                         <div class="body-line" contenteditable="true">
                             @if($isFemale)
-                            نؤيد لكم أن الطالبة ({{ $dto->fullName }}) الملصقة صورتها أعلاه، والمولودة بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> إحدى طالبات الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشتركت بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت نتيجتها ({{ $dto->result }}) في الدور ({{ $dto->round }})، وبناءً على طلبها زُوِّدَت بهذا التأييد.
+                            نؤيد لكم أن الطالبة ({{ $dto->fullName }}) الملصقة صورتها أعلاه، والمولودة بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> إحدى طالبات الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشتركت بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت نتيجتها ({{ $dto->result }}) في الدور ({{ $dto->round }}) وبمعدل ({{ $avgInParens }})، . وبناءً على طلبها زُوِّدَت بهذا التأييد. مع التقدير
                             @else
-                            نؤيد لكم أن الطالب ({{ $dto->fullName }}) الملصقة صورته أعلاه، والمولود بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> أحد طلاب الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشترك بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت النتيجة ({{ $dto->result }}) في الدور ({{ $dto->round }})، وبناءً على طلبه زُوِّد بهذا التأييد.
+                            نؤيد لكم أن الطالب ({{ $dto->fullName }}) الملصقة صورته أعلاه، والمولود بتاريخ <span class="nowrap arabic-date" data-date="{{ $dto->birthDate }}">({{ $dto->birthDate }})</span> أحد طلاب الصف الثالث إعدادي مهني، الفرع ({{ $dto->branch }}) / الاختصاص <span class="nowrap">({{ $dto->specialization }})</span>، اشترك بالامتحانات الوزارية للعام الدراسي <span class="nowrap arabic-number" data-number="{{ $dto->academicYear }}">({{ $dto->academicYear }})</span> وكانت النتيجة ({{ $dto->result }}) في الدور ({{ $dto->round }}) وبمعدل ({{ $avgInParens }})، وبناءً على طلبه زُوِّد بهذا التأييد. مع التقدير
                             @endif
                         </div>
 
@@ -74,13 +76,15 @@
 
                         <div class="signature-columns">
                             <div class="signature-col">
-                                <div id="cert-field-right-title" class="signature-title">{{ $organizerTitle }}</div>
                                 <div id="cert-field-right-name" class="signature-name">{{ $organizer }}</div>
+                                <div id="cert-field-right-title" class="signature-title">{{ $organizerTitle }}</div>
+
                                 <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
                             </div>
                             <div class="signature-col">
-                                <div id="cert-field-left-title" class="signature-title">{{ $managerTitle }}</div>
                                 <div id="cert-field-left-name" class="signature-name">{{ $manager }}</div>
+                                <div id="cert-field-left-title" class="signature-title">{{ $managerTitle }}</div>
+
                                 <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
                             </div>
                         </div>

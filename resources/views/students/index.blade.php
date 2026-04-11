@@ -4,6 +4,10 @@
 @section('icon', asset('favicon-students.svg'))
 @section('body_class', 'page-students')
 
+@section('toolbar_center')
+    @include('students.partials.toolbar-filter-summary', ['useStudentListSessionMerge' => true])
+@endsection
+
 @section('content')
     @if(!empty($flash_error) || !empty($flash_status))
         <div class="flash-overlay" role="alert">
@@ -13,7 +17,7 @@
             </div>
         </div>
         <script>
-            // إخفاء رسالة الحالة تلقائياً بعد ثانيتين
+            // إخفاء رسالة الحالة تلقائياً بعد 20 ثانية
             document.addEventListener('DOMContentLoaded', function () {
                 var overlay = document.querySelector('.flash-overlay');
                 if (overlay) {

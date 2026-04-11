@@ -20,22 +20,25 @@ class UpdateStudentGradesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name_student'      => ['nullable', 'string', 'max:255'],
-            'name_father'       => ['nullable', 'string', 'max:255'],
-            'name_grandfather'  => ['nullable', 'string', 'max:255'],
-            'name_surname'      => ['nullable', 'string', 'max:255'],
-            'exam_number'       => ['required', 'string', 'max:255'],
-            'gender'            => ['nullable', 'string', 'max:255'],
-            'branch'            => ['nullable', 'string', 'max:255'],
-            'major'             => ['nullable', 'string', 'max:255'],
-            'academic_year'     => ['nullable', 'string', 'max:255'],
-            'result'            => ['nullable', 'string', Rule::in(config('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده']))],
-            'total'             => ['nullable', 'string', 'max:255'],
-            'average'           => ['nullable', 'string', 'max:255'],
-            'round'             => ['nullable', 'string', Rule::in(config('grades_catalog.round_options', ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي']))],
-            'grades'            => ['nullable', 'array'],
-            'grades.*.subject'  => ['nullable', 'string', 'max:255'],
-            'grades.*.score'    => ['nullable', 'string', 'max:255'],
+            'name_student' => ['nullable', 'string', 'max:255'],
+            'name_father' => ['nullable', 'string', 'max:255'],
+            'name_grandfather' => ['nullable', 'string', 'max:255'],
+            'name_surname' => ['nullable', 'string', 'max:255'],
+            'exam_number' => ['required', 'string', 'max:255'],
+            'birth_date' => ['nullable', 'date'],
+            'birth_place' => ['nullable', 'string', 'max:500'],
+            'mother_full_name' => ['nullable', 'string', 'max:255'],
+            'gender' => ['nullable', 'string', 'max:255'],
+            'branch' => ['nullable', 'string', 'max:255'],
+            'major' => ['nullable', 'string', 'max:255'],
+            'academic_year' => ['nullable', 'string', 'max:255'],
+            'result' => ['nullable', 'string', Rule::in(config('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده']))],
+            'total' => ['nullable', 'string', 'max:255'],
+            'average' => ['nullable', 'string', 'max:255'],
+            'round' => ['nullable', 'string', Rule::in(config('grades_catalog.round_options', ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي']))],
+            'grades' => ['nullable', 'array'],
+            'grades.*.subject' => ['nullable', 'string', 'max:255'],
+            'grades.*.score' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -55,6 +58,9 @@ class UpdateStudentGradesRequest extends FormRequest
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   birth_date?: string,
+     *   birth_place?: string,
+     *   mother_full_name?: string,
      *   gender?: string,
      *   branch?: string,
      *   major?: string,
@@ -79,7 +85,8 @@ class UpdateStudentGradesRequest extends FormRequest
 
         $allowedKeys = [
             'name_student', 'name_father', 'name_grandfather', 'name_surname',
-            'exam_number', 'gender', 'branch', 'major', 'academic_year',
+            'exam_number', 'birth_date', 'birth_place', 'mother_full_name',
+            'gender', 'branch', 'major', 'academic_year',
             'result', 'total', 'average', 'round', 'grades',
         ];
 
@@ -88,11 +95,10 @@ class UpdateStudentGradesRequest extends FormRequest
             array_fill_keys($allowedKeys, true)
         );
 
-        if (isset($payload['grades']) && !is_array($payload['grades'])) {
+        if (isset($payload['grades']) && ! is_array($payload['grades'])) {
             $payload['grades'] = [];
         }
 
         return $payload;
     }
 }
-

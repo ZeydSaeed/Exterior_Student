@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Domain\Attestation\AttestationCommandRepository;
 use App\Domain\Attestation\AttestationQueryRepository;
+use App\Domain\Backup\Repositories\DatabaseBackupRepository;
 use App\Domain\Certificate\CertificateSignatureRepository;
 use App\Domain\Employee\EmployeeCommandRepository;
 use App\Domain\Employee\EmployeeQueryRepository;
@@ -13,23 +14,24 @@ use App\Domain\Student\BranchMajorCatalogInterface;
 use App\Domain\Student\StudentCommandRepository;
 use App\Domain\Student\StudentImportTempRepository;
 use App\Domain\Student\StudentQueryRepository;
-use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\StudentReadRepository;
+use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
 use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
 use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
+use App\Infrastructure\Persistence\MySQLBranchMajorCatalog;
 use App\Infrastructure\Persistence\MySQLCertificateSignatureRepository;
+use App\Infrastructure\Persistence\MySQLDatabaseBackupRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeCommandRepository;
 use App\Infrastructure\Persistence\MySQLEmployeeQueryRepository;
 use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
 use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
-use App\Infrastructure\Persistence\MySQLBranchMajorCatalog;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
 use App\Infrastructure\Persistence\MySQLStudentImportTempRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
-use App\Infrastructure\Persistence\MySQLStudentResultsImportTempRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
+use App\Infrastructure\Persistence\MySQLStudentResultsImportTempRepository;
 use App\Support\StudentListFiltersSession;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
@@ -64,6 +66,9 @@ class AppServiceProvider extends ServiceProvider
         // Attestations (certificate table)
         $this->app->bind(AttestationQueryRepository::class, MySQLAttestationQueryRepository::class);
         $this->app->bind(AttestationCommandRepository::class, MySQLAttestationCommandRepository::class);
+
+        // Database backup
+        $this->app->bind(DatabaseBackupRepository::class, MySQLDatabaseBackupRepository::class);
 
         // Student records (documents)
         $this->app->bind(RecordQueryRepository::class, MySQLRecordQueryRepository::class);

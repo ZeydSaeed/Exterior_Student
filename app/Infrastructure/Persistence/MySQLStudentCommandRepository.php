@@ -87,6 +87,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         if (Schema::hasTable('major_subjects') && Schema::hasTable('subjects')) {
             $this->seedMajorSubjectsForNewMajor($newMajorId, $nameAr, $branchId);
         }
+
         return $newMajorId;
     }
 
@@ -203,8 +204,10 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         }
         if ($nameAr === 'انثى') {
             $id = DB::table('genders')->where('name_ar', 'أنثى')->value('id');
+
             return $id !== null ? (int) $id : null;
         }
+
         return null;
     }
 
@@ -214,6 +217,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         'name_grandfather' => 'اسم الجد',
         'name_surname' => 'اللقب',
         'exam_number' => 'الرقم الامتحاني',
+        'birth_date' => 'التولد',
+        'birth_place' => 'محل الولادة',
+        'mother_full_name' => 'اسم الام الكامل',
         'gender' => 'الجنس',
         'branch' => 'الفرع',
         'major' => 'الاختصاص',
@@ -248,6 +254,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         if ($this->useNormalizedSchema()) {
             return $this->createNormalized($data);
         }
+
         return DB::transaction(function () use ($data): int {
             $row = [];
             foreach (self::CREATE_FIELDS_MAP as $key => $column) {
@@ -255,6 +262,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 // الرقم الامتحاني: إذا تُرك فارغاً نضعه 0
                 if ($key === 'exam_number') {
                     $row[$column] = $value !== null && $value !== '' ? $value : '0';
+
                     continue;
                 }
 
@@ -262,6 +270,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 // بدلاً من NULL أو فراغ لتفادي مشاكل تواريخ غير صالحة مع MySQL STRICT.
                 if ($key === 'birth_date' || $key === 'middle_doc_date') {
                     $row[$column] = $value !== null && $value !== '' ? $value : '1000-01-01';
+
                     continue;
                 }
 
@@ -277,7 +286,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             // إدخال فراغ '' في أعمدة من نوع INT عند تفعيل STRICT.
             $gradeColumns = Config::get('grades_catalog.grade_columns', []);
             foreach ($gradeColumns as $subjectColumn) {
-                if (!array_key_exists($subjectColumn, $row)) {
+                if (! array_key_exists($subjectColumn, $row)) {
                     $row[$subjectColumn] = 0;
                 }
             }
@@ -289,7 +298,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'المعدل',
             ];
             foreach ($numericMetaColumns as $metaColumn) {
-                if (!array_key_exists($metaColumn, $row)) {
+                if (! array_key_exists($metaColumn, $row)) {
                     $row[$metaColumn] = 0;
                 }
             }
@@ -303,7 +312,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'المنصب',
             ];
             foreach ($stringMetaColumns as $metaColumn) {
-                if (!array_key_exists($metaColumn, $row)) {
+                if (! array_key_exists($metaColumn, $row)) {
                     $row[$metaColumn] = '';
                 }
             }
@@ -312,6 +321,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $row['id'] = $nextId;
             DB::table('main_table')->insert($row);
             Cache::forget('student_filters.lists');
+
             return $nextId;
         });
     }
@@ -396,6 +406,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             }
 
             Cache::forget('student_filters.lists');
+
             return $studentId;
         });
     }
@@ -405,6 +416,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         if ($this->useNormalizedSchema()) {
             return $this->updateGradesNormalized($id, $payload);
         }
+
         return DB::transaction(function () use ($id, $payload): bool {
             $data = [];
             $allowedResults = Config::get('grades_catalog.result_options', []);
@@ -418,6 +430,8 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                         $data[$column] = $v;
                     } elseif ($key === 'round' && ($v === '' || in_array($v, $allowedRounds, true))) {
                         $data[$column] = $v;
+                    } elseif ($key === 'birth_date') {
+                        $data[$column] = $v !== '' ? $v : '1000-01-01';
                     } elseif ($key !== 'result' && $key !== 'round') {
                         $data[$column] = $v;
                     }
@@ -431,9 +445,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 }
                 $subject = trim((string) ($row['subject'] ?? ''));
                 $score = trim((string) ($row['score'] ?? ''));
-                    if ($subject !== '' && isset($allowedGrades[$subject])) {
-                        $data[$subject] = is_numeric($score) ? (string) (int) round((float) $score) : '0';
-                    }
+                if ($subject !== '' && isset($allowedGrades[$subject])) {
+                    $data[$subject] = is_numeric($score) ? (string) (int) round((float) $score) : '0';
+                }
             }
             if (empty($data)) {
                 return false;
@@ -442,6 +456,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             if ($affected > 0) {
                 Cache::forget('student_filters.lists');
             }
+
             return $affected > 0;
         });
     }
@@ -450,7 +465,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
     {
         return DB::transaction(function () use ($id, $payload): bool {
             $any = false;
-            if (array_intersect_key($payload, array_flip(['name_student', 'name_father', 'name_grandfather', 'name_surname', 'gender'])) !== []) {
+            if (array_intersect_key($payload, array_flip(['name_student', 'name_father', 'name_grandfather', 'name_surname', 'gender', 'birth_date', 'birth_place', 'mother_full_name'])) !== []) {
                 $up = [];
                 if (array_key_exists('name_student', $payload)) {
                     $up['first_name'] = trim((string) $payload['name_student']);
@@ -466,6 +481,16 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 }
                 if (array_key_exists('gender', $payload)) {
                     $up['gender'] = trim((string) $payload['gender']);
+                }
+                if (array_key_exists('birth_date', $payload)) {
+                    $bd = trim((string) $payload['birth_date']);
+                    $up['birth_date'] = $bd !== '' ? $bd : null;
+                }
+                if (array_key_exists('birth_place', $payload)) {
+                    $up['birth_place'] = trim((string) $payload['birth_place']);
+                }
+                if (array_key_exists('mother_full_name', $payload)) {
+                    $up['mother_full_name'] = trim((string) $payload['mother_full_name']);
                 }
                 if ($up !== []) {
                     $up['updated_at'] = now();
@@ -502,9 +527,17 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             foreach (['total', 'average', 'round'] as $k) {
                 if (array_key_exists($k, $payload)) {
                     $v = trim((string) $payload[$k]);
-                    $acUp[$k] = ($k === 'total' && $v !== '' && is_numeric($v))
-                        ? (int) round((float) $v)
-                        : $v;
+                    if ($k === 'total') {
+                        $acUp[$k] = ($v !== '' && is_numeric($v))
+                            ? (int) round((float) $v)
+                            : 0;
+                    } elseif ($k === 'average') {
+                        $acUp[$k] = ($v !== '' && is_numeric($v))
+                            ? (float) $v
+                            : 0;
+                    } else {
+                        $acUp[$k] = $v;
+                    }
                 }
             }
             if ($acUp !== []) {
@@ -560,6 +593,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             if ($any) {
                 Cache::forget('student_filters.lists');
             }
+
             return $any;
         });
     }
@@ -567,11 +601,13 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
     public function deleteStudent(int $id): bool
     {
         $table = $this->useNormalizedSchema() ? 'students' : 'main_table';
+
         return DB::transaction(function () use ($id, $table): bool {
             $affected = DB::table($table)->where('id', $id)->delete();
             if ($affected > 0) {
                 Cache::forget('student_filters.lists');
             }
+
             return $affected > 0;
         });
     }
@@ -582,11 +618,13 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             return 0;
         }
         $table = $this->useNormalizedSchema() ? 'students' : 'main_table';
+
         return (int) DB::transaction(function () use ($ids, $table): int {
             $affected = DB::table($table)->whereIn('id', $ids)->delete();
             if ($affected > 0) {
                 Cache::forget('student_filters.lists');
             }
+
             return $affected;
         });
     }

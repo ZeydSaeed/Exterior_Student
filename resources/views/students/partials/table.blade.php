@@ -5,6 +5,7 @@
     @if(request('year'))<input type="hidden" name="year" value="{{ request('year') }}">@endif
     <div class="students-search students-search-full">
         <input type="text" name="search" id="students-search-input" value="{{ request('search') }}" placeholder="البحث عن اسم الطالب او الرقم الامتحاني ثم اضغط على Enter ..." autocomplete="off" />
+        <button type="button" class="btn-primary btn-secondary students-search-clear-btn" aria-label="إلغاء البحث" title="إلغاء البحث" onclick="var i=document.getElementById('students-search-input'); if(i){i.value='';} var f=document.getElementById('students-search-form'); if(f){f.submit();}">إلغاء البحث</button>
     </div>
 </form>
 <div class="students-table-wrapper">
@@ -26,6 +27,10 @@
         <tbody id="students-table-body">
             @forelse($students as $student)
                 @php $examNum = (string)($student->exam_number ?? ''); @endphp
+                @php $attestWithoutCount = (int)($student->attest_without_count ?? 0); @endphp
+                @php $attestWithCount = (int)($student->attest_with_count ?? 0); @endphp
+                @php $docsCount = (int)($student->docs_count ?? 0); @endphp
+                @php $profileTotalCount = (int)($student->profile_total_count ?? ($attestWithoutCount + $attestWithCount + $docsCount)); @endphp
                 <tr class="students-data-row" data-exam="{{ e($examNum) }}" data-name="{{ e($student->full_name ?? '') }}">
                     <td>{{ $loop->iteration + ($students->currentPage() - 1) * $students->perPage() }}</td>
                     <td>{!! \App\Support\Highlight::render($examNum, $searchPattern ?? null) !!}</td>
@@ -48,6 +53,7 @@
                            class="btn-primary btn-confirm-without-grades"
                            title="تأييد بدون درجات">
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">تأييد بدون درجات</span>
+                            <span class="students-action-badge students-action-badge-without" aria-label="عدد التأييدات بدون درجات المطبوعة">{{ $attestWithoutCount }}</span>
                         </a>
                     </td>
                     <td>
@@ -55,6 +61,7 @@
                            class="btn-primary btn-confirm-with-grades"
                            title="تأييد بالدرجات">
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">تأييد بالدرجات</span>
+                            <span class="students-action-badge students-action-badge-with" aria-label="عدد التأييدات بالدرجات المطبوعة">{{ $attestWithCount }}</span>
                         </a>
                     </td>
                     <td>
@@ -72,6 +79,7 @@
                                 <path d="M4 4h5l2 3h9v11H4z"/>
                             </svg>
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">وثائق</span>
+                            <span class="students-action-badge students-action-badge-docs" aria-label="عدد الوثائق المضافة">{{ $docsCount }}</span>
                         </a>
                     </td>
                     <td>
@@ -83,6 +91,7 @@
                                 <path d="M6 20c0-3 2.5-5 6-5s6 2 6 5"/>
                             </svg>
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">سجل</span>
+                            <span class="students-action-badge students-action-badge-profile" aria-label="مجموع التأييدات والوثائق">{{ $profileTotalCount }}</span>
                         </a>
                     </td>
                     <td class="students-table-actions">

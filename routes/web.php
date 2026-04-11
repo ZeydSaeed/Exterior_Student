@@ -1,15 +1,17 @@
 <?php
 
+use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\StudentCertificateController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentsBulkPrintController;
 use App\Http\Controllers\StudentExcelImportController;
 use App\Http\Controllers\StudentFailuresBulkDeleteController;
-use App\Http\Controllers\StudentResultsExcelImportController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
+use App\Http\Controllers\StudentRepeatersController;
+use App\Http\Controllers\StudentResultsExcelImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +30,9 @@ Route::get('/students/documents/print', StudentDocumentsBulkPrintController::cla
 
 Route::delete('/students/failures', StudentFailuresBulkDeleteController::class)
     ->name('students.failures.destroy');
+
+Route::get('/students/repeaters', [StudentRepeatersController::class, 'index'])
+    ->name('students.repeaters.index');
 
 Route::get('/students/create', [StudentController::class, 'create'])
     ->name('students.create');
@@ -102,3 +107,6 @@ Route::put('/employees/{id}', [EmployeeController::class, 'update'])
 
 Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])
     ->name('employees.destroy');
+
+Route::post('/database/backup', [DatabaseBackupController::class, 'store'])
+    ->name('database-backup.store');

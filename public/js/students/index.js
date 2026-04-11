@@ -95,6 +95,8 @@
         originalData = data && typeof data === 'object' ? JSON.parse(JSON.stringify(data)) : null;
         var sid = document.getElementById('grades-student-id');
         if (sid) sid.value = data.id || '';
+        setText('grades-exam-number', data.exam_number);
+        setVal('grades-exam-number-input', data.exam_number);
         setText('grades-name-student', data.name_student != null ? data.name_student : (data.full_name || ''));
         setVal('grades-name-student-input', data.name_student != null ? data.name_student : (data.full_name || ''));
         setText('grades-name-father', data.name_father != null ? data.name_father : '');
@@ -103,8 +105,12 @@
         setVal('grades-name-grandfather-input', data.name_grandfather != null ? data.name_grandfather : '');
         setText('grades-name-surname', data.name_surname != null ? data.name_surname : '');
         setVal('grades-name-surname-input', data.name_surname != null ? data.name_surname : '');
-        setText('grades-exam-number', data.exam_number);
-        setVal('grades-exam-number-input', data.exam_number);
+        setText('grades-birth-date', data.birth_date != null ? data.birth_date : '');
+        setVal('grades-birth-date-input', data.birth_date != null ? data.birth_date : '');
+        setText('grades-birth-place', data.birth_place != null ? data.birth_place : '');
+        setVal('grades-birth-place-input', data.birth_place != null ? data.birth_place : '');
+        setText('grades-mother-full-name', data.mother_full_name != null ? data.mother_full_name : '');
+        setVal('grades-mother-full-name-input', data.mother_full_name != null ? data.mother_full_name : '');
         setText('grades-gender', data.gender != null ? data.gender : '');
         setVal('grades-gender-input', data.gender != null ? data.gender : '');
         setText('grades-branch', data.branch);
@@ -154,6 +160,9 @@
                     name_father: '',
                     name_grandfather: '',
                     name_surname: '',
+                    birth_date: '',
+                    birth_place: '',
+                    mother_full_name: '',
                     gender: btn ? (btn.getAttribute('data-gender') || '') : '',
                     branch: btn ? btn.getAttribute('data-branch') : '',
                     major: btn ? btn.getAttribute('data-major') : '',
@@ -223,13 +232,17 @@
                 grades.push({ subject: sub ? sub.value : '', score: score ? score.value : '' });
             });
             var payload = {
+                exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
                 name_student: (document.getElementById('grades-name-student-input') || {}).value || '',
                 name_father: (document.getElementById('grades-name-father-input') || {}).value || '',
                 name_grandfather: (document.getElementById('grades-name-grandfather-input') || {}).value || '',
                 name_surname: (document.getElementById('grades-name-surname-input') || {}).value || '',
-                exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
+                birth_date: (document.getElementById('grades-birth-date-input') || {}).value || '',
+                birth_place: (document.getElementById('grades-birth-place-input') || {}).value || '',
+                mother_full_name: (document.getElementById('grades-mother-full-name-input') || {}).value || '',
                 gender: (document.getElementById('grades-gender-input') || {}).value || '',
                 branch: (document.getElementById('grades-branch-input') || {}).value || '',
+                major: (document.getElementById('grades-major-input') || {}).value || '',
                 academic_year: (document.getElementById('grades-year-input') || {}).value || '',
                 total: (document.getElementById('grades-total-input') || {}).value || '',
                 average: (document.getElementById('grades-average-input') || {}).value || '',
@@ -318,6 +331,12 @@
             setCertText('certificate-academic-year', data.academic_year || '');
             setCertText('certificate-result', data.result || '');
             setCertText('certificate-round', data.round || '');
+            var avgEl = document.getElementById('certificate-average');
+            if (avgEl) {
+                var avgRaw = data.average != null && String(data.average).trim() !== '' ? String(data.average).trim() : '—';
+                avgEl.setAttribute('data-number', avgRaw === '—' ? '' : avgRaw);
+                avgEl.textContent = avgRaw;
+            }
             var employees = Array.isArray(data.employees) ? data.employees : [];
             var organizer = employees[0] || {};
             var manager = employees[1] || {};

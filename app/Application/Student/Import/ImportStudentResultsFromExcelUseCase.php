@@ -85,13 +85,18 @@ final class ImportStudentResultsFromExcelUseCase
                 continue;
             }
             try {
-                $subjects = $this->decodeSubjects($row->subjects_json);
+                $rawScores = $this->decodeRawScores($row->subjects_json);
+                $subjects = $this->buildGradesForRow(
+                    (string) ($row->branch ?? ''),
+                    (string) ($row->major ?? ''),
+                    $rawScores
+                );
                 $payload = [
                     'branch' => (string) ($row->branch ?? ''),
                     'major' => (string) ($row->major ?? ''),
                     'academic_year' => (string) ($row->academic_year ?? ''),
-                    'total' => (string) ($row->total ?? ''),
-                    'average' => (string) ($row->average ?? ''),
+                    'total' => $this->normalizeNumericText((string) ($row->total ?? '')),
+                    'average' => $this->normalizeNumericText((string) ($row->average ?? '')),
                     'result' => (string) ($row->result ?? ''),
                     'grades' => $subjects,
                 ];
@@ -107,12 +112,13 @@ final class ImportStudentResultsFromExcelUseCase
         }
         $validRows = array_filter($rows, fn ($r) => $r->status === 'valid');
         $this->tempRepository->deleteByBatchId($batchId);
+
         return ['success' => $success, 'failed' => count($validRows) - $success, 'errors' => $errors];
     }
 
     /**
-     * @param array<int,mixed> $excelRow
-     * @param array<int,mixed> $headerRow
+     * @param  array<int,mixed>  $excelRow
+     * @param  array<int,mixed>  $headerRow
      * @return array{row_index:int,exam_number:?string,student_name:?string,branch:?string,major:?string,academic_year:?string,subjects_json:?string,total:?string,average:?string,result:?string}|null
      */
     private function mapRow(array $excelRow, array $headerRow, int $rowIndex): ?array
@@ -123,14 +129,13 @@ final class ImportStudentResultsFromExcelUseCase
         if ($exam === '' && $name === '') {
             return null;
         }
-        $subjects = [];
+        $rawScores = [];
         for ($i = 5; $i <= 12; $i++) {
             $subjectName = isset($headerRow[$i]) ? trim((string) $headerRow[$i]) : '';
             $score = $get($i);
-            if ($subjectName !== '') {
-                $subjects[] = ['subject' => $subjectName, 'score' => $score];
-            }
+            $rawScores[] = ['idx' => $i, 'subject' => $subjectName, 'score' => $score];
         }
+
         return [
             'row_index' => $rowIndex,
             'exam_number' => $exam !== '' ? $exam : null,
@@ -138,7 +143,7 @@ final class ImportStudentResultsFromExcelUseCase
             'branch' => ($b = $get(2)) !== '' ? $b : null,
             'major' => ($m = $get(3)) !== '' ? $m : null,
             'academic_year' => ($y = $get(4)) !== '' ? $y : null,
-            'subjects_json' => $subjects !== [] ? json_encode($subjects, JSON_UNESCAPED_UNICODE) : null,
+            'subjects_json' => $rawScores !== [] ? json_encode($rawScores, JSON_UNESCAPED_UNICODE) : null,
             'total' => ($t = $get(13)) !== '' ? $t : null,
             'average' => ($a = $get(14)) !== '' ? $a : null,
             'result' => ($r = $get(15)) !== '' ? $r : null,
@@ -192,18 +197,18 @@ final class ImportStudentResultsFromExcelUseCase
             }
         }
 
-        $subjects = $this->decodeSubjects($row->subjects_json);
+        $rawScores = $this->decodeRawScores($row->subjects_json);
         $catalogSubjects = $this->subjectCatalog->getSubjectsFor($branch, $major);
-        $catalogMap = array_fill_keys(array_map([$this, 'normalize'], $catalogSubjects), true);
+        if ($catalogSubjects === []) {
+            $errors[] = 'لا توجد مواد معرفة لهذا الفرع/الاختصاص';
+        }
+        if (count($catalogSubjects) > count($rawScores)) {
+            $errors[] = 'عدد درجات الأعمدة أقل من عدد مواد الاختصاص';
+        }
+        $subjects = $this->buildGradesForRow($branch, $major, $rawScores);
         foreach ($subjects as $s) {
             $subject = trim((string) ($s['subject'] ?? ''));
-            $score = trim((string) ($s['score'] ?? ''));
-            if ($subject === '') {
-                continue;
-            }
-            if (! isset($catalogMap[$this->normalize($subject)])) {
-                $errors[] = "المادة {$subject} لا تتبع الاختصاص";
-            }
+            $score = $this->normalizeNumericText((string) ($s['score'] ?? ''));
             if ($score !== '' && ! is_numeric($score)) {
                 $errors[] = "درجة المادة {$subject} غير رقمية";
             }
@@ -213,9 +218,9 @@ final class ImportStudentResultsFromExcelUseCase
     }
 
     /**
-     * @return list<array{subject:string,score:string}>
+     * @return list<array{idx:int,subject:string,score:string}>
      */
-    private function decodeSubjects(?string $json): array
+    private function decodeRawScores(?string $json): array
     {
         if ($json === null || trim($json) === '') {
             return [];
@@ -230,16 +235,72 @@ final class ImportStudentResultsFromExcelUseCase
                 continue;
             }
             $out[] = [
+                'idx' => (int) ($row['idx'] ?? 0),
                 'subject' => trim((string) ($row['subject'] ?? '')),
                 'score' => trim((string) ($row['score'] ?? '')),
             ];
         }
+
         return $out;
+    }
+
+    /**
+     * بناء درجات المواد اعتماداً على مواد الاختصاص في النظام، مع أخذ الدرجات من أعمدة Excel (6-13) ترتيباً.
+     *
+     * @param  list<array{idx:int,subject:string,score:string}>  $rawScores
+     * @return list<array{subject:string,score:string}>
+     */
+    private function buildGradesForRow(string $branch, string $major, array $rawScores): array
+    {
+        $catalogSubjects = $this->subjectCatalog->getSubjectsFor($branch, $major);
+        if ($catalogSubjects === []) {
+            return [];
+        }
+        usort($rawScores, static fn ($a, $b) => ($a['idx'] <=> $b['idx']));
+        $grades = [];
+        foreach ($catalogSubjects as $i => $subjectName) {
+            $score = $this->normalizeNumericText((string) ($rawScores[$i]['score'] ?? ''));
+            $grades[] = [
+                'subject' => trim((string) $subjectName),
+                'score' => $score,
+            ];
+        }
+
+        return $grades;
+    }
+
+    /**
+     * تطبيع النصوص الرقمية القادمة من Excel (يدعم الأرقام العربية والفواصل العربية).
+     */
+    private function normalizeNumericText(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+        $value = strtr($value, [
+            '٠' => '0',
+            '١' => '1',
+            '٢' => '2',
+            '٣' => '3',
+            '٤' => '4',
+            '٥' => '5',
+            '٦' => '6',
+            '٧' => '7',
+            '٨' => '8',
+            '٩' => '9',
+            '٫' => '.',
+            '٬' => '',
+            ',' => '.',
+        ]);
+
+        return trim($value);
     }
 
     private function normalize(string $v): string
     {
         $v = trim(preg_replace('/\s+/u', ' ', $v));
+
         return str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $v);
     }
 }

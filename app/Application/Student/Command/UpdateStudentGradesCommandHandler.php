@@ -20,6 +20,9 @@ final class UpdateStudentGradesCommandHandler
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   birth_date?: string,
+     *   birth_place?: string,
+     *   mother_full_name?: string,
      *   gender?: string,
      *   branch?: string,
      *   major?: string,
@@ -34,13 +37,14 @@ final class UpdateStudentGradesCommandHandler
     public function handle(int $id, array $payload): bool
     {
         $normalized = $this->normalizePayload($payload);
+
         return $this->commandRepository->updateGrades($id, $normalized);
     }
 
     private function normalizePayload(array $payload): array
     {
         $out = [];
-        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'gender', 'branch', 'major', 'academic_year', 'result', 'total', 'average', 'round'];
+        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'birth_date', 'birth_place', 'mother_full_name', 'gender', 'branch', 'major', 'academic_year', 'result', 'total', 'average', 'round'];
         foreach ($basic as $key) {
             if (array_key_exists($key, $payload)) {
                 $out[$key] = trim((string) $payload[$key]);
@@ -50,7 +54,7 @@ final class UpdateStudentGradesCommandHandler
         if (is_array($grades)) {
             $out['grades'] = [];
             foreach ($grades as $i => $row) {
-                if (!is_array($row)) {
+                if (! is_array($row)) {
                     continue;
                 }
                 $out['grades'][$i] = [
@@ -59,6 +63,7 @@ final class UpdateStudentGradesCommandHandler
                 ];
             }
         }
+
         return $out;
     }
 }

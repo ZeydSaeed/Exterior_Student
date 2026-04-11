@@ -96,6 +96,8 @@
             const sid = document.getElementById('grades-student-id');
             if (sid) sid.value = data.id || '';
 
+            setText('grades-exam-number', data.exam_number);
+            setInputValue('grades-exam-number-input', data.exam_number);
             setText('grades-name-student', data.name_student != null ? data.name_student : (data.full_name || ''));
             setInputValue('grades-name-student-input', data.name_student != null ? data.name_student : (data.full_name || ''));
             setText('grades-name-father', data.name_father != null ? data.name_father : '');
@@ -104,8 +106,14 @@
             setInputValue('grades-name-grandfather-input', data.name_grandfather != null ? data.name_grandfather : '');
             setText('grades-name-surname', data.name_surname != null ? data.name_surname : '');
             setInputValue('grades-name-surname-input', data.name_surname != null ? data.name_surname : '');
-            setText('grades-exam-number', data.exam_number);
-            setInputValue('grades-exam-number-input', data.exam_number);
+            setText('grades-birth-date', data.birth_date != null ? data.birth_date : '');
+            setInputValue('grades-birth-date-input', data.birth_date != null ? data.birth_date : '');
+            setText('grades-birth-place', data.birth_place != null ? data.birth_place : '');
+            setInputValue('grades-birth-place-input', data.birth_place != null ? data.birth_place : '');
+            setText('grades-mother-full-name', data.mother_full_name != null ? data.mother_full_name : '');
+            setInputValue('grades-mother-full-name-input', data.mother_full_name != null ? data.mother_full_name : '');
+            setText('grades-gender', data.gender != null ? data.gender : '');
+            setInputValue('grades-gender-input', data.gender != null ? data.gender : '');
             setText('grades-branch', data.branch);
             setInputValue('grades-branch-input', data.branch);
             setText('grades-major', data.major);
@@ -166,6 +174,10 @@
                         name_father: '',
                         name_grandfather: '',
                         name_surname: '',
+                        birth_date: '',
+                        birth_place: '',
+                        mother_full_name: '',
+                        gender: btn ? (btn.getAttribute('data-gender') || '') : '',
                         branch: btn ? btn.getAttribute('data-branch') : '',
                         major: btn ? btn.getAttribute('data-major') : '',
                         academic_year: btn ? btn.getAttribute('data-year') : '',
@@ -227,6 +239,7 @@
             }
             btn.setAttribute('data-name', fullName);
             btn.setAttribute('data-exam-number', payload.exam_number != null ? String(payload.exam_number) : '');
+            btn.setAttribute('data-gender', payload.gender != null ? String(payload.gender) : '');
             btn.setAttribute('data-branch', payload.branch != null ? String(payload.branch) : '');
             btn.setAttribute('data-major', payload.major != null ? String(payload.major) : '');
             btn.setAttribute('data-year', payload.academic_year != null ? String(payload.academic_year) : '');
@@ -245,11 +258,15 @@
                 });
             });
             const payload = {
+                exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
                 name_student: (document.getElementById('grades-name-student-input') || {}).value || '',
                 name_father: (document.getElementById('grades-name-father-input') || {}).value || '',
                 name_grandfather: (document.getElementById('grades-name-grandfather-input') || {}).value || '',
                 name_surname: (document.getElementById('grades-name-surname-input') || {}).value || '',
-                exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
+                birth_date: (document.getElementById('grades-birth-date-input') || {}).value || '',
+                birth_place: (document.getElementById('grades-birth-place-input') || {}).value || '',
+                mother_full_name: (document.getElementById('grades-mother-full-name-input') || {}).value || '',
+                gender: (document.getElementById('grades-gender-input') || {}).value || '',
                 branch: (document.getElementById('grades-branch-input') || {}).value || '',
                 major: (document.getElementById('grades-major-input') || {}).value || '',
                 academic_year: (document.getElementById('grades-year-input') || {}).value || '',

@@ -28,6 +28,31 @@ interface StudentQueryRepository
      */
     public function listFailedIdsWithFilters(array $filters): array;
 
+    /**
+     * تقرير الطلبة المعيدين حسب الفلاتر.
+     *
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
+     * @return array{
+     *   groups:list<array{
+     *     branch:string,
+     *     major:string,
+     *     students:list<array{
+     *       id:int,
+     *       exam_number:string,
+     *       full_name:string,
+     *       subjects:list<array{subject:string, score:string}>,
+     *       total:string,
+     *       average:string,
+     *       result:string
+     *     }>,
+     *     count:int
+     *   }>,
+     *   stats:array{total_repeaters:int},
+     *   filters:array{academicYears:\Illuminate\Support\Collection, branches:\Illuminate\Support\Collection, majors:\Illuminate\Support\Collection, genders:\Illuminate\Support\Collection}
+     * }
+     */
+    public function listRepeatersReport(array $filters): array;
+
     /** بيانات درجات طالب واحد (للمودال) — يُرجع null إن لم يُوجَد */
     public function getGradesById(int $id): ?StudentGradesView;
 

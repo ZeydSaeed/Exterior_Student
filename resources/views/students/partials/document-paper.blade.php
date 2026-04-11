@@ -16,7 +16,7 @@
     </div>
 
     <div class="doc-row">
-        <span class="doc-label">رقم الصفحة</span>
+        <span class="doc-label ">رقم الصفحة</span>
         <span class="doc-value doc-value-page-number">&nbsp;</span>
     </div>
     <div class="doc-row">
@@ -31,7 +31,7 @@
         <span class="doc-label doc-w-17">التولد</span>
         <span class="doc-value doc-w-18">{{ $ad($dto->birthDate) }}</span>
         <span class="doc-label">محل الولادة</span>
-        <span class="doc-value">{{ $ad($dto->birthPlace) }}</span>
+        <span class="doc-value doc-value-birth-place">{{ $ad($dto->birthPlace) }}</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">اسم الام الكامل</span>
@@ -39,9 +39,9 @@
     </div>
     <div class="doc-row doc-row-two">
         <span class="doc-label doc-w-11">الفرع</span>
-        <span class="doc-value doc-w-13">{{ $ad($dto->branch) }}</span>
+        <span class="doc-value doc-value-branch">{{ $ad($dto->branch) }}</span>
         <span class="doc-label doc-w-16">الاختصاص</span>
-        <span class="doc-value">{{ $ad($dto->specialization) }}</span>
+        <span class="doc-value doc-value-specialization">{{ $ad($dto->specialization) }}</span>
     </div>
     <div class="doc-row doc-row-wide">
         <span class="doc-label">آخر مدرسة كان فيها الطالب</span>
@@ -51,7 +51,7 @@
         <span class="doc-label doc-w-11">رقم وثيقة المتوسطة</span>
         <span class="doc-value doc-w-13">{{ $ad($dto->middleDocNumber) }}</span>
         <span class="doc-label doc-w-14">تاريخها</span>
-        <span class="doc-value">{{ $ad($dto->middleDocDate) }}</span>
+        <span class="doc-value doc-value-middle-doc-date">{{ $ad($dto->middleDocDate) }}</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">جهة الإصدار</span>
@@ -59,9 +59,9 @@
     </div>
     <div class="doc-row doc-row-three">
         <span class="doc-label doc-w-11">العام الدراسي</span>
-        <span class="doc-value">{{ $ad($dto->academicYear) }}</span>
+        <span class="doc-value doc-value-academic-year">{{ $ad($dto->academicYear) }}</span>
         <span class="doc-label">الدور</span>
-        <span class="doc-value">{{ $ad($dto->round) }}</span>
+        <span class="doc-value doc-value-round">{{ $ad($dto->round) }}</span>
         <span class="doc-label">النتيجة</span>
         <span class="doc-value">{{ $ad($dto->result) }}</span>
     </div>
@@ -107,29 +107,25 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($dto->documents as $rec)
+            @for ($docRow = 0; $docRow < 5; $docRow++)
                 <tr>
-                    <td>{{ $ad($rec->documentNumber) }}</td>
-                    <td>{{ $ad($rec->documentDate) }}</td>
-                    <td>{{ $ad($rec->addressee) }}</td>
-                    <td>{{ $ad($rec->purpose) }}</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="4">لا توجد وثائق لهذا الطالب حالياً.</td>
-                </tr>
-            @endforelse
+            @endfor
         </tbody>
     </table>
 
     <div class="doc-signatures">
         <div class="doc-sig-cell">
-            <div class="doc-sig-title">{{ $emp0['type'] }}</div>
-            <div class="doc-sig-name">{{ $emp0['name'] }}</div>
+            <div class="doc-sig-title">المنظم</div>
+            <!-- <div class="doc-sig-name">{{ $emp0['name'] }}</div> -->
         </div>
         <div class="doc-sig-cell">
-            <div class="doc-sig-title">{{ $emp1['type'] }}</div>
-            <div class="doc-sig-name">{{ $emp1['name'] }}</div>
+            <div class="doc-sig-title">مدير القسم المهني</div>
+            <!-- <div class="doc-sig-name">{{ $emp1['name'] }}</div> -->
         </div>
     </div>
 </div>

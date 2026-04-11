@@ -24,12 +24,13 @@ final class MySQLStudentReadRepository implements StudentReadRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->where('s.id', $id)
-                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round')
+                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.average')
                 ->first();
             if (! $row) {
                 return null;
             }
             $birthDate = $row->birth_date ? (is_string($row->birth_date) ? $row->birth_date : $row->birth_date->format('Y-m-d')) : '';
+
             return new StudentCertificate(
                 firstName: trim((string) ($row->first_name ?? '')),
                 fatherName: trim((string) ($row->father_name ?? '')),
@@ -42,6 +43,7 @@ final class MySQLStudentReadRepository implements StudentReadRepository
                 academicYear: trim((string) ($row->academic_year ?? '')),
                 result: trim((string) ($row->result ?? '')),
                 round: trim((string) ($row->round ?? '')),
+                average: $this->averageAsDisplayString($row->average ?? null),
                 gender: trim((string) ($row->gender ?? '')),
             );
         }
@@ -50,6 +52,7 @@ final class MySQLStudentReadRepository implements StudentReadRepository
             return null;
         }
         $birthDate = isset($row->{'التولد'}) ? trim((string) $row->{'التولد'}) : '';
+
         return new StudentCertificate(
             firstName: trim((string) ($row->{'اسم الطالب'} ?? '')),
             fatherName: trim((string) ($row->{'اسم الاب'} ?? '')),
@@ -62,7 +65,17 @@ final class MySQLStudentReadRepository implements StudentReadRepository
             academicYear: trim((string) ($row->{'العام الدراسي'} ?? '')),
             result: trim((string) ($row->{'النتيجة'} ?? '')),
             round: trim((string) ($row->{'الدور'} ?? '')),
+            average: $this->averageAsDisplayString($row->{'المعدل'} ?? $row->{'معدل'} ?? null),
             gender: trim((string) ($row->{'الجنس'} ?? '')),
         );
+    }
+
+    private function averageAsDisplayString(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return trim((string) $value);
     }
 }
