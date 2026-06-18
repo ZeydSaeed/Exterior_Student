@@ -23,5 +23,7 @@ final readonly class StudentDocumentInfo
         public string $result,
         public string $round,
         public string $gender,
+        public string $pageNumber,
+        public string $enrollmentNumber,
     ) {}
 }

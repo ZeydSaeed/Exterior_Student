@@ -5,12 +5,14 @@ namespace App\Support;
 use Illuminate\Http\Request;
 
 /**
- * يحافظ على فلاتر قائمة الطلاب (فرع، اختصاص، جنس، عام) في الجلسة
+ * يحافظ على فلاتر قائمة الطلاب (فرع، اختصاص، جنس، عام، دور) ورقم الصفحة في الجلسة
  * حتى يبقى الاختيار ثابتاً عند التنقل وإعادة فتح الصفحات.
  */
 final class StudentListFiltersSession
 {
     public const SESSION_KEY = 'students_list_filters';
+
+    private const PAGE_KEY = 'page';
 
     /** @var list<string> */
     private const FILTER_KEYS = ['branch', 'major', 'gender', 'year', 'round'];
@@ -40,6 +42,15 @@ final class StudentListFiltersSession
             $merged['search'] = (string) $stored['search'];
         }
 
+        if ($request->query->has(self::PAGE_KEY)) {
+            $page = max(1, (int) $request->query->get(self::PAGE_KEY));
+            if ($page > 1) {
+                $merged[self::PAGE_KEY] = (string) $page;
+            }
+        } elseif (! self::filterOrSearchSubmitted($request) && ! empty($stored[self::PAGE_KEY])) {
+            $merged[self::PAGE_KEY] = (string) $stored[self::PAGE_KEY];
+        }
+
         return $merged;
     }
 
@@ -66,6 +77,13 @@ final class StudentListFiltersSession
             return true;
         }
 
+        if (isset($merged[self::PAGE_KEY]) && (int) $merged[self::PAGE_KEY] > 1) {
+            $currentPage = $request->query->get(self::PAGE_KEY);
+            if ($currentPage === null || (string) $currentPage !== (string) $merged[self::PAGE_KEY]) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -90,6 +108,17 @@ final class StudentListFiltersSession
             unset($stored['search']);
         } elseif (isset($filters['search']) && $filters['search'] !== '' && $filters['search'] !== null) {
             $stored['search'] = (string) $filters['search'];
+        }
+
+        if ($request->query->has(self::PAGE_KEY)) {
+            $page = max(1, (int) $request->query->get(self::PAGE_KEY));
+            if ($page > 1) {
+                $stored[self::PAGE_KEY] = (string) $page;
+            } else {
+                unset($stored[self::PAGE_KEY]);
+            }
+        } elseif (self::filterOrSearchSubmitted($request)) {
+            unset($stored[self::PAGE_KEY]);
         }
 
         $request->session()->put(self::SESSION_KEY, $stored);
@@ -127,7 +156,52 @@ final class StudentListFiltersSession
     public static function queryFromSession(Request $request): array
     {
         $stored = $request->session()->get(self::SESSION_KEY, []);
+        $query = array_filter($stored, static fn ($v) => $v !== '' && $v !== null);
 
-        return array_filter($stored, static fn ($v) => $v !== '' && $v !== null);
+        if (isset($query[self::PAGE_KEY]) && (int) $query[self::PAGE_KEY] <= 1) {
+            unset($query[self::PAGE_KEY]);
+        }
+
+        return $query;
+    }
+
+    /**
+     * رابط قائمة الطلاب مع الفلاتر ورقم الصفحة المحفوظين.
+     *
+     * @param  array<string, string>|null  $merged
+     */
+    public static function indexUrl(Request $request, ?array $merged = null): string
+    {
+        $params = $merged !== null
+            ? self::queryParamsFromMerged($merged)
+            : self::queryFromSession($request);
+
+        return route('students.index', $params);
+    }
+
+    /**
+     * @param  array<string, string>  $merged
+     * @return array<string, string>
+     */
+    private static function queryParamsFromMerged(array $merged): array
+    {
+        $params = array_filter($merged, static fn ($v) => $v !== '' && $v !== null);
+
+        if (isset($params[self::PAGE_KEY]) && (int) $params[self::PAGE_KEY] <= 1) {
+            unset($params[self::PAGE_KEY]);
+        }
+
+        return $params;
+    }
+
+    private static function filterOrSearchSubmitted(Request $request): bool
+    {
+        foreach (self::FILTER_KEYS as $key) {
+            if ($request->query->has($key)) {
+                return true;
+            }
+        }
+
+        return $request->query->has('search');
     }
 }

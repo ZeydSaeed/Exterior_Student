@@ -30,6 +30,7 @@
                 @php $attestWithoutCount = (int)($student->attest_without_count ?? 0); @endphp
                 @php $attestWithCount = (int)($student->attest_with_count ?? 0); @endphp
                 @php $docsCount = (int)($student->docs_count ?? 0); @endphp
+                @php $enrollmentNumber = trim((string)($student->enrollment_number ?? '')); @endphp
                 @php $profileTotalCount = (int)($student->profile_total_count ?? ($attestWithoutCount + $attestWithCount + $docsCount)); @endphp
                 <tr class="students-data-row" data-exam="{{ e($examNum) }}" data-name="{{ e($student->full_name ?? '') }}">
                     <td>{{ $loop->iteration + ($students->currentPage() - 1) * $students->perPage() }}</td>
@@ -69,6 +70,9 @@
                            class="btn-primary btn-enroll"
                            title="قيد الطالب">
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">قيد</span>
+                            @if($enrollmentNumber !== '')
+                                <span class="students-action-badge students-action-badge-enroll" aria-label="رقم القيد">{{ $enrollmentNumber }}</span>
+                            @endif
                         </a>
                     </td>
                     <td>

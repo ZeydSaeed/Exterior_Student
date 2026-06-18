@@ -39,6 +39,8 @@ final class StudentCertificateController
             return response()->json($dto->toArray());
         }
 
+        $request->session()->forget(['app_dialog', 'flash_error', 'error', 'warning']);
+
         return view('students.certificate', ['dto' => $dto, 'studentId' => $id]);
     }
 

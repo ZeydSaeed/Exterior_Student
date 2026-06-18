@@ -51,4 +51,9 @@ interface StudentCommandRepository
      * @return int عدد السجلات المحذوفة
      */
     public function deleteStudentsByIds(array $ids): int;
+
+    /**
+     * تحديث رقم الصفحة ورقم القيد لسجل قيد الطالب.
+     */
+    public function updateEnrollmentRecord(int $studentId, ?string $pageNumber, ?string $enrollmentNumber): void;
 }

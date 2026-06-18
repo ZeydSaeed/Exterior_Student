@@ -150,6 +150,11 @@
         </main>
     </div>
 
+    @unless(request()->routeIs('students.certificate'))
+        @include('partials.app-error-dialog')
+        <script src="{{ url('js/app-error-dialog.js') }}?v={{ file_exists(public_path('js/app-error-dialog.js')) ? filemtime(public_path('js/app-error-dialog.js')) : time() }}"></script>
+    @endunless
+
     @yield('scripts')
     <script>
         (function () {

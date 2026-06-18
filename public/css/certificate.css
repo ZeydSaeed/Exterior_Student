@@ -40,7 +40,7 @@
     width: 100%;
     max-width:200%;
     min-height: 10px;
-    max-height: 84vh;
+    max-height: 75vh;
     padding: 1cm;
     padding-top: calc(1cm + 10px);
     box-sizing: border-box;
@@ -325,7 +325,7 @@
     white-space: nowrap;
 }
 
-.modal-backdrop {
+#certificate-modal.modal-backdrop {
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -336,7 +336,7 @@
     padding: 30px 0;
 }
 
-.modal-backdrop .modal {
+#certificate-modal.modal-backdrop .modal {
     background: #fff;
     width: 21cm;
     max-width: 100%;
@@ -396,7 +396,7 @@
     border-radius: 6px 6px 0 0;
 }
 
-.page-certificate .modal-backdrop {
+.page-certificate #certificate-modal.modal-backdrop {
     align-items: flex-start;
     padding-top: 0.75rem;
     z-index: 200;
@@ -456,7 +456,7 @@
         line-height: 140px;
     }
 
-    .modal-backdrop,
+    #certificate-modal.modal-backdrop,
     .certificate-modal {
         background: #fff !important;
         box-shadow: none;

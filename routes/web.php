@@ -74,6 +74,8 @@ Route::get('/students/{id}/certificate-with-grades', [StudentCertificateControll
 
 Route::get('/students/{id}/document', [StudentRecordPrintController::class, 'show'])
     ->name('students.document');
+Route::put('/students/{id}/document', [StudentRecordPrintController::class, 'update'])
+    ->name('students.document.update');
 
 Route::get('/students/{id}/documents', [StudentRecordsController::class, 'index'])
     ->name('students.documents.index');

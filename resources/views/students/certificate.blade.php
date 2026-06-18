@@ -26,7 +26,7 @@
                     <div class="support-paper print-area" contenteditable="true">
                         <div class="form-actions no-print" contenteditable="false">
                             <button type="button" class="btn-primary btn-print" id="certificate-btn-print">طباعة</button>
-                            <a href="{{ route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
+                            <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
                         </div>
                         <form id="certificate-save-form" method="POST" action="{{ route('students.profile.attestations.store', $studentId) }}" style="display: none;">
                             @csrf

@@ -15,9 +15,38 @@
         <div class="doc-photo">صورة</div>
     </div>
 
-    <div class="doc-row">
-        <span class="doc-label ">رقم الصفحة</span>
-        <span class="doc-value doc-value-page-number">&nbsp;</span>
+    <div class="doc-row doc-row-page-meta">
+        @php
+            $editable = $editable ?? true;
+            $pageNumber = $dto->pageNumber ?? '';
+            $enrollmentNumber = $dto->enrollmentNumber ?? '';
+        @endphp
+        @if($editable)
+            <span class="doc-label doc-enrollment-meta no-print">رقم القيد</span>
+            <span class="doc-value doc-value-enrollment-number doc-enrollment-meta no-print">
+                <input type="text"
+                       name="enrollment_number"
+                       class="doc-field-input"
+                       value="{{ $enrollmentNumber }}"
+                       placeholder=""
+                       autocomplete="off"
+                       data-enrollment-input />
+            </span>
+        @endif
+        <span class="doc-label">رقم الصفحة</span>
+        <span class="doc-value doc-value-page-number">
+            @if($editable)
+                <input type="text"
+                       name="page_number"
+                       class="doc-field-input"
+                       value="{{ $pageNumber }}"
+                       placeholder=""
+                       autocomplete="off"
+                       data-page-input />
+            @else
+                {!! $ad($pageNumber) !== '' ? e($ad($pageNumber)) : '&nbsp;' !!}
+            @endif
+        </span>
     </div>
     <div class="doc-row">
         <span class="doc-label">الرقم الامتحاني</span>

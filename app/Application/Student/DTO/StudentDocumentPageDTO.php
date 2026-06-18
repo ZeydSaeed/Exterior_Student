@@ -32,6 +32,8 @@ final class StudentDocumentPageDTO
         public string $result,
         public string $round,
         public string $gender,
+        public string $pageNumber,
+        public string $enrollmentNumber,
         public array $gradesTable,
         public string $total,
         public string $totalWords,

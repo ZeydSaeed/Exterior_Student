@@ -59,6 +59,20 @@ interface StudentQueryRepository
     /** جلب كيان طالب واحد (لاستخدام قواعد الدومين مثل الحذف) */
     public function getStudentById(int $id): ?Student;
 
+    /**
+     * معرف الطالب التالي في قائمة الطلاب المفلترة بنفس ترتيب الجدول.
+     * يعيد null إن لم يوجد طالب لاحق أو الطالب الحالي غير موجود في القائمة.
+     *
+     * @param  array{branch?: string|null, major?: string|null, gender?: string|null, year?: string|null, round?: string|null, search?: string|null}  $filters
+     */
+    public function findNextStudentIdInList(int $currentStudentId, array $filters): ?int;
+
+    /**
+     * معرف الطالب التالي حسب ترتيب الرقم الامتحاني تصاعدياً (بدون فلاتر القائمة).
+     * يعيد null إن لم يوجد طالب لاحق.
+     */
+    public function findNextStudentIdByExamNumber(string $examNumber): ?int;
+
     /** هل يوجد طالب بالرقم الامتحاني (لاستخدامه في التحقق من التكرار عند الاستيراد) */
     public function existsExamNumber(string $examNumber): bool;
 

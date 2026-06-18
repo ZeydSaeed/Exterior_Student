@@ -382,7 +382,20 @@ body.page-students .dashboard-main {
 .students-table a.btn-primary { text-decoration: none; display: inline-block; }
 .btn-confirm-with-grades { background: #c63240; color: #fff; }
 .btn-confirm-with-grades .btn-label { margin-inline-start: 0.25rem; }
-.btn-enroll { background: #200f1b; color: #f1a257; }
+.btn-enroll {
+    background: #200f1b;
+    color: #f1a257;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+.btn-enroll .btn-label { margin-inline-start: 0; }
+
+.btn-enroll:hover .students-action-badge-enroll {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
 .btn-docs { background: #bfb487; color: #200f1b; }
 .btn-docs .btn-label { margin-inline-start: 0.25rem; }
 .btn-profile { background: #200f1b; color: #f1a257; }
@@ -416,6 +429,55 @@ body.page-students .dashboard-main {
 .grades-edit-hidden { display: none; }
 .grades-modal .grades-edit.grades-edit-visible { display: block; }
 .grades-modal .grades-readonly.grades-readonly-hidden { display: none; }
+
+.app-error-dialog-panel {
+    max-width: 32rem;
+    width: calc(100% - 2rem);
+}
+.app-error-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.app-error-dialog-header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+.app-error-dialog--error .app-error-dialog-header h2 {
+    color: #b91c1c;
+}
+.app-error-dialog--warning .app-error-dialog-header h2 {
+    color: #b45309;
+}
+.app-error-dialog--info .app-error-dialog-header h2 {
+    color: #1d4ed8;
+}
+.app-error-dialog--error .app-error-dialog-panel {
+    border-top: 4px solid #b91c1c;
+}
+.app-error-dialog--warning .app-error-dialog-panel {
+    border-top: 4px solid #d97706;
+}
+.app-error-dialog--info .app-error-dialog-panel {
+    border-top: 4px solid #2563eb;
+}
+.app-error-dialog-text {
+    margin: 0 0 1rem 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    color: #1f2937;
+}
+.app-error-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+.app-error-page-placeholder {
+    min-height: 4rem;
+}
 
 .flash-overlay {
     position: fixed;
@@ -1396,10 +1458,24 @@ body.grades-modal-open {
     padding: 0.75rem 0;
     border-bottom: 1px solid rgba(74, 84, 94, 0.2);
     text-align: start;
-    padding-inline-start: 0;
+    padding-inline: 0;
+    width: 100%;
 }
 
-.documents-student-info p { margin: 0.25rem 0; }
+.documents-student-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 2rem;
+    align-items: baseline;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.documents-student-info-row .documents-student-line {
+    flex: 0 1 auto;
+    margin: 0.25rem 0;
+    text-align: start;
+}
 .document-add-fields {
     display: flex;
     flex-wrap: wrap;
@@ -1416,21 +1492,28 @@ body.grades-modal-open {
 .document-add-fields input[type="date"] { min-width: 10rem; }
 .documents-back-link { margin-top: 1rem; }
 
-/* زر إغلاق صفحة الوثائق — الركن العلوي الأيسر داخل المحتوى (ليس بالتول بار) */
+/* أزرار إغلاق/التالي — الركن العلوي الأيسر داخل المحتوى */
 .page-student-documents .documents-page-wrap {
     position: relative;
     min-height: 2rem;
 }
-.page-student-documents .documents-close-btn {
+.page-student-documents .documents-page-actions {
     position: absolute;
     top: 0;
     left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    z-index: 2;
+}
+.page-student-documents .documents-page-actions .btn-primary {
     margin: 0;
     text-decoration: none;
     font-weight: bold;
 }
 .page-student-documents .documents-page-wrap .employees-page-header {
-    padding-inline-start: 5rem;
+    padding-inline-start: 9rem;
 }
 
 /* ========== Responsive ========== */

@@ -25,7 +25,7 @@ class StudentController extends Controller
         if (StudentListFiltersSession::shouldRedirectToNormalize($request, $merged)) {
             StudentListFiltersSession::persist($request, $merged);
 
-            return redirect()->route('students.index', array_filter($merged, static fn ($v) => $v !== '' && $v !== null));
+            return redirect()->to(StudentListFiltersSession::indexUrl($request, $merged));
         }
 
         $normalized = StudentListFiltersSession::normalizeForQuery($merged);
@@ -93,20 +93,22 @@ class StudentController extends Controller
 
     public function destroy(int $id, DeleteStudentCommandHandler $handler)
     {
+        $request = request();
+
         try {
             $ok = $handler->handle($id);
             if (! $ok) {
                 return redirect()
-                    ->route('students.index')
+                    ->to(StudentListFiltersSession::indexUrl($request))
                     ->with('error', 'لم يتم العثور على الطالب أو تعذر حذفه.');
             }
 
             return redirect()
-                ->route('students.index')
+                ->to(StudentListFiltersSession::indexUrl($request))
                 ->with('status', 'تم حذف الطالب بنجاح.');
         } catch (\DomainException $e) {
             return redirect()
-                ->route('students.index')
+                ->to(StudentListFiltersSession::indexUrl($request))
                 ->with('error', $e->getMessage());
         }
     }

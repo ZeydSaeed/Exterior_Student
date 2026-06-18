@@ -6,7 +6,12 @@
 
 @section('content')
     <div class="documents-page-wrap">
-        <a href="{{ route('students.index') }}" class="btn-primary documents-close-btn" title="إغلاق">إغلاق</a>
+        <div class="documents-page-actions">
+            @if($dto->nextStudentId)
+                <a href="{{ route('students.documents.index', ['id' => $dto->nextStudentId]) }}" class="btn-primary documents-next-btn" title="الطالب التالي حسب ترتيب جدول الطلاب">التالي</a>
+            @endif
+            <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary documents-close-btn" title="إغلاق">إغلاق</a>
+        </div>
 
     <div class="employees-page-header documents-page-header">
         <h1>وثائق الطالب</h1>
@@ -19,8 +24,21 @@
     <div class="students-layout">
         <section class="students-table-area" aria-label="وثائق الطالب">
             <div class="documents-student-info">
-                <p class="documents-student-line" style="text-align: start;"><strong>الرقم الامتحاني:</strong> {{ $dto->examNumber ?? '—' }}</p>
-                <p class="documents-student-line" style="text-align: start;"><strong>اسم الطالب:</strong> {{ $dto->studentName ?? '—' }}</p>
+                <div class="documents-student-info-row">
+                    <p class="documents-student-line"><strong>الرقم الامتحاني:</strong> {{ $dto->examNumber ?: '—' }}</p>
+                </div>
+                <div class="documents-student-info-row">
+                    <p class="documents-student-line"><strong>اسم الطالب:</strong> {{ $dto->studentName ?: '—' }}</p>
+                </div>
+                <div class="documents-student-info-row">
+                    <p class="documents-student-line"><strong>الفرع:</strong> {{ $dto->branch ?: '—' }}</p>
+                    <p class="documents-student-line"><strong>الاختصاص:</strong> {{ $dto->major ?: '—' }}</p>
+                </div>
+                <div class="documents-student-info-row">
+                    <p class="documents-student-line"><strong>العام الدراسي:</strong> {{ $dto->academicYear ?: '—' }}</p>
+                    <p class="documents-student-line"><strong>الدور:</strong> {{ $dto->round ?: '—' }}</p>
+                    <p class="documents-student-line"><strong>الجنس:</strong> {{ $dto->gender ?: '—' }}</p>
+                </div>
             </div>
 
             <div class="employees-card employees-card-documents">

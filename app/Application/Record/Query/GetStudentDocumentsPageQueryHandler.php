@@ -17,7 +17,7 @@ final class GetStudentDocumentsPageQueryHandler
         private RecordQueryRepository $recordRepository
     ) {}
 
-    public function handle(int $studentId): ?StudentDocumentsPageDTO
+    public function handle(int $studentId, array $filters = []): ?StudentDocumentsPageDTO
     {
         $student = $this->studentRepository->getStudentById($studentId);
         if ($student === null) {
@@ -36,10 +36,18 @@ final class GetStudentDocumentsPageQueryHandler
             $records
         );
 
+        $nextStudentId = $this->studentRepository->findNextStudentIdInList($studentId, $filters);
+
         return new StudentDocumentsPageDTO(
             studentId: $student->id,
             examNumber: $student->exam_number,
             studentName: $student->full_name,
+            branch: $student->branch,
+            major: $student->major,
+            academicYear: $student->academic_year,
+            round: $student->round,
+            gender: $student->gender,
+            nextStudentId: $nextStudentId,
             records: $recordDTOs,
         );
     }

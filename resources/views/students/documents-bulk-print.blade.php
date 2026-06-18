@@ -111,7 +111,7 @@
     {{-- شريط ثابت أعلى يسار: إغلاق الصفحة + طباعة + إغلاق (رجوع) --}}
     <div class="documents-bulk-top-bar no-print" aria-label="إجراءات القيود">
         <button type="button" class="btn-primary" id="documents-bulk-btn-print">طباعة</button>
-        <a href="{{ route('students.index') }}" class="btn-primary" title="إغلاق الصفحة والرجوع">إغلاق</a>
+        <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary" title="إغلاق الصفحة والرجوع">إغلاق</a>
     </div>
 
     <div class="employees-page-wrap">
@@ -129,7 +129,7 @@
                     <div class="student-document-layout">
                         @forelse($dtos as $dto)
                             <div class="doc-bulk-page-break">
-                                @include('students.partials.document-paper', ['dto' => $dto])
+                                @include('students.partials.document-paper', ['dto' => $dto, 'editable' => false])
                             </div>
                         @empty
                             <p class="employees-success" style="text-align:center;">لا يوجد طلاب مطابقون للفلاتر المحددة.</p>

@@ -98,6 +98,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 $docsExpr = '0';
             }
         }
+        $enrollmentExpr = Schema::hasColumn('main_table', 'رقم القيد')
+            ? "TRIM(COALESCE(`رقم القيد`, ''))"
+            : "''";
 
         $query = DB::table('main_table')
             ->selectRaw("
@@ -112,7 +115,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 {$withoutExpr} AS attest_without_count,
                 {$withExpr} AS attest_with_count,
                 {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count,
+                {$enrollmentExpr} AS enrollment_number
             ");
 
         $this->applyListFilters($query, $filters);
@@ -176,7 +180,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 {$withoutExpr} AS attest_without_count,
                 {$withExpr} AS attest_with_count,
                 {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count,
+                TRIM(COALESCE(a.enrollment_number, '')) AS enrollment_number
             ");
 
         $this->applyListFiltersNormalized($query, $filters);
@@ -500,11 +505,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->where('s.id', $id)
-                ->selectRaw("s.id, s.exam_number, CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) AS full_name, y.year_label AS academic_year, rt.name_ar AS result, b.name_ar AS branch, m.name_ar AS major, p.gender")
+                ->selectRaw("s.id, s.exam_number, CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) AS full_name, y.year_label AS academic_year, rt.name_ar AS result, b.name_ar AS branch, m.name_ar AS major, p.gender, a.round")
                 ->first();
         } else {
             $row = DB::table('main_table')
-                ->selectRaw("id, `الرقم الامتحاني` AS exam_number, CONCAT_WS(' ', `اسم الطالب`, `اسم الاب`, `اسم الجد`, `اللقب`) AS full_name, `العام الدراسي` AS academic_year, `النتيجة` AS result, TRIM(`الفرع`) AS branch, TRIM(`الاختصاص`) AS major, TRIM(`الجنس`) AS gender")
+                ->selectRaw("id, `الرقم الامتحاني` AS exam_number, CONCAT_WS(' ', `اسم الطالب`, `اسم الاب`, `اسم الجد`, `اللقب`) AS full_name, `العام الدراسي` AS academic_year, `النتيجة` AS result, TRIM(`الفرع`) AS branch, TRIM(`الاختصاص`) AS major, TRIM(`الجنس`) AS gender, TRIM(`الدور`) AS round")
                 ->where('id', $id)->first();
         }
         if (! $row) {
@@ -512,6 +517,55 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         return Student::fromObject($row);
+    }
+
+    public function findNextStudentIdByExamNumber(string $examNumber): ?int
+    {
+        $examNumber = trim($examNumber);
+        if ($examNumber === '') {
+            return null;
+        }
+
+        if ($this->useNormalizedSchema()) {
+            $row = DB::table('students as s')
+                ->where(function ($query) use ($examNumber): void {
+                    $query->whereRaw('CAST(s.exam_number AS UNSIGNED) > CAST(? AS UNSIGNED)', [$examNumber])
+                        ->orWhere(function ($inner) use ($examNumber): void {
+                            $inner->whereRaw('CAST(s.exam_number AS UNSIGNED) = CAST(? AS UNSIGNED)', [$examNumber])
+                                ->where('s.exam_number', '>', $examNumber);
+                        });
+                })
+                ->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')
+                ->orderBy('s.exam_number', 'asc')
+                ->select('s.id')
+                ->first();
+        } else {
+            $row = DB::table('main_table')
+                ->where(function ($query) use ($examNumber): void {
+                    $query->whereRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) > CAST(? AS UNSIGNED)', [$examNumber])
+                        ->orWhere(function ($inner) use ($examNumber): void {
+                            $inner->whereRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) = CAST(? AS UNSIGNED)', [$examNumber])
+                                ->whereRaw('`الرقم الامتحاني` > ?', [$examNumber]);
+                        });
+                })
+                ->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')
+                ->orderBy('الرقم الامتحاني', 'asc')
+                ->select('id')
+                ->first();
+        }
+
+        return $row ? (int) $row->id : null;
+    }
+
+    public function findNextStudentIdInList(int $currentStudentId, array $filters): ?int
+    {
+        $ids = $this->listIdsWithFilters($filters);
+        $index = array_search($currentStudentId, $ids, true);
+        if ($index === false) {
+            return null;
+        }
+
+        return $ids[$index + 1] ?? null;
     }
 
     public function existsExamNumber(string $examNumber): bool
@@ -760,7 +814,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->where('s.id', $id)
-                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority')
+                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority, a.page_number, a.enrollment_number')
                 ->first();
             if (! $row) {
                 return null;
@@ -784,6 +838,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 result: $trim($row->result ?? ''),
                 round: $trim($row->round ?? ''),
                 gender: $trim($row->gender ?? ''),
+                pageNumber: $trim($row->page_number ?? ''),
+                enrollmentNumber: $trim($row->enrollment_number ?? ''),
             );
         }
         $row = DB::table('main_table')->where('id', $id)->first();
@@ -809,6 +865,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             result: $trim($row->{'النتيجة'} ?? ''),
             round: $trim($row->{'الدور'} ?? ''),
             gender: $trim($row->{'الجنس'} ?? ''),
+            pageNumber: $trim($row->{'رقم الصفحة'} ?? ''),
+            enrollmentNumber: $trim($row->{'رقم القيد'} ?? ''),
         );
     }
 

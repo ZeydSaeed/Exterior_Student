@@ -89,7 +89,7 @@
     font-weight: 700;
     font-size: 0.9rem;
     margin-top: -0.9rem;
-    margin-bottom: 0.9rem;
+    margin-bottom: 2rem;
 }
 
 /* ========== صفوف البيانات ========== */
@@ -173,6 +173,35 @@
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
+}
+
+/* رقم الصفحة ورقم القيد */
+.doc-row-page-meta {
+    flex-wrap: nowrap;
+}
+
+.doc-value.doc-value-enrollment-number {
+    width: 5.5rem;
+    min-width: 5.5rem;
+    flex: 0 0 5.5rem;
+    min-height: 1.28rem;
+}
+
+.doc-field-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.doc-field-input:focus {
+    outline: 1px dotted #64748b;
+    outline-offset: 1px;
 }
 
 /* رقم الصفحة: مربع ضيق ثابت */
@@ -497,6 +526,7 @@
     }
 
     .no-print,
+    .doc-enrollment-meta,
     .student-document-actions,
     .dashboard-toolbar,
     .dashboard-sidebar {

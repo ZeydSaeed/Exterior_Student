@@ -8,7 +8,9 @@ use App\Application\Record\Command\UpdateRecordCommandHandler;
 use App\Application\Record\Query\GetStudentDocumentsPageQueryHandler;
 use App\Http\Requests\StoreRecordRequest;
 use App\Http\Requests\UpdateRecordRequest;
+use App\Support\StudentListFiltersSession;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -23,9 +25,11 @@ final class StudentRecordsController
         private DeleteRecordCommandHandler $deleteCommandHandler
     ) {}
 
-    public function index(int $id): View|RedirectResponse
+    public function index(int $id, Request $request): View|RedirectResponse
     {
-        $dto = $this->queryHandler->handle($id);
+        $merged = StudentListFiltersSession::mergeRequestWithSession($request);
+        $filters = StudentListFiltersSession::normalizeForQuery($merged);
+        $dto = $this->queryHandler->handle($id, $filters);
 
         if ($dto === null) {
             abort(404, 'لم يتم العثور على الطالب.');

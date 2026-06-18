@@ -14,7 +14,7 @@
 <body class="page-student-document">
     <div class="doc-bulk-print-actions no-print">
         <button type="button" class="btn-primary" onclick="window.print()">طباعة</button>
-        <a href="{{ route('students.index') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn-primary btn-close">إغلاق</a>
+        <a href="{{ \App\Support\StudentListFiltersSession::indexUrl(request()) }}" class="btn-primary btn-close">إغلاق</a>
     </div>
     @yield('content')
     <script>

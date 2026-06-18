@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="employees-page-wrap">
-        <a href="{{ route('students.index') }}" class="btn-primary employees-close-btn" title="إغلاق">إغلاق</a>
+        <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary employees-close-btn" title="إغلاق">إغلاق</a>
 
     <div class="employees-page-header">
         <h1>السجل الشخصي للطالب</h1>

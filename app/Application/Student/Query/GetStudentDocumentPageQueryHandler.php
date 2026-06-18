@@ -94,6 +94,8 @@ final class GetStudentDocumentPageQueryHandler
             result: $info->result,
             round: $info->round,
             gender: $info->gender,
+            pageNumber: $info->pageNumber,
+            enrollmentNumber: $info->enrollmentNumber,
             gradesTable: $gradesTable,
             total: $totalStr,
             totalWords: $totalWords,

@@ -97,7 +97,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.dashboard', function ($view) {
             $query = StudentListFiltersSession::queryFromSession(request());
-            $view->with('students_index_url', route('students.index', $query));
+            $view->with('students_index_url', StudentListFiltersSession::indexUrl(request()));
             $view->with('students_bulk_print_url', route('students.documents.bulk-print', $query));
         });
 

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Student\Command\UpdateStudentEnrollmentRecordCommandHandler;
 use App\Application\Student\Query\GetStudentDocumentPageQueryHandler;
+use App\Http\Requests\UpdateStudentEnrollmentRecordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -43,6 +45,20 @@ final class StudentRecordPrintController
         }
 
         return view('students.document', ['dto' => $dto]);
+    }
+
+    public function update(
+        int $id,
+        UpdateStudentEnrollmentRecordRequest $request,
+        UpdateStudentEnrollmentRecordCommandHandler $handler,
+    ): JsonResponse {
+        $handler->handle(
+            $id,
+            $request->validated('page_number'),
+            $request->validated('enrollment_number'),
+        );
+
+        return response()->json(['ok' => true]);
     }
 }
 

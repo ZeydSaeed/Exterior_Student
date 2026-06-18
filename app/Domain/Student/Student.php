@@ -18,6 +18,7 @@ final class Student
         public readonly ?string $branch,
         public readonly ?string $major,
         public readonly ?string $gender,
+        public readonly ?string $round = null,
     ) {}
 
     public static function fromObject(object $row): self
@@ -31,6 +32,7 @@ final class Student
             branch: $row->branch ?? null,
             major: $row->major ?? null,
             gender: $row->gender ?? null,
+            round: $row->round ?? null,
         );
     }
 

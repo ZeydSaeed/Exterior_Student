@@ -8,10 +8,12 @@
 @endsection
 
 @section('content')
-    <div class="student-document-layout">
+    <div class="student-document-layout"
+         data-student-id="{{ $dto->studentId }}"
+         data-update-url="{{ route('students.document.update', ['id' => $dto->studentId]) }}">
         <div class="student-document-actions no-print">
             <button type="button" class="btn-primary" id="student-document-btn-print">طباعة</button>
-            <a href="{{ route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
+            <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
         </div>
 
         @include('students.partials.document-paper', ['dto' => $dto])

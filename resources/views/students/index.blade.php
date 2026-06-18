@@ -9,15 +9,14 @@
 @endsection
 
 @section('content')
-    @if(!empty($flash_error) || !empty($flash_status))
-        <div class="flash-overlay" role="alert">
-            <div class="flash-box {{ !empty($flash_error) ? 'flash-box-error' : 'flash-box-success' }}">
-                <span class="flash-text">{{ $flash_error ?? $flash_status }}</span>
+    @if(!empty($flash_status))
+        <div class="flash-overlay" role="status">
+            <div class="flash-box flash-box-success">
+                <span class="flash-text">{{ $flash_status }}</span>
                 <button type="button" class="flash-close" onclick="this.closest('.flash-overlay').style.display='none'">&times;</button>
             </div>
         </div>
         <script>
-            // إخفاء رسالة الحالة تلقائياً بعد 20 ثانية
             document.addEventListener('DOMContentLoaded', function () {
                 var overlay = document.querySelector('.flash-overlay');
                 if (overlay) {

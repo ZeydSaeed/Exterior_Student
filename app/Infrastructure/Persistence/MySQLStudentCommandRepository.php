@@ -598,6 +598,47 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         });
     }
 
+    public function updateEnrollmentRecord(int $studentId, ?string $pageNumber, ?string $enrollmentNumber): void
+    {
+        $page = $pageNumber !== null ? trim($pageNumber) : '';
+        $enrollment = $enrollmentNumber !== null ? trim($enrollmentNumber) : '';
+
+        if ($this->useNormalizedSchema()) {
+            DB::transaction(function () use ($studentId, $page, $enrollment): void {
+                $now = now();
+                $exists = DB::table('student_academic')->where('student_id', $studentId)->exists();
+                if ($exists) {
+                    DB::table('student_academic')->where('student_id', $studentId)->update([
+                        'page_number' => $page,
+                        'enrollment_number' => $enrollment,
+                        'updated_at' => $now,
+                    ]);
+                } else {
+                    DB::table('student_academic')->insert([
+                        'student_id' => $studentId,
+                        'page_number' => $page,
+                        'enrollment_number' => $enrollment,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            });
+
+            return;
+        }
+
+        $update = [];
+        if (Schema::hasColumn('main_table', 'رقم الصفحة')) {
+            $update['رقم الصفحة'] = $page;
+        }
+        if (Schema::hasColumn('main_table', 'رقم القيد')) {
+            $update['رقم القيد'] = $enrollment;
+        }
+        if ($update !== []) {
+            DB::table('main_table')->where('id', $studentId)->update($update);
+        }
+    }
+
     public function deleteStudent(int $id): bool
     {
         $table = $this->useNormalizedSchema() ? 'students' : 'main_table';
