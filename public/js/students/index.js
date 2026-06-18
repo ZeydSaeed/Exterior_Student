@@ -407,8 +407,8 @@
         function buildQuery() {
             if (!filterForm) return '';
             var params = new URLSearchParams();
-            ['branch', 'major', 'gender', 'year'].forEach(function (name) {
-                var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+            ['branch', 'major', 'gender', 'year', 'round'].forEach(function (name) {
+                var el = filterForm.querySelector('select[name="' + name + '"]');
                 if (el) params.set(name, el.value);
             });
             var searchHidden = document.getElementById('students-filter-search-hidden');
@@ -447,12 +447,11 @@
 
         function getFilterLabel(name) {
             if (!filterForm) return 'الكل';
-            var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+            var el = filterForm.querySelector('select[name="' + name + '"]');
             if (!el) return 'الكل';
-            var label = el.closest('label');
-            if (!label) return 'الكل';
-            var txt = label.textContent || '';
-            txt = txt.replace(/\s+/g, ' ').trim();
+            var opt = el.options[el.selectedIndex];
+            if (!opt) return 'الكل';
+            var txt = (opt.textContent || '').replace(/\s+/g, ' ').trim();
             return txt || 'الكل';
         }
 
@@ -461,6 +460,7 @@
             document.getElementById('failures-filter-major').textContent = getFilterLabel('major');
             document.getElementById('failures-filter-gender').textContent = getFilterLabel('gender');
             document.getElementById('failures-filter-year').textContent = getFilterLabel('year');
+            document.getElementById('failures-filter-round').textContent = getFilterLabel('round');
             modal.classList.add('is-visible');
             modal.setAttribute('aria-hidden', 'false');
         }
@@ -492,8 +492,8 @@
                 var base = window.STUDENTS_DELETE_FAILED_URL || '/students/failures';
                 var params = new URLSearchParams();
                 if (filterForm) {
-                    ['branch', 'major', 'gender', 'year'].forEach(function (name) {
-                        var el = filterForm.querySelector('input[name="' + name + '"]:checked');
+                    ['branch', 'major', 'gender', 'year', 'round'].forEach(function (name) {
+                        var el = filterForm.querySelector('select[name="' + name + '"]');
                         if (el) params.set(name, el.value);
                     });
                 }

@@ -13,7 +13,7 @@ final class StudentListFiltersSession
     public const SESSION_KEY = 'students_list_filters';
 
     /** @var list<string> */
-    private const FILTER_KEYS = ['branch', 'major', 'gender', 'year'];
+    private const FILTER_KEYS = ['branch', 'major', 'gender', 'year', 'round'];
 
     /**
      * يدمج الطلب الحالي مع ما خُزّن في الجلسة لنفس المفاتيح.

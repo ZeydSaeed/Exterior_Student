@@ -211,6 +211,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if (! empty($filters['year'])) {
             $query->where('y.year_label', $filters['year']);
         }
+        if (! empty($filters['round'])) {
+            $query->where('a.round', $filters['round']);
+        }
         if (! empty($filters['search'])) {
             $pattern = '%'.$filters['search'].'%';
             $query->where(function ($q) use ($pattern): void {
@@ -343,6 +346,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
         if (! empty($filters['year'])) {
             $query->where('العام الدراسي', $filters['year']);
+        }
+
+        if (! empty($filters['round'])) {
+            $query->whereRaw('TRIM(`الدور`) = ?', [$filters['round']]);
         }
 
         if (! empty($filters['search'])) {

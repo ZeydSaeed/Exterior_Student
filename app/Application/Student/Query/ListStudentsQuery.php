@@ -12,6 +12,7 @@ final class ListStudentsQuery
         public readonly ?string $major = null,
         public readonly ?string $gender = null,
         public readonly ?string $year = null,
+        public readonly ?string $round = null,
         public readonly ?string $search = null,
     ) {}
 
@@ -22,6 +23,7 @@ final class ListStudentsQuery
             major: $input['major'] ?? null,
             gender: $input['gender'] ?? null,
             year: $input['year'] ?? null,
+            round: $input['round'] ?? null,
             search: $input['search'] ?? null,
         );
     }
@@ -31,9 +33,10 @@ final class ListStudentsQuery
     {
         return [
             'branch' => $this->branch,
-            'major'  => $this->major,
+            'major' => $this->major,
             'gender' => $this->gender,
-            'year'   => $this->year,
+            'year' => $this->year,
+            'round' => $this->round,
             'search' => $this->searchNormalized(),
         ];
     }
@@ -48,6 +51,7 @@ final class ListStudentsQuery
         $s = preg_replace('/[\x{064B}-\x{065F}\x{0670}]/u', '', $s);
         $s = str_replace(['أ', 'إ', 'آ'], 'ا', $s);
         $s = str_replace('ى', 'ي', $s);
+
         return mb_strtolower($s, 'UTF-8');
     }
 }

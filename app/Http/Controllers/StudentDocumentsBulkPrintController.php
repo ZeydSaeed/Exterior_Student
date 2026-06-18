@@ -30,7 +30,7 @@ final class StudentDocumentsBulkPrintController extends Controller
         $filtersRequired = ($branch === '' || $major === '' || $year === '');
 
         $query = ListStudentsQuery::fromArray(array_merge(
-            ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'search' => null],
+            ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'round' => null, 'search' => null],
             $normalized
         ));
 

@@ -21,6 +21,9 @@
         <div class="failures-modal-filters-row">
             <span>العام الدراسي: <strong id="failures-filter-year">الكل</strong></span>
         </div>
+        <div class="failures-modal-filters-row">
+            <span>الدور: <strong id="failures-filter-round">الكل</strong></span>
+        </div>
 
         <p class="failures-modal-confirm-text">
             هل أنت متأكد من تنفيذ عملية الحذف؟

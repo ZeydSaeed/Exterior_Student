@@ -28,6 +28,7 @@ final class StudentFailuresBulkDeleteController extends Controller
             'major' => $normalized['major'] ?? null,
             'gender' => $normalized['gender'] ?? null,
             'year' => $normalized['year'] ?? null,
+            'round' => $normalized['round'] ?? null,
             'search' => null, // الحذف يعتمد على الفلاتر الأساسية فقط
         ]);
 

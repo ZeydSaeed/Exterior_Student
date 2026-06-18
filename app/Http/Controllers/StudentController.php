@@ -30,7 +30,7 @@ class StudentController extends Controller
 
         $normalized = StudentListFiltersSession::normalizeForQuery($merged);
         $query = ListStudentsQuery::fromArray(array_merge(
-            ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'search' => null],
+            ['branch' => null, 'major' => null, 'gender' => null, 'year' => null, 'round' => null, 'search' => null],
             $normalized
         ));
 
