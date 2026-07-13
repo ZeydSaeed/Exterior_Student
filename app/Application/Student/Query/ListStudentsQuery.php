@@ -13,6 +13,7 @@ final class ListStudentsQuery
         public readonly ?string $gender = null,
         public readonly ?string $year = null,
         public readonly ?string $round = null,
+        public readonly ?string $result = null,
         public readonly ?string $search = null,
     ) {}
 
@@ -24,6 +25,7 @@ final class ListStudentsQuery
             gender: $input['gender'] ?? null,
             year: $input['year'] ?? null,
             round: $input['round'] ?? null,
+            result: $input['result'] ?? null,
             search: $input['search'] ?? null,
         );
     }
@@ -31,13 +33,28 @@ final class ListStudentsQuery
     /** مصفوفة الفلاتر المُطبَّعة للبحث (بدون search pattern للتضليل) */
     public function filtersForRepository(): array
     {
+        $search = $this->searchNormalized();
+
+        if ($search !== null) {
+            return [
+                'branch' => null,
+                'major' => null,
+                'gender' => null,
+                'year' => null,
+                'round' => null,
+                'result' => null,
+                'search' => $search,
+            ];
+        }
+
         return [
             'branch' => $this->branch,
             'major' => $this->major,
             'gender' => $this->gender,
             'year' => $this->year,
             'round' => $this->round,
-            'search' => $this->searchNormalized(),
+            'result' => $this->result,
+            'search' => null,
         ];
     }
 

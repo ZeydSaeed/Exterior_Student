@@ -53,6 +53,7 @@ return new class extends Migration
             'subjects_computer' => Config::get('grades_catalog.subjects_computer', []),
             'subjects_art' => Config::get('grades_catalog.subjects_art', []),
             'subjects_hotel' => Config::get('grades_catalog.subjects_hotel', []),
+            'subjects_decor' => Config::get('grades_catalog.subjects_decor', []),
         ];
 
         $branches = DB::table('branches')->pluck('id', 'name_ar')->all();

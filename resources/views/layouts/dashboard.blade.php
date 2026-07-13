@@ -156,25 +156,6 @@
     @endunless
 
     @yield('scripts')
-    <script>
-        (function () {
-            var link = document.getElementById('sidebar-link-bulk-print');
-            if (!link || typeof link.href !== 'string') return;
-            link.addEventListener('click', function (e) {
-                try {
-                    var url = new URL(link.href, window.location.origin);
-                    var branch = (url.searchParams.get('branch') || '').trim();
-                    var major = (url.searchParams.get('major') || '').trim();
-                    var year = (url.searchParams.get('year') || '').trim();
-                    var onBulkPage = window.location.pathname.indexOf('/documents/print') !== -1;
-                    if (!onBulkPage && (branch === '' || major === '' || year === '')) {
-                        e.preventDefault();
-                        alert('يرجى تحديد الفرع والاختصاص والعام الدراسي من الفلاتر أولاً، ثم النقر على «القيود».');
-                    }
-                } catch (err) {}
-            });
-        })();
-    </script>
 </body>
 </html>
 

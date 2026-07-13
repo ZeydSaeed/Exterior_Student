@@ -4,6 +4,7 @@ namespace App\Application\Student\Import;
 
 use App\Application\Student\Command\CreateStudentCommandHandler;
 use App\Domain\Student\StudentImportTempRepository;
+use App\Support\ImportDateNormalizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -13,24 +14,28 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 final class ImportStudentsFromExcelUseCase
 {
-    /** عناوين الأعمدة المتوقعة في Excel (بعد تطبيع المسافات) */
+    /**
+     * عناوين الأعمدة المتوقعة في Excel (الاسم الأساسي + أسماء بديلة شائعة).
+     *
+     * @var array<string, list<string>>
+     */
     private const HEADERS = [
-        'exam_number' => 'الرقم الامتحاني',
-        'first_name' => 'اسم الطالب',
-        'father' => 'اسم الاب',
-        'grandfather' => 'اسم الجد',
-        'last_name' => 'اللقب',
-        'gender' => 'الجنس',
-        'birth_date' => 'التولد',
-        'birth_place' => 'محل الولادة',
-        'mother' => 'اسم الام الكامل',
-        'branch' => 'الفرع',
-        'major' => 'الاختصاص',
-        'academic_year' => 'العام الدراسي',
-        'last_school' => 'اخر مدرسة',
-        'document_number' => 'رقم الوثيقة',
-        'document_date' => 'تاريخها',
-        'issue_place' => 'جهة الاصدار',
+        'exam_number' => ['الرقم الامتحاني'],
+        'first_name' => ['اسم الطالب'],
+        'father' => ['اسم الاب'],
+        'grandfather' => ['اسم الجد'],
+        'last_name' => ['اللقب'],
+        'gender' => ['الجنس'],
+        'birth_date' => ['التولد', 'تاريخ التولد', 'تاريخ الولادة'],
+        'birth_place' => ['محل الولادة', 'مكان الولادة', 'محل الولاده', 'مكان الولاده'],
+        'mother' => ['اسم الام الكامل', 'اسم الام'],
+        'branch' => ['الفرع'],
+        'major' => ['الاختصاص'],
+        'academic_year' => ['العام الدراسي'],
+        'last_school' => ['اخر مدرسة', 'اخر مدرسة كان فيها الطالب', 'آخر مدرسة', 'آخر مدرسة كان فيها الطالب'],
+        'document_number' => ['رقم الوثيقة', 'رقم الوثيقة المتوسطة'],
+        'document_date' => ['تاريخها', 'تاريخ الوثيقة'],
+        'issue_place' => ['جهة الاصدار', 'جهة الإصدار'],
     ];
 
     public function __construct(
@@ -62,7 +67,7 @@ final class ImportStudentsFromExcelUseCase
         $tempRows = [];
         $rowIndex = 1;
         foreach (array_slice($rows, 1) as $excelRow) {
-            $row = $this->mapRowToTemp($excelRow, $indexMap, $rowIndex);
+            $row = $this->mapRowToTemp(array_values($excelRow), $indexMap, $rowIndex);
             if ($row !== null) {
                 $tempRows[] = $row;
             }
@@ -94,6 +99,7 @@ final class ImportStudentsFromExcelUseCase
                 $failed++;
             }
         }
+
         return [
             'batch_id' => $batchId,
             'total' => count($allTemp),
@@ -129,10 +135,11 @@ final class ImportStudentsFromExcelUseCase
                 $this->createStudentHandler->handle($data);
                 $success++;
             } catch (\Throwable $e) {
-                $errors[] = "صف {$tempRow->row_index}: " . $e->getMessage();
+                $errors[] = "صف {$tempRow->row_index}: ".$e->getMessage();
             }
         }
         $this->tempRepository->deleteByBatchId($batchId);
+
         return [
             'success' => $success,
             'failed' => count($validRows) - $success,
@@ -141,7 +148,7 @@ final class ImportStudentsFromExcelUseCase
     }
 
     /**
-     * @param array<int, mixed> $headerRow
+     * @param  array<int, mixed>  $headerRow
      * @return array<string, int>
      */
     private function buildHeaderIndexMap(array $headerRow): array
@@ -149,28 +156,58 @@ final class ImportStudentsFromExcelUseCase
         $map = [];
         foreach ($headerRow as $i => $cell) {
             $normalized = $this->normalizeHeader((string) $cell);
-            if ($normalized !== '') {
-                foreach (self::HEADERS as $key => $ar) {
-                    if ($this->normalizeHeader($ar) === $normalized) {
+            if ($normalized === '') {
+                continue;
+            }
+            foreach (self::HEADERS as $key => $aliases) {
+                if (isset($map[$key])) {
+                    continue;
+                }
+                foreach ($aliases as $alias) {
+                    if ($this->normalizeHeader($alias) === $normalized) {
                         $map[$key] = $i;
-                        break;
+                        break 2;
                     }
+                }
+                // مطابقة مرنة لمحل الولادة عند اختلاف بسيط في العنوان
+                if ($key === 'birth_place' && $this->looksLikeBirthPlaceHeader($normalized)) {
+                    $map[$key] = $i;
+                    break;
                 }
             }
         }
+
+        // إذا وُجد التولد واسم الام ولم يُطابق عنوان محل الولادة، خذ العمود بينهما
+        if (! isset($map['birth_place']) && isset($map['birth_date'], $map['mother'])) {
+            $between = $map['birth_date'] + 1;
+            if ($map['mother'] === $between + 1) {
+                $map['birth_place'] = $between;
+            }
+        }
+
         return $map;
+    }
+
+    private function looksLikeBirthPlaceHeader(string $normalized): bool
+    {
+        return str_contains($normalized, 'ولاد')
+            && (str_contains($normalized, 'محل') || str_contains($normalized, 'مكان'));
     }
 
     private function normalizeHeader(string $s): string
     {
-        $s = trim(preg_replace('/\s+/u', ' ', $s));
-        $s = str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $s);
-        return $s;
+        $s = preg_replace('/[\x{FEFF}\x{200B}\x{200C}\x{200D}\x{2060}]/u', '', $s) ?? $s;
+        $s = str_replace(["\xc2\xa0", "\xC2\xA0"], ' ', $s);
+        $s = trim(preg_replace('/\s+/u', ' ', $s) ?? $s);
+        $s = str_replace(['أ', 'إ', 'آ', 'ى', 'ة'], ['ا', 'ا', 'ا', 'ا', 'ه'], $s);
+        $s = preg_replace('/[:：\-–_]+$/u', '', $s) ?? $s;
+
+        return trim($s);
     }
 
     /**
-     * @param array<int, mixed> $excelRow
-     * @param array<string, int> $indexMap
+     * @param  array<int, mixed>  $excelRow
+     * @param  array<string, int>  $indexMap
      * @return array{row_index: int, exam_number: ?string, ...}|null
      */
     private function mapRowToTemp(array $excelRow, array $indexMap, int $rowIndex): ?array
@@ -184,6 +221,7 @@ final class ImportStudentsFromExcelUseCase
         }
         $birthDateRaw = $get('birth_date');
         $docDateRaw = $get('document_date');
+
         return [
             'row_index' => $rowIndex,
             'exam_number' => $exam ?: null,
@@ -207,34 +245,11 @@ final class ImportStudentsFromExcelUseCase
 
     /**
      * تحويل قيمة التاريخ من Excel إلى Y-m-d.
-     * يدعم: نص (مثل 20/03/2005)، الرقم التسلسلي لـ Excel، أو كائن DateTime.
-     *
-     * @param mixed $value
+     * يدعم: نص (مثل 25/4/1990)، الرقم التسلسلي لـ Excel، أو كائن DateTime.
      */
     private function normalizeDateValue(mixed $value): ?string
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        if (is_numeric($value)) {
-            $days = (int) round((float) $value);
-            if ($days >= 1 && $days <= 100000) {
-                $base = new \DateTimeImmutable('1899-12-30');
-                return $base->add(new \DateInterval("P{$days}D"))->format('Y-m-d');
-            }
-        }
-        $str = trim((string) $value);
-        if ($str === '') {
-            return null;
-        }
-        $ts = strtotime($str);
-        if ($ts === false) {
-            return null;
-        }
-        return date('Y-m-d', $ts);
+        return ImportDateNormalizer::toYmd($value);
     }
 
     private function tempRowToArray(object $row): array

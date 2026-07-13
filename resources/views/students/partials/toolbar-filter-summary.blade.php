@@ -8,12 +8,14 @@
         $year = trim((string) ($merged['year'] ?? ''));
         $gender = trim((string) ($merged['gender'] ?? ''));
         $round = trim((string) ($merged['round'] ?? ''));
+        $result = trim((string) ($merged['result'] ?? ''));
     } else {
         $branch = trim((string) request('branch', ''));
         $major = trim((string) request('major', ''));
         $year = trim((string) request('year', ''));
         $gender = trim((string) request('gender', ''));
         $round = trim((string) request('round', ''));
+        $result = trim((string) request('result', ''));
     }
     $allLabel = 'الكل';
 @endphp
@@ -27,4 +29,6 @@
     <span class="dashboard-toolbar-filter-item"><span class="dashboard-toolbar-filter-key">الجنس:</span> {{ $gender !== '' ? $gender : $allLabel }}</span>
     <span class="dashboard-toolbar-filter-sep" aria-hidden="true">|</span>
     <span class="dashboard-toolbar-filter-item"><span class="dashboard-toolbar-filter-key">الدور:</span> {{ $round !== '' ? $round : $allLabel }}</span>
+    <span class="dashboard-toolbar-filter-sep" aria-hidden="true">|</span>
+    <span class="dashboard-toolbar-filter-item"><span class="dashboard-toolbar-filter-key">النتيجة:</span> {{ $result !== '' ? $result : $allLabel }}</span>
 </div>

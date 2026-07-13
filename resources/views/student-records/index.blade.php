@@ -7,8 +7,21 @@
 @section('content')
     <div class="documents-page-wrap">
         <div class="documents-page-actions">
+            @if($dto->previousStudentId)
+                <a href="{{ route('students.documents.index', ['id' => $dto->previousStudentId]) }}" class="btn-primary documents-nav-btn documents-prev-btn" title="الطالب السابق حسب ترتيب جدول الطلاب">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                    <span>السابق</span>
+                </a>
+            @endif
             @if($dto->nextStudentId)
-                <a href="{{ route('students.documents.index', ['id' => $dto->nextStudentId]) }}" class="btn-primary documents-next-btn" title="الطالب التالي حسب ترتيب جدول الطلاب">التالي</a>
+                <a href="{{ route('students.documents.index', ['id' => $dto->nextStudentId]) }}" class="btn-primary documents-nav-btn documents-next-btn" title="الطالب التالي حسب ترتيب جدول الطلاب">
+                    <span>التالي</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </a>
             @endif
             <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary documents-close-btn" title="إغلاق">إغلاق</a>
         </div>
@@ -48,7 +61,7 @@
                         @csrf
                         <div class="document-add-fields">
                             <input type="text" name="document_number" value="{{ old('document_number') }}" placeholder="رقم الوثيقة..." />
-                            <input type="date" name="document_date" value="{{ old('document_date') }}" placeholder="التاريخ..." />
+                            <input type="text" name="document_date" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toDisplayDmy(old('document_date')) : '' }}" placeholder="يوم / شهر / سنة" dir="ltr" inputmode="numeric" autocomplete="off" />
                             <input type="text" name="addressee" value="{{ old('addressee') }}" placeholder="الجهة المعنونة إليها..." />
                             <input type="text" name="purpose" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
                             <button type="submit" class="btn-primary">إضافة وثيقة</button>
@@ -78,7 +91,7 @@
                                             <input type="text" name="document_number" value="{{ $record->documentNumber ?? '' }}" />
                                     </td>
                                     <td>
-                                            <input type="date" name="document_date" value="{{ $record->documentDate ?? '' }}" />
+                                            <input type="text" name="document_date" value="{{ \App\Support\ImportDateNormalizer::toDisplayDmy($record->documentDate) }}" placeholder="يوم / شهر / سنة" dir="ltr" inputmode="numeric" autocomplete="off" />
                                     </td>
                                     <td>
                                             <input type="text" name="addressee" value="{{ $record->addressee ?? '' }}" />

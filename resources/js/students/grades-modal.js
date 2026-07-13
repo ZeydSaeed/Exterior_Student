@@ -18,6 +18,20 @@
         /** نسخة من البيانات عند فتح المودال لاستعادتها عند الإلغاء */
         let originalData = null;
 
+        function formatDisplayDate(value) {
+            if (value == null || value === '') {
+                return '';
+            }
+            var s = String(value).trim();
+            var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (m) {
+                var day = m[3].length === 1 ? '0' + m[3] : m[3];
+                var month = m[2].length === 1 ? '0' + m[2] : m[2];
+                return day + ' / ' + month + ' / ' + m[1];
+            }
+            return s;
+        }
+
         function openModal() {
             modal.classList.add('is-visible');
             modal.setAttribute('aria-hidden', 'false');
@@ -106,7 +120,7 @@
             setInputValue('grades-name-grandfather-input', data.name_grandfather != null ? data.name_grandfather : '');
             setText('grades-name-surname', data.name_surname != null ? data.name_surname : '');
             setInputValue('grades-name-surname-input', data.name_surname != null ? data.name_surname : '');
-            setText('grades-birth-date', data.birth_date != null ? data.birth_date : '');
+            setText('grades-birth-date', formatDisplayDate(data.birth_date));
             setInputValue('grades-birth-date-input', data.birth_date != null ? data.birth_date : '');
             setText('grades-birth-place', data.birth_place != null ? data.birth_place : '');
             setInputValue('grades-birth-place-input', data.birth_place != null ? data.birth_place : '');

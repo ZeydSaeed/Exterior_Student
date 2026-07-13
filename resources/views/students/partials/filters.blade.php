@@ -2,7 +2,21 @@
     use App\Support\StudentBranchMajors;
     use App\Support\StudentListFiltersSession;
 
-    $merged = StudentListFiltersSession::mergeRequestWithSession(request());
+    $useSessionMerge = $useStudentListSessionMerge ?? true;
+    $merged = $useSessionMerge
+        ? StudentListFiltersSession::mergeRequestWithSession(request())
+        : array_filter(
+            [
+                'branch' => (string) request('branch', ''),
+                'major' => (string) request('major', ''),
+                'gender' => (string) request('gender', ''),
+                'year' => (string) request('year', ''),
+                'round' => (string) request('round', ''),
+                'result' => (string) request('result', ''),
+            ],
+            static fn ($v) => $v !== ''
+        );
+
     $filterBranchVal = trim((string) ($merged['branch'] ?? ''));
     $filterMajorsForBranch = StudentBranchMajors::majorsForBranch($filterBranchVal !== '' ? $filterBranchVal : null);
     $reqMajorVal = trim((string) ($merged['major'] ?? ''));
@@ -12,13 +26,11 @@
     $filterGenderVal = trim((string) ($merged['gender'] ?? ''));
     $filterYearVal = trim((string) ($merged['year'] ?? ''));
     $filterRoundVal = trim((string) ($merged['round'] ?? ''));
+    $filterResultVal = trim((string) ($merged['result'] ?? ''));
 @endphp
 <aside class="students-filter-sidebar" aria-label="فلاتر البحث">
     <script type="application/json" id="student-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
     <form method="GET" action="{{ $students_filter_form_action ?? route('students.index') }}" id="students-filter-form" class="students-filter-form">
-        @if(request()->filled('search'))
-            <input type="hidden" name="search" value="{{ request('search') }}" id="students-filter-search-hidden">
-        @endif
         <div class="students-filter-cards">
             <div class="students-filter">
                 <div class="students-filter-card-options students-filter-clear-row">
@@ -72,6 +84,15 @@
                     @endforeach
                 </select>
             </div>
+            <div class="students-filter-card">
+                <label class="students-filter-card-title" for="students-filter-result">النتيجة</label>
+                <select name="result" id="students-filter-result" class="students-filter-select students-filter-control" aria-label="النتيجة">
+                    <option value="" @selected($filterResultVal === '')>الكل</option>
+                    @foreach($resultOptions ?? [] as $result)
+                        <option value="{{ $result }}" @selected($filterResultVal === $result)>{{ $result }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
     </form>
     <script>
@@ -79,7 +100,7 @@
             var form = document.getElementById('students-filter-form');
             if (!form) return;
             var action = form.getAttribute('action') || '';
-            var filterKeys = ['branch', 'major', 'gender', 'year', 'round'];
+            var filterKeys = ['branch', 'major', 'gender', 'year', 'round', 'result'];
 
             function parseBranchMajorsMap() {
                 var el = document.getElementById('student-branch-majors-json');
@@ -136,8 +157,6 @@
                     var el = form.querySelector('select[name="' + name + '"]');
                     if (el) params.set(name, el.value);
                 });
-                var searchHidden = document.getElementById('students-filter-search-hidden');
-                if (searchHidden && searchHidden.value) params.set('search', searchHidden.value);
                 return params;
             }
 

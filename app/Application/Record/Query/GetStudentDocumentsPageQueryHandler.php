@@ -37,6 +37,7 @@ final class GetStudentDocumentsPageQueryHandler
         );
 
         $nextStudentId = $this->studentRepository->findNextStudentIdInList($studentId, $filters);
+        $previousStudentId = $this->studentRepository->findPreviousStudentIdInList($studentId, $filters);
 
         return new StudentDocumentsPageDTO(
             studentId: $student->id,
@@ -48,6 +49,7 @@ final class GetStudentDocumentsPageQueryHandler
             round: $student->round,
             gender: $student->gender,
             nextStudentId: $nextStudentId,
+            previousStudentId: $previousStudentId,
             records: $recordDTOs,
         );
     }

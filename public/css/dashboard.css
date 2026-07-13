@@ -1512,6 +1512,15 @@ body.grades-modal-open {
     text-decoration: none;
     font-weight: bold;
 }
+.page-student-documents .documents-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+.page-student-documents .documents-nav-btn svg {
+    flex-shrink: 0;
+}
 .page-student-documents .documents-page-wrap .employees-page-header {
     padding-inline-start: 9rem;
 }

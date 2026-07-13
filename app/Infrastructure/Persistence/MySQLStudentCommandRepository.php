@@ -121,6 +121,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             'subjects_computer' => Config::get('grades_catalog.subjects_computer', []),
             'subjects_art' => Config::get('grades_catalog.subjects_art', []),
             'subjects_hotel' => Config::get('grades_catalog.subjects_hotel', []),
+            'subjects_decor' => Config::get('grades_catalog.subjects_decor', []),
         ];
         $subjectNames = $subjectGroups[$groupKey] ?? [];
         if (! is_array($subjectNames) || empty($subjectNames)) {

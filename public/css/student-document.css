@@ -37,6 +37,25 @@
     width: 42rem;
 }
 
+/* القيد الفارغ: نفس مقاسات القيد المملوء لضمان الطباعة اليدوية */
+.student-document-paper-blank .doc-value,
+.student-document-paper-blank .doc-table td,
+.student-document-paper-blank .doc-completed-row {
+    min-height: 1.28rem;
+}
+
+.student-document-paper-blank .doc-grades-table tbody tr:not(.doc-total-row) td {
+    height: 1.45rem;
+}
+
+.student-document-paper-blank .doc-docs-table tbody td {
+    height: 1.45rem;
+}
+
+.student-document-paper-blank .doc-completed-row {
+    min-height: 1.45rem;
+}
+
 /* ========== الهيدر ========== */
 .doc-header {
     display: grid;

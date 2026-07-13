@@ -5,7 +5,7 @@ namespace App\Support;
 use Illuminate\Http\Request;
 
 /**
- * يحافظ على فلاتر قائمة الطلاب (فرع، اختصاص، جنس، عام، دور) ورقم الصفحة في الجلسة
+ * يحافظ على فلاتر قائمة الطلاب (فرع، اختصاص، جنس، عام، دور، نتيجة) ورقم الصفحة في الجلسة
  * حتى يبقى الاختيار ثابتاً عند التنقل وإعادة فتح الصفحات.
  */
 final class StudentListFiltersSession
@@ -15,7 +15,7 @@ final class StudentListFiltersSession
     private const PAGE_KEY = 'page';
 
     /** @var list<string> */
-    private const FILTER_KEYS = ['branch', 'major', 'gender', 'year', 'round'];
+    private const FILTER_KEYS = ['branch', 'major', 'gender', 'year', 'round', 'result'];
 
     /**
      * يدمج الطلب الحالي مع ما خُزّن في الجلسة لنفس المفاتيح.

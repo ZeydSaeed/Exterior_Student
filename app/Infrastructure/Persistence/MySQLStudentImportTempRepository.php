@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence;
 
 use App\Domain\Student\StudentImportTempRepository;
+use App\Support\ImportDateNormalizer;
 use Illuminate\Support\Facades\DB;
 
 final class MySQLStudentImportTempRepository implements StudentImportTempRepository
@@ -74,6 +75,7 @@ final class MySQLStudentImportTempRepository implements StudentImportTempReposit
                 'error' => $row->error,
             ];
         }
+
         return $out;
     }
 
@@ -93,20 +95,6 @@ final class MySQLStudentImportTempRepository implements StudentImportTempReposit
 
     private function normalizeDate(mixed $value): ?string
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-        $str = trim((string) $value);
-        if ($str === '') {
-            return null;
-        }
-        $ts = strtotime($str);
-        if ($ts === false) {
-            return null;
-        }
-        return date('Y-m-d', $ts);
+        return ImportDateNormalizer::toYmd($value);
     }
 }

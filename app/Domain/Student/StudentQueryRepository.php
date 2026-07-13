@@ -68,6 +68,14 @@ interface StudentQueryRepository
     public function findNextStudentIdInList(int $currentStudentId, array $filters): ?int;
 
     /**
+     * معرف الطالب السابق في قائمة الطلاب المفلترة بنفس ترتيب الجدول.
+     * يعيد null إن لم يوجد طالب سابق أو الطالب الحالي غير موجود في القائمة.
+     *
+     * @param  array{branch?: string|null, major?: string|null, gender?: string|null, year?: string|null, round?: string|null, search?: string|null}  $filters
+     */
+    public function findPreviousStudentIdInList(int $currentStudentId, array $filters): ?int;
+
+    /**
      * معرف الطالب التالي حسب ترتيب الرقم الامتحاني تصاعدياً (بدون فلاتر القائمة).
      * يعيد null إن لم يوجد طالب لاحق.
      */

@@ -24,7 +24,7 @@ final class GetStudentDocumentPageQueryHandler
         private GetCertificateSignatureEmployeesQueryHandler $signatureEmployeesHandler,
     ) {}
 
-    public function handle(int $id): StudentDocumentPageDTO
+    public function handle(int $id, ?array $employees = null): StudentDocumentPageDTO
     {
         $info = $this->studentRepository->getStudentDocumentInfo($id);
         if ($info === null) {
@@ -48,8 +48,8 @@ final class GetStudentDocumentPageQueryHandler
                 $subjectsCompleted[] = $subjectName;
             }
             $gradesTable[] = [
-                'subject'     => $subjectName,
-                'score'       => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : ($scoreTrim !== '' ? $scoreTrim : '0'),
+                'subject' => $subjectName,
+                'score' => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : ($scoreTrim !== '' ? $scoreTrim : '0'),
                 'score_words' => $scoreTrim !== '' && is_numeric($scoreTrim)
                     ? $this->numberToWords->convert((int) round((float) $scoreTrim))
                     : 'صفر',
@@ -75,7 +75,7 @@ final class GetStudentDocumentPageQueryHandler
             $records
         );
 
-        $employees = $this->signatureEmployeesHandler->handle();
+        $employees = $employees ?? $this->signatureEmployeesHandler->handle();
 
         return new StudentDocumentPageDTO(
             studentId: $id,
@@ -115,7 +115,7 @@ final class GetStudentDocumentPageQueryHandler
             return $map;
         }
         foreach ($gradesView->grades as $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $subject = trim((string) ($row['subject'] ?? ''));
@@ -124,6 +124,7 @@ final class GetStudentDocumentPageQueryHandler
                 $map[$subject] = $score;
             }
         }
+
         return $map;
     }
 
@@ -141,6 +142,7 @@ final class GetStudentDocumentPageQueryHandler
                 return $score;
             }
         }
+
         return '';
     }
 
@@ -148,6 +150,7 @@ final class GetStudentDocumentPageQueryHandler
     {
         $t = trim(preg_replace('/\s+/u', ' ', $name));
         $t = str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $t);
+
         return $t;
     }
 }

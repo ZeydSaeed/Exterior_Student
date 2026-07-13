@@ -21,5 +21,6 @@
 @endsection
 
 @section('scripts')
+    <script src="{{ url('js/arabic-date.js') }}?v={{ file_exists(public_path('js/arabic-date.js')) ? filemtime(public_path('js/arabic-date.js')) : time() }}"></script>
     <script src="{{ url('js/students/document.js') }}?v={{ file_exists(public_path('js/students/document.js')) ? filemtime(public_path('js/students/document.js')) : time() }}"></script>
 @endsection

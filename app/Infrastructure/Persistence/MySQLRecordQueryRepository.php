@@ -65,6 +65,10 @@ final class MySQLRecordQueryRepository implements RecordQueryRepository
         $date = $row->document_date ?? $row->{'تاريخها'} ?? null;
         if ($date instanceof \DateTimeInterface) {
             $date = $date->format('Y-m-d');
+        } elseif ($date !== null && $date !== '') {
+            $date = \App\Support\ImportDateNormalizer::toYmd($date) ?? (string) $date;
+        } else {
+            $date = null;
         }
 
         $docNumber = $row->document_number ?? $row->{'رقم الوثيقة'} ?? null;

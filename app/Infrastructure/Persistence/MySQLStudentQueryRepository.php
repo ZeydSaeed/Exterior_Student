@@ -219,6 +219,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         if (! empty($filters['round'])) {
             $query->where('a.round', $filters['round']);
         }
+        if (! empty($filters['result'])) {
+            $query->where('rt.name_ar', $filters['result']);
+        }
         if (! empty($filters['search'])) {
             $pattern = '%'.$filters['search'].'%';
             $query->where(function ($q) use ($pattern): void {
@@ -293,6 +296,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
                 ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->select('s.id');
             $this->applyListFiltersNormalized($query, $filters);
             $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
@@ -355,6 +359,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
         if (! empty($filters['round'])) {
             $query->whereRaw('TRIM(`الدور`) = ?', [$filters['round']]);
+        }
+
+        if (! empty($filters['result'])) {
+            $query->whereRaw('TRIM(`النتيجة`) = ?', [$filters['result']]);
         }
 
         if (! empty($filters['search'])) {
@@ -566,6 +574,17 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         return $ids[$index + 1] ?? null;
+    }
+
+    public function findPreviousStudentIdInList(int $currentStudentId, array $filters): ?int
+    {
+        $ids = $this->listIdsWithFilters($filters);
+        $index = array_search($currentStudentId, $ids, true);
+        if ($index === false || $index === 0) {
+            return null;
+        }
+
+        return $ids[$index - 1];
     }
 
     public function existsExamNumber(string $examNumber): bool

@@ -20,6 +20,20 @@
     var currentData = null;
     var originalData = null;
 
+    function formatDisplayDate(value) {
+        if (value == null || value === '') {
+            return '';
+        }
+        var s = String(value).trim();
+        var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) {
+            var day = m[3].length === 1 ? '0' + m[3] : m[3];
+            var month = m[2].length === 1 ? '0' + m[2] : m[2];
+            return day + ' / ' + month + ' / ' + m[1];
+        }
+        return s;
+    }
+
     function openModal() {
         modal.classList.add('is-visible');
         modal.setAttribute('aria-hidden', 'false');
@@ -105,7 +119,7 @@
         setVal('grades-name-grandfather-input', data.name_grandfather != null ? data.name_grandfather : '');
         setText('grades-name-surname', data.name_surname != null ? data.name_surname : '');
         setVal('grades-name-surname-input', data.name_surname != null ? data.name_surname : '');
-        setText('grades-birth-date', data.birth_date != null ? data.birth_date : '');
+        setText('grades-birth-date', formatDisplayDate(data.birth_date));
         setVal('grades-birth-date-input', data.birth_date != null ? data.birth_date : '');
         setText('grades-birth-place', data.birth_place != null ? data.birth_place : '');
         setVal('grades-birth-place-input', data.birth_place != null ? data.birth_place : '');
@@ -325,7 +339,11 @@
             if (!data) return;
             setCertText('certificate-exam-number', data.exam_number || '');
             setCertText('certificate-full-name', data.full_name || '');
-            setCertText('certificate-birth-date', data.birth_date || '');
+            setCertText('certificate-birth-date', formatDisplayDate(data.birth_date || ''));
+            var birthDateEl = document.getElementById('certificate-birth-date');
+            if (birthDateEl && data.birth_date) {
+                birthDateEl.setAttribute('data-date', data.birth_date);
+            }
             setCertText('certificate-branch', data.branch || '');
             setCertText('certificate-specialization', data.specialization || '');
             setCertText('certificate-academic-year', data.academic_year || '');
@@ -399,39 +417,20 @@
         window.addEventListener('resize', fitCertificate);
     })();
 
-    /** ربط رابط «القيود» بفلاتر النموذج (الفرع/الاختصاص/العام/الجنس/بحث) */
+    /** رابط «القيود» يفتح صفحة فارغة قابلة للطباعة؛ الفلترة تتم داخل صفحة القيود */
     (function syncBulkPrintLinks() {
         var base = window.STUDENTS_BULK_PRINT_URL;
         if (!base) return;
-        var filterForm = document.getElementById('students-filter-form');
-        function buildQuery() {
-            if (!filterForm) return '';
-            var params = new URLSearchParams();
-            ['branch', 'major', 'gender', 'year', 'round'].forEach(function (name) {
-                var el = filterForm.querySelector('select[name="' + name + '"]');
-                if (el) params.set(name, el.value);
-            });
-            var searchHidden = document.getElementById('students-filter-search-hidden');
-            if (searchHidden && searchHidden.value) params.set('search', searchHidden.value);
-            var s = params.toString();
-            return s ? '?' + s : '';
-        }
         function updateLinks() {
-            var q = buildQuery();
-            var href = base + q;
             var toolbar = document.getElementById('toolbar-link-bulk-print');
             var sidebar = document.getElementById('sidebar-link-bulk-print');
-            /* فتح صفحة القيود (تنسيق الموظفين) بدون طباعة تلقائية */
-            if (toolbar) toolbar.setAttribute('href', href);
-            if (sidebar) sidebar.setAttribute('href', href);
+            if (toolbar) toolbar.setAttribute('href', base);
+            if (sidebar) sidebar.setAttribute('href', base);
         }
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', updateLinks);
         } else {
             updateLinks();
-        }
-        if (filterForm) {
-            filterForm.addEventListener('change', updateLinks);
         }
     })();
 

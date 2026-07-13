@@ -20,6 +20,7 @@ final class StudentDocumentsPageDTO
         public readonly ?string $round,
         public readonly ?string $gender,
         public readonly ?int $nextStudentId,
+        public readonly ?int $previousStudentId,
         public readonly array $records,
     ) {}
 
@@ -35,6 +36,7 @@ final class StudentDocumentsPageDTO
             'round' => $this->round,
             'gender' => $this->gender,
             'next_student_id' => $this->nextStudentId,
+            'previous_student_id' => $this->previousStudentId,
             'records' => array_map(static fn (RecordDTO $r) => $r->toArray(), $this->records),
         ];
     }

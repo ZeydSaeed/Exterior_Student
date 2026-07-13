@@ -4,6 +4,7 @@ namespace App\Application\Student\Import;
 
 use App\Domain\Student\BranchMajorCatalogInterface;
 use App\Domain\Student\StudentQueryRepository;
+use App\Support\ImportDateNormalizer;
 
 /**
  * التحقق من صف استيراد طالب واحد (قواعد: الرقم الامتحاني مطلوب، الجنس، التولد، علاقة الاختصاص بالفرع، عدم التكرار).
@@ -18,7 +19,7 @@ final class StudentImportRowValidator
     ) {}
 
     /**
-     * @param array{exam_number?: ?string, first_name?: ?string, father?: ?string, grandfather?: ?string, last_name?: ?string, mother?: ?string, birth_date?: ?string, birth_place?: ?string, gender?: ?string, branch?: ?string, major?: ?string, academic_year?: ?string, last_school?: ?string, document_number?: ?string, document_date?: ?string, issue_place?: ?string} $row
+     * @param  array{exam_number?: ?string, first_name?: ?string, father?: ?string, grandfather?: ?string, last_name?: ?string, mother?: ?string, birth_date?: ?string, birth_place?: ?string, gender?: ?string, branch?: ?string, major?: ?string, academic_year?: ?string, last_school?: ?string, document_number?: ?string, document_date?: ?string, issue_place?: ?string}  $row
      * @return list<string> قائمة رسائل الأخطاء (فارغة = صالح)
      */
     public function validate(array $row): array
@@ -63,14 +64,6 @@ final class StudentImportRowValidator
 
     private function normalizeDate(string $value): ?string
     {
-        $value = trim($value);
-        if ($value === '') {
-            return null;
-        }
-        $ts = strtotime($value);
-        if ($ts === false) {
-            return null;
-        }
-        return date('Y-m-d', $ts);
+        return ImportDateNormalizer::toYmd($value);
     }
 }

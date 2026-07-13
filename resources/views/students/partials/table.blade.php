@@ -1,10 +1,12 @@
 <form method="GET" action="{{ route('students.index') }}" class="students-search-form" id="students-search-form">
-    @if(request('branch'))<input type="hidden" name="branch" value="{{ request('branch') }}">@endif
-    @if(request('major'))<input type="hidden" name="major" value="{{ request('major') }}">@endif
-    @if(request('gender'))<input type="hidden" name="gender" value="{{ request('gender') }}">@endif
-    @if(request('year'))<input type="hidden" name="year" value="{{ request('year') }}">@endif
+    {{-- إرسال فلاتر فارغة لمسح فلاتر الشريط الجانبي والجلسة — البحث على كامل قاعدة البيانات --}}
+    <input type="hidden" name="branch" value="">
+    <input type="hidden" name="major" value="">
+    <input type="hidden" name="gender" value="">
+    <input type="hidden" name="year" value="">
+    <input type="hidden" name="round" value="">
     <div class="students-search students-search-full">
-        <input type="text" name="search" id="students-search-input" value="{{ request('search') }}" placeholder="البحث عن اسم الطالب او الرقم الامتحاني ثم اضغط على Enter ..." autocomplete="off" />
+        <input type="text" name="search" id="students-search-input" value="{{ request('search') }}" placeholder="البحث في جميع الطلبة (الاسم أو الرقم الامتحاني) ثم اضغط Enter ..." autocomplete="off" />
         <button type="button" class="btn-primary btn-secondary students-search-clear-btn" aria-label="إلغاء البحث" title="إلغاء البحث" onclick="var i=document.getElementById('students-search-input'); if(i){i.value='';} var f=document.getElementById('students-search-form'); if(f){f.submit();}">إلغاء البحث</button>
     </div>
 </form>

@@ -106,7 +106,8 @@
         var formatted = formatDateArabic(raw);
         if (formatted) {
             el.textContent = formatted;
-            el.setAttribute('dir', 'rtl');
+            // اتجاه LTR يثبت ترتيب يوم / شهر / سنة بصرياً داخل صفحات RTL
+            el.setAttribute('dir', 'ltr');
             el.classList.add('arabic-date-applied');
         }
     }

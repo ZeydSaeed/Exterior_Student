@@ -111,7 +111,7 @@
                                             <input type="text" name="document_number" value="{{ $record->documentNumber ?? '' }}" />
                                     </td>
                                     <td>
-                                            <input type="date" name="document_date" value="{{ $record->documentDate ?? '' }}" />
+                                            <input type="text" name="document_date" value="{{ \App\Support\ImportDateNormalizer::toDisplayDmy($record->documentDate) }}" placeholder="يوم / شهر / سنة" dir="ltr" inputmode="numeric" autocomplete="off" />
                                     </td>
                                     <td>
                                             <input type="text" name="addressee" value="{{ $record->addressee ?? '' }}" />

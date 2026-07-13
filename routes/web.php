@@ -25,8 +25,10 @@ Route::get('/dashboard', function () {
 Route::get('/students', [StudentController::class, 'index'])
     ->name('students.index');
 
-Route::get('/students/documents/print', StudentDocumentsBulkPrintController::class)
+Route::get('/students/documents/print', [StudentDocumentsBulkPrintController::class, '__invoke'])
     ->name('students.documents.bulk-print');
+Route::get('/students/documents/print/chunk', [StudentDocumentsBulkPrintController::class, 'chunk'])
+    ->name('students.documents.bulk-print.chunk');
 
 Route::delete('/students/failures', StudentFailuresBulkDeleteController::class)
     ->name('students.failures.destroy');
