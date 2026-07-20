@@ -27,21 +27,8 @@
         @php
             $editable = $editable ?? true;
             $pageNumber = $dto->pageNumber ?? '';
-            $enrollmentNumber = $dto->enrollmentNumber ?? '';
         @endphp
-        @if($editable)
-            <span class="doc-label doc-enrollment-meta no-print">رقم القيد</span>
-            <span class="doc-value doc-value-enrollment-number doc-enrollment-meta no-print">
-                <input type="text"
-                       name="enrollment_number"
-                       class="doc-field-input"
-                       value="{{ $enrollmentNumber }}"
-                       placeholder=""
-                       autocomplete="off"
-                       data-enrollment-input />
-            </span>
-        @endif
-        <span class="doc-label">رقم الصفحة</span>
+        <span class="doc-label doc-label-page-number">رقم الصفحة</span>
         <span class="doc-value doc-value-page-number">
             @if($editable)
                 <input type="text"
@@ -56,13 +43,13 @@
             @endif
         </span>
     </div>
-    <div class="doc-row">
+    <div class="doc-row doc-row-exam-number">
         <span class="doc-label">الرقم الامتحاني</span>
         <span class="doc-value">{!! $cell($ad($dto->examNumber)) !!}</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">الاسم الرباعي</span>
-        <span class="doc-value">{!! $cell($dto->fullName) !!}</span>
+        <span class="doc-value doc-value-full-name">{!! $cell($dto->fullName) !!}</span>
     </div>
     <div class="doc-row doc-row-two">
         <span class="doc-label doc-w-17">التولد</span>
@@ -72,7 +59,7 @@
     </div>
     <div class="doc-row">
         <span class="doc-label">اسم الام الكامل</span>
-        <span class="doc-value">{!! $cell($ad($dto->motherName)) !!}</span>
+        <span class="doc-value doc-value-mother-name">{!! $cell($ad($dto->motherName)) !!}</span>
     </div>
     <div class="doc-row doc-row-two">
         <span class="doc-label doc-w-11">الفرع</span>
@@ -82,7 +69,7 @@
     </div>
     <div class="doc-row doc-row-wide">
         <span class="doc-label">آخر مدرسة كان فيها الطالب</span>
-        <span class="doc-value">{!! $cell($ad($dto->lastSchool)) !!}</span>
+        <span class="doc-value doc-value-last-school">{!! $cell($ad($dto->lastSchool)) !!}</span>
     </div>
     <div class="doc-row doc-row-three">
         <span class="doc-label doc-w-11">رقم وثيقة المتوسطة</span>
@@ -92,7 +79,7 @@
     </div>
     <div class="doc-row">
         <span class="doc-label">جهة الإصدار</span>
-        <span class="doc-value doc-w-15">{!! $cell($ad($dto->issuingAuthority)) !!}</span>
+        <span class="doc-value doc-w-15 doc-value-issuing-authority">{!! $cell($ad($dto->issuingAuthority)) !!}</span>
     </div>
     <div class="doc-row doc-row-three">
         <span class="doc-label doc-w-11">العام الدراسي</span>
@@ -100,7 +87,7 @@
         <span class="doc-label">الدور</span>
         <span class="doc-value doc-value-round">{!! $cell($ad($dto->round)) !!}</span>
         <span class="doc-label">النتيجة</span>
-        <span class="doc-value">{!! $cell($ad($dto->result)) !!}</span>
+        <span class="doc-value doc-value-result">{!! $cell($ad($dto->result)) !!}</span>
     </div>
 
     <table class="doc-table doc-grades-table" aria-label="جدول الدرجات">
@@ -127,17 +114,12 @@
         </tbody>
     </table>
 
-    @if(count($dto->subjectsCompleted) > 0)
-        <div class="doc-completed-row">
-            <span class="doc-label doc-label-block">الدروس التي أكمل بها: {{ $ad(implode('، ', $dto->subjectsCompleted)) }}</span>
-        </div>
-    @elseif($isBlank)
-        <div class="doc-completed-row">
-            <span class="doc-label doc-label-block">الدروس التي أكمل بها:&nbsp;</span>
-        </div>
-    @endif
+    <div class="doc-completed-row">
+        <span class="doc-text-title">الدروس التي أكمل بها:</span>
+        <span class="doc-completed-value">@if(count($dto->subjectsCompleted) > 0){{ $ad(implode('، ', $dto->subjectsCompleted)) }}@else&nbsp;@endif</span>
+    </div>
 
-    <div class="doc-section-title">الوثائق التي زود بها:</div>
+    <div class="doc-section-title"><span class="doc-text-title">الوثائق التي زود بها:</span></div>
     <table class="doc-table doc-docs-table" aria-label="جدول الوثائق">
         <thead>
             <tr>
@@ -148,7 +130,7 @@
             </tr>
         </thead>
         <tbody>
-            @for ($docRow = 0; $docRow < 5; $docRow++)
+            @for ($docRow = 0; $docRow < 4; $docRow++)
                 <tr>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>

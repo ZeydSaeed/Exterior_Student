@@ -284,9 +284,11 @@ body.page-students .dashboard-main {
     max-width: min(520px, 90vw);
     width: 100%;
     height: auto;
-    margin: 2rem auto;
+    margin: 5.5rem auto 2rem;
     border-radius: 0.5rem;
     background: transparent;
+    /* تنزيل بسيط لجعل الأشخاص أقرب لمنتصف مساحة العرض */
+    transform: translateY(1.25rem);
 }
 .dashboard-main h1 {
     color: var(--color-dark-accent);

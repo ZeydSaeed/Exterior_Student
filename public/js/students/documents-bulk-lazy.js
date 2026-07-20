@@ -145,6 +145,8 @@
             });
     }
 
+    var scaleLockedFromRealPaper = false;
+
     function applyChunkHtml(html) {
         var temp = document.createElement('div');
         temp.innerHTML = html.trim();
@@ -159,6 +161,100 @@
             if (placeholder) {
                 placeholder.replaceWith(item);
             }
+        });
+
+        // أول ورقة حقيقية: أعد حساب مقياس ملء الشاشة بدقة، ثم ثبّته
+        if (!scaleLockedFromRealPaper && root.querySelector('.student-document-paper')) {
+            scaleLockedFromRealPaper = true;
+            fitDocumentsToViewport(true);
+        } else {
+            fitDocumentsToViewport(false);
+        }
+    }
+
+    /**
+     * معاينة مصغّرة: كل قيد يملأ مساحة الشاشة المتاحة (عرض+ارتفاع).
+     * المقياس يُحسب مرة واحدة ويُطبَّق على كل القيود — الطباعة تُصفَّر عبر clearDocumentFit.
+     */
+    var lockedFitScale = null;
+
+    function applyLockedScaleTo(el) {
+        if (!el || lockedFitScale === null) {
+            return;
+        }
+        el.style.zoom = String(lockedFitScale);
+    }
+
+    function applyLockedScaleToAll() {
+        if (lockedFitScale === null) {
+            return;
+        }
+        root.querySelectorAll('.student-document-paper, .doc-bulk-placeholder-inner').forEach(applyLockedScaleTo);
+    }
+
+    function computeLockedScale() {
+        var area = document.querySelector('.page-documents-bulk .students-table-area');
+        if (!area) {
+            lockedFitScale = 1;
+            return lockedFitScale;
+        }
+
+        root.querySelectorAll('.student-document-paper, .doc-bulk-placeholder-inner').forEach(function (el) {
+            el.style.zoom = '';
+            el.style.transform = '';
+        });
+
+        var sample = root.querySelector('.student-document-paper')
+            || root.querySelector('.doc-bulk-placeholder-inner');
+        var naturalW = sample ? sample.offsetWidth : 0;
+        var naturalH = sample ? sample.offsetHeight : 0;
+        if (!naturalW) {
+            naturalW = 42 * 16;
+        }
+        if (!naturalH) {
+            naturalH = 1050;
+        }
+
+        var areaRect = area.getBoundingClientRect();
+        var availW = Math.max(240, areaRect.width - 12);
+
+        var topBar = document.querySelector('.page-documents-bulk .documents-bulk-top-bar');
+        var top = topBar
+            ? topBar.getBoundingClientRect().bottom
+            : Math.max(areaRect.top, 0);
+        var availH = Math.max(260, window.innerHeight - top - 10);
+
+        // قيد واحد يملأ الشاشة مصغّراً (contain) — نفس المقياس لكل القيود
+        var scale = Math.min(availW / naturalW, availH / naturalH);
+        if (!isFinite(scale) || scale <= 0) {
+            scale = 1;
+        }
+        lockedFitScale = Math.max(0.25, Math.min(scale, 2.8));
+        return lockedFitScale;
+    }
+
+    function fitDocumentsToViewport(forceRecalc) {
+        if (isPrinting || (window.matchMedia && window.matchMedia('print').matches)) {
+            return;
+        }
+
+        if (forceRecalc || lockedFitScale === null) {
+            computeLockedScale();
+        }
+
+        applyLockedScaleToAll();
+    }
+
+    function clearDocumentFit() {
+        lockedFitScale = null;
+        scaleLockedFromRealPaper = false;
+        root.querySelectorAll('.student-document-paper, .doc-bulk-placeholder-inner').forEach(function (el) {
+            el.style.zoom = '';
+            el.style.transform = '';
+        });
+        root.querySelectorAll('.doc-bulk-page-break').forEach(function (wrap) {
+            wrap.style.height = '';
+            wrap.style.width = '';
         });
     }
 
@@ -323,6 +419,7 @@
         loadAllForPrint()
             .then(function () {
                 hideProgress();
+                clearDocumentFit();
                 setTimeout(function () {
                     window.print();
                 }, 150);
@@ -340,6 +437,16 @@
         printBtn.addEventListener('click', handlePrint);
     }
 
+    window.addEventListener('beforeprint', function () {
+        clearDocumentFit();
+    });
+    window.addEventListener('afterprint', function () {
+        fitDocumentsToViewport(true);
+    });
+    window.addEventListener('resize', throttle(function () {
+        fitDocumentsToViewport(true);
+    }, 150));
+
     installScrollObserver();
 
     var mutationTimer = null;
@@ -347,9 +454,20 @@
         if (mutationTimer) {
             clearTimeout(mutationTimer);
         }
-        mutationTimer = setTimeout(observeNewPlaceholders, 100);
+        mutationTimer = setTimeout(function () {
+            observeNewPlaceholders();
+            // نفس مقياس ملء الشاشة على القيود الجديدة — بدون إعادة حساب أثناء السكرول
+            fitDocumentsToViewport(false);
+        }, 100);
     });
     layoutObserver.observe(root, { childList: true, subtree: true });
 
     loadVisibleChunks();
+    fitDocumentsToViewport(true);
+    setTimeout(function () {
+        fitDocumentsToViewport(false);
+    }, 200);
+    setTimeout(function () {
+        fitDocumentsToViewport(false);
+    }, 600);
 })();

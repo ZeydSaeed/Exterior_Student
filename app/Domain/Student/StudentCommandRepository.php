@@ -56,4 +56,11 @@ interface StudentCommandRepository
      * تحديث رقم الصفحة ورقم القيد لسجل قيد الطالب.
      */
     public function updateEnrollmentRecord(int $studentId, ?string $pageNumber, ?string $enrollmentNumber): void;
+
+    /**
+     * تثبيت قائمة «الدروس التي أكمل بها» من الدور الأول (تُخزَّن كـ JSON).
+     *
+     * @param  list<string>  $subjects
+     */
+    public function saveLockedSubjectsCompleted(int $studentId, array $subjects): void;
 }

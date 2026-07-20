@@ -22,7 +22,7 @@ final class GetStudentCertificateWithGradesQueryHandler
     ) {}
 
     /**
-     * @param array<int, array{type: string, name: string}> $employees الموظفون من الجلسة
+     * @param  array<int, array{type: string, name: string}>  $employees  الموظفون من الجلسة
      */
     public function handle(int $id, array $employees): StudentCertificateWithGradesDTO
     {
@@ -43,16 +43,13 @@ final class GetStudentCertificateWithGradesQueryHandler
             $scoreInt = $scoreTrim !== '' && is_numeric($scoreTrim) ? (int) round((float) $scoreTrim) : 0;
             $totalNumeric += $scoreInt;
             $gradesTable[] = [
-                'subject'      => $subjectName,
-                'score'        => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : $score,
-                'score_words'  => $scoreTrim !== '' && is_numeric($scoreTrim) ? $this->numberToWords->convert($scoreInt) : '',
+                'subject' => $subjectName,
+                'score' => $scoreTrim !== '' && is_numeric($scoreTrim) ? (string) (int) round((float) $scoreTrim) : $score,
+                'score_words' => $scoreTrim !== '' && is_numeric($scoreTrim) ? $this->numberToWords->convert($scoreInt) : '',
             ];
         }
 
-        $totalFromDb = $gradesView !== null ? trim($gradesView->total) : '';
-        if ($totalFromDb !== '' && is_numeric($totalFromDb)) {
-            $totalNumeric = (int) round((float) $totalFromDb);
-        }
+        // المجموع دائماً بدالة الجمع من درجات المواد
         $totalStr = (string) $totalNumeric;
         $totalWords = $this->numberToWords->convert($totalStr);
 
@@ -83,7 +80,7 @@ final class GetStudentCertificateWithGradesQueryHandler
             return $map;
         }
         foreach ($gradesView->grades as $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $subject = trim((string) ($row['subject'] ?? ''));
@@ -92,6 +89,7 @@ final class GetStudentCertificateWithGradesQueryHandler
                 $map[$subject] = $score;
             }
         }
+
         return $map;
     }
 
@@ -109,6 +107,7 @@ final class GetStudentCertificateWithGradesQueryHandler
                 return $score;
             }
         }
+
         return '';
     }
 
@@ -116,6 +115,7 @@ final class GetStudentCertificateWithGradesQueryHandler
     {
         $t = trim(preg_replace('/\s+/u', ' ', $name));
         $t = str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $t);
+
         return $t;
     }
 }

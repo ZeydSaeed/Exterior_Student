@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence;
 
 use App\Domain\Record\RecordCommandRepository;
+use App\Support\ArabicDigits;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -54,17 +55,20 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
     }
 
     /**
-     * العمود رقم الوثيقة في DB من نوع integer — نُرجع null أو عدداً صحيحاً فقط.
+     * العمود رقم الوثيقة في بعض قواعد البيانات من نوع integer —
+     * نحوّل الأرقام العربية إلى لاتينية ثم نُرجع null أو عدداً صحيحاً.
      */
     private function normalizeDocumentNumber(?string $value): ?int
     {
         if ($value === null || $value === '') {
             return null;
         }
-        $trimmed = trim($value);
-        if ($trimmed === '' || !is_numeric($trimmed)) {
+
+        $trimmed = trim(ArabicDigits::toWestern($value));
+        if ($trimmed === '' || ! is_numeric($trimmed)) {
             return null;
         }
+
         return (int) $trimmed;
     }
 

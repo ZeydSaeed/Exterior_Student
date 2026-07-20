@@ -56,12 +56,13 @@ final class GetStudentDocumentPageQueryHandler
             ];
         }
 
-        $totalFromDb = $gradesView !== null ? trim($gradesView->total) : '';
-        if ($totalFromDb !== '' && is_numeric($totalFromDb)) {
-            $totalNumeric = (int) round((float) $totalFromDb);
-        }
+        // المجموع دائماً بدالة الجمع من درجات المواد
         $totalStr = (string) $totalNumeric;
         $totalWords = $this->numberToWords->convert($totalStr);
+
+        if ($info->lockedSubjectsCompleted !== null) {
+            $subjectsCompleted = $info->lockedSubjectsCompleted;
+        }
 
         $records = $this->recordRepository->listByStudentId($id);
         $documentDTOs = array_map(

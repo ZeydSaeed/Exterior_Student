@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# WebView2 build cache
+scripts/webview-host/wv-extract/
+

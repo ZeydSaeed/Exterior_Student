@@ -14,7 +14,12 @@
     @endif
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="@yield('icon', asset('favicon.svg'))">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="@yield('icon', asset('favicon-students.svg'))">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="application-name" content="نظام الطلبة">
+    <meta name="theme-color" content="#4a545e">
 </head>
 <body class="dashboard-layout @yield('body_class')">
     <div class="dashboard-wrap">

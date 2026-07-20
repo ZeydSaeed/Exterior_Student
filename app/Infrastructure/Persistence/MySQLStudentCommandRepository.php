@@ -450,6 +450,19 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     $data[$subject] = is_numeric($score) ? (string) (int) round((float) $score) : '0';
                 }
             }
+            if (array_key_exists('grades', $payload) && is_array($payload['grades'])) {
+                $sum = 0;
+                foreach ($payload['grades'] as $row) {
+                    if (! is_array($row)) {
+                        continue;
+                    }
+                    $score = trim((string) ($row['score'] ?? ''));
+                    if ($score !== '' && is_numeric($score)) {
+                        $sum += (int) round((float) $score);
+                    }
+                }
+                $data['المجموع'] = (string) $sum;
+            }
             if (empty($data)) {
                 return false;
             }
@@ -591,6 +604,23 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     }
                 }
             }
+            if (array_key_exists('grades', $payload) && is_array($payload['grades'])) {
+                $sum = 0;
+                foreach ($payload['grades'] as $row) {
+                    if (! is_array($row)) {
+                        continue;
+                    }
+                    $score = trim((string) ($row['score'] ?? ''));
+                    if ($score !== '' && is_numeric($score)) {
+                        $sum += (int) round((float) $score);
+                    }
+                }
+                DB::table('student_academic')->where('student_id', $id)->update([
+                    'total' => $sum,
+                    'updated_at' => now(),
+                ]);
+                $any = true;
+            }
             if ($any) {
                 Cache::forget('student_filters.lists');
             }
@@ -637,6 +667,40 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         }
         if ($update !== []) {
             DB::table('main_table')->where('id', $studentId)->update($update);
+        }
+    }
+
+    public function saveLockedSubjectsCompleted(int $studentId, array $subjects): void
+    {
+        $json = json_encode(array_values($subjects), JSON_UNESCAPED_UNICODE);
+
+        if ($this->useNormalizedSchema()) {
+            if (! Schema::hasColumn('student_academic', 'subjects_completed')) {
+                return;
+            }
+            DB::transaction(function () use ($studentId, $json): void {
+                $now = now();
+                $exists = DB::table('student_academic')->where('student_id', $studentId)->exists();
+                if ($exists) {
+                    DB::table('student_academic')->where('student_id', $studentId)->update([
+                        'subjects_completed' => $json,
+                        'updated_at' => $now,
+                    ]);
+                } else {
+                    DB::table('student_academic')->insert([
+                        'student_id' => $studentId,
+                        'subjects_completed' => $json,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            });
+
+            return;
+        }
+
+        if (Schema::hasColumn('main_table', 'الدروس التي أكمل بها')) {
+            DB::table('main_table')->where('id', $studentId)->update(['الدروس التي أكمل بها' => $json]);
         }
     }
 

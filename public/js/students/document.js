@@ -1,20 +1,125 @@
 /**
- * صفحة سجل قيد الطالب — زر الطباعة وحفظ رقم الصفحة ورقم القيد.
+ * صفحة سجل قيد الطالب — ملء الشاشة للمعاينة فقط (بدون المساس بطباعة القيد).
  */
 (function () {
     'use strict';
 
     var printBtn = document.getElementById('student-document-btn-print');
+    var layout = document.querySelector('.student-document-layout');
+    var paper = document.querySelector('.student-document-paper');
+    var content = document.querySelector('.page-student-document .dashboard-content');
+
+    function clearDocumentFit() {
+        if (paper) {
+            paper.style.zoom = '';
+            paper.style.transform = '';
+            paper.style.transformOrigin = '';
+        }
+        if (content) {
+            content.style.height = '';
+            content.style.minHeight = '';
+            content.style.maxHeight = '';
+        }
+    }
+
+    function toolbarBottom() {
+        var toolbar = document.querySelector('.dashboard-toolbar');
+        if (!toolbar) {
+            return 0;
+        }
+        return toolbar.getBoundingClientRect().bottom;
+    }
+
+    function applyContentHeight() {
+        if (!content || (window.matchMedia && window.matchMedia('print').matches)) {
+            return;
+        }
+        var h = Math.max(280, window.innerHeight - toolbarBottom());
+        content.style.height = h + 'px';
+        content.style.minHeight = h + 'px';
+        content.style.maxHeight = h + 'px';
+    }
+
+    function fitDocumentToViewport() {
+        if (!paper || !layout) {
+            return;
+        }
+        if (window.matchMedia && window.matchMedia('print').matches) {
+            clearDocumentFit();
+            return;
+        }
+
+        applyContentHeight();
+
+        paper.style.zoom = '';
+        paper.style.transform = '';
+        paper.style.transformOrigin = '';
+
+        var naturalW = paper.offsetWidth;
+        var naturalH = paper.offsetHeight;
+        if (!naturalW || !naturalH) {
+            return;
+        }
+
+        var actions = layout.querySelector('.student-document-actions');
+        var availW;
+        var availH;
+
+        if (content) {
+            var contentRect = content.getBoundingClientRect();
+            var top = actions
+                ? Math.max(contentRect.top, actions.getBoundingClientRect().bottom)
+                : contentRect.top;
+            availW = Math.max(240, contentRect.width - 8);
+            availH = Math.max(240, window.innerHeight - top - 6);
+        } else {
+            var topFallback = actions ? actions.getBoundingClientRect().bottom : toolbarBottom();
+            availW = Math.max(240, window.innerWidth - 24);
+            availH = Math.max(240, window.innerHeight - topFallback - 12);
+        }
+
+        // تكبير/تصغير للمعاينة فقط — الطباعة تُصفَّر عبر clearDocumentFit
+        var scale = Math.min(availW / naturalW, availH / naturalH);
+        if (!isFinite(scale) || scale <= 0) {
+            scale = 1;
+        }
+        scale = Math.max(0.35, Math.min(scale, 3));
+        paper.style.zoom = String(scale);
+    }
+
+    function openPrint() {
+        clearDocumentFit();
+        if (typeof window.print === 'function') {
+            window.print();
+        }
+    }
+
     if (printBtn) {
-        printBtn.addEventListener('click', function () {
-            if (typeof window.print === 'function') {
-                window.print();
-            }
+        printBtn.addEventListener('click', openPrint);
+    }
+
+    window.addEventListener('beforeprint', clearDocumentFit);
+    window.addEventListener('afterprint', function () {
+        fitDocumentToViewport();
+    });
+    window.addEventListener('resize', fitDocumentToViewport);
+
+    function runFit() {
+        fitDocumentToViewport();
+        setTimeout(fitDocumentToViewport, 80);
+        setTimeout(fitDocumentToViewport, 250);
+        requestAnimationFrame(function () {
+            requestAnimationFrame(fitDocumentToViewport);
         });
     }
 
-    var layout = document.querySelector('.student-document-layout[data-update-url]');
-    if (!layout) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runFit);
+    } else {
+        runFit();
+    }
+
+    if (!layout || !layout.getAttribute('data-update-url')) {
         return;
     }
 

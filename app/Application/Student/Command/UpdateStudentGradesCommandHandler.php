@@ -2,6 +2,8 @@
 
 namespace App\Application\Student\Command;
 
+use App\Application\Student\Service\FirstRoundSubjectsLocker;
+use App\Application\Student\Service\GradesTotalCalculator;
 use App\Domain\Student\StudentCommandRepository;
 
 /**
@@ -11,6 +13,8 @@ final class UpdateStudentGradesCommandHandler
 {
     public function __construct(
         private StudentCommandRepository $commandRepository,
+        private FirstRoundSubjectsLocker $firstRoundSubjectsLocker,
+        private GradesTotalCalculator $gradesTotalCalculator,
     ) {}
 
     /**
@@ -38,7 +42,11 @@ final class UpdateStudentGradesCommandHandler
     {
         $normalized = $this->normalizePayload($payload);
 
-        return $this->commandRepository->updateGrades($id, $normalized);
+        $updated = $this->commandRepository->updateGrades($id, $normalized);
+
+        $this->firstRoundSubjectsLocker->lock($id);
+
+        return $updated;
     }
 
     private function normalizePayload(array $payload): array
@@ -62,6 +70,8 @@ final class UpdateStudentGradesCommandHandler
                     'score' => trim((string) ($row['score'] ?? '')),
                 ];
             }
+            // المجموع دائماً بدالة الجمع من درجات المواد
+            $out['total'] = (string) $this->gradesTotalCalculator->sum($out['grades']);
         }
 
         return $out;

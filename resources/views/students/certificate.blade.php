@@ -49,7 +49,7 @@
 
                         {{-- العدد: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.number --}}
                         <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-number" data-cert-db="number" placeholder="" /></div>
-                        <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('d / m / Y') }}</span></div>
+                        <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('j / n / Y') }}</span></div>
                         <div class="meta-line">الرقم الامتحاني: <span class="arabic-number" data-number="{{ $dto->examNumber }}">{{ $dto->examNumber }}</span></div>
 
                         <br>

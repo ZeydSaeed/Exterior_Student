@@ -63,6 +63,27 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         return (string) (int) round((float) $v);
     }
 
+    /**
+     * المجموع بدالة الجمع من درجات المواد.
+     *
+     * @param  list<array{subject?: string, score?: string}>  $grades
+     */
+    private function sumGradeScores(array $grades): int
+    {
+        $total = 0;
+        foreach ($grades as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $score = trim((string) ($row['score'] ?? ''));
+            if ($score !== '' && is_numeric($score)) {
+                $total += (int) round((float) $score);
+            }
+        }
+
+        return $total;
+    }
+
     /** النتيجة في فورم الدرجات: تُعرض فقط إن كانت من الخيارات المسموحة، وإلا فارغة. */
     private function sanitizeResult(mixed $value): string
     {
@@ -420,7 +441,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             academicYear: (string) ($row->{'العام الدراسي'} ?? ''),
             result: $this->sanitizeResult($row->{'النتيجة'} ?? ''),
             grades: $grades,
-            total: (string) ($row->{'المجموع'} ?? $row->{'مجموع'} ?? ''),
+            total: (string) $this->sumGradeScores($grades),
             average: (string) ($row->{'المعدل'} ?? $row->{'معدل'} ?? ''),
             round: (string) ($row->{'الدور'} ?? $row->{'دور'} ?? ''),
         );
@@ -496,7 +517,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             academicYear: (string) ($row->academic_year ?? ''),
             result: $this->sanitizeResult($row->result ?? ''),
             grades: $grades,
-            total: $this->formatTotal($row->total ?? ''),
+            total: (string) $this->sumGradeScores($grades),
             average: (string) ($row->average ?? ''),
             round: (string) ($row->round ?? ''),
         );
@@ -744,12 +765,13 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 'students' => [],
                 'count' => 0,
             ];
+            $subjects = $subjectsByStudent[$id] ?? [];
             $grouped[$key]['students'][] = [
                 'id' => $id,
                 'exam_number' => trim((string) ($row->exam_number ?? '')),
                 'full_name' => trim((string) ($row->full_name ?? '')),
-                'subjects' => $subjectsByStudent[$id] ?? [],
-                'total' => $this->formatTotal($row->total ?? ''),
+                'subjects' => $subjects,
+                'total' => (string) $this->sumGradeScores($subjects),
                 'average' => trim((string) ($row->average ?? '')),
                 'result' => trim((string) ($row->result ?? '')),
             ];
@@ -812,7 +834,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 'exam_number' => trim((string) ($row->exam_number ?? '')),
                 'full_name' => trim((string) ($row->full_name ?? '')),
                 'subjects' => $subjects,
-                'total' => $this->formatTotal($row->total ?? ''),
+                'total' => (string) $this->sumGradeScores($subjects),
                 'average' => trim((string) ($row->average ?? '')),
                 'result' => trim((string) ($row->result ?? '')),
             ];
@@ -825,6 +847,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo
     {
         if ($this->useNormalizedSchema()) {
+            $hasLockedColumn = Schema::hasColumn('student_academic', 'subjects_completed');
+            $select = 's.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority, a.page_number, a.enrollment_number';
+            if ($hasLockedColumn) {
+                $select .= ', a.subjects_completed';
+            }
             $row = DB::table('students as s')
                 ->join('student_personal as p', 'p.student_id', '=', 's.id')
                 ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
@@ -833,7 +860,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->where('s.id', $id)
-                ->selectRaw('s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority, a.page_number, a.enrollment_number')
+                ->selectRaw($select)
                 ->first();
             if (! $row) {
                 return null;
@@ -859,6 +886,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 gender: $trim($row->gender ?? ''),
                 pageNumber: $trim($row->page_number ?? ''),
                 enrollmentNumber: $trim($row->enrollment_number ?? ''),
+                lockedSubjectsCompleted: $this->decodeLockedSubjects($hasLockedColumn ? ($row->subjects_completed ?? null) : null),
             );
         }
         $row = DB::table('main_table')->where('id', $id)->first();
@@ -886,7 +914,31 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             gender: $trim($row->{'الجنس'} ?? ''),
             pageNumber: $trim($row->{'رقم الصفحة'} ?? ''),
             enrollmentNumber: $trim($row->{'رقم القيد'} ?? ''),
+            lockedSubjectsCompleted: $this->decodeLockedSubjects($row->{'الدروس التي أكمل بها'} ?? null),
         );
+    }
+
+    /**
+     * فك تشفير قائمة الدروس المثبتة المخزّنة كـ JSON.
+     * NULL/فراغ = غير مثبتة؛ مصفوفة (قد تكون فارغة) = مثبتة.
+     *
+     * @return list<string>|null
+     */
+    private function decodeLockedSubjects(mixed $raw): ?array
+    {
+        if ($raw === null) {
+            return null;
+        }
+        $raw = trim((string) $raw);
+        if ($raw === '') {
+            return null;
+        }
+        $decoded = json_decode($raw, true);
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        return array_values(array_map(static fn ($v): string => (string) $v, $decoded));
     }
 
     public function getAcademicYearsForForm(): array

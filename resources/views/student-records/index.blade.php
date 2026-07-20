@@ -60,9 +60,9 @@
                     <form method="POST" action="{{ route('students.documents.store', $dto->studentId) }}" class="students-search-form document-add-form">
                         @csrf
                         <div class="document-add-fields">
-                            <input type="text" name="document_number" value="{{ old('document_number') }}" placeholder="رقم الوثيقة..." />
-                            <input type="text" name="document_date" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toDisplayDmy(old('document_date')) : '' }}" placeholder="يوم / شهر / سنة" dir="ltr" inputmode="numeric" autocomplete="off" />
-                            <input type="text" name="addressee" value="{{ old('addressee') }}" placeholder="الجهة المعنونة إليها..." />
+                            <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic(old('document_number')) }}" placeholder="رقم الوثيقة..." />
+                            <input type="date" name="document_date" class="arabic-date-field" lang="ar-IQ" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toYmd(old('document_date')) : '' }}" autocomplete="off" />
+                            <textarea name="addressee" class="doc-field-addressee" rows="1" placeholder="الجهة المعنونة إليها...">{{ old('addressee') }}</textarea>
                             <input type="text" name="purpose" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
                             <button type="submit" class="btn-primary">إضافة وثيقة</button>
                         </div>
@@ -88,13 +88,13 @@
                                         <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form">
                                             @csrf
                                             @method('PUT')
-                                            <input type="text" name="document_number" value="{{ $record->documentNumber ?? '' }}" />
+                                            <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic($record->documentNumber ?? '') }}" />
                                     </td>
                                     <td>
-                                            <input type="text" name="document_date" value="{{ \App\Support\ImportDateNormalizer::toDisplayDmy($record->documentDate) }}" placeholder="يوم / شهر / سنة" dir="ltr" inputmode="numeric" autocomplete="off" />
+                                            <input type="date" name="document_date" class="arabic-date-field" lang="ar-IQ" value="{{ \App\Support\ImportDateNormalizer::toYmd($record->documentDate) ?? '' }}" autocomplete="off" />
                                     </td>
                                     <td>
-                                            <input type="text" name="addressee" value="{{ $record->addressee ?? '' }}" />
+                                            <textarea name="addressee" class="doc-field-addressee" rows="1">{{ $record->addressee ?? '' }}</textarea>
                                     </td>
                                     <td>
                                             <input type="text" name="purpose" value="{{ $record->purpose ?? '' }}" />
@@ -123,4 +123,168 @@
         </section>
     </div>
     </div>
+@endsection
+
+@section('styles')
+    <style>
+        .page-student-documents .arabic-date-field-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.15rem;
+            width: 100%;
+            min-width: 11.5rem;
+            direction: rtl;
+            box-sizing: border-box;
+            border: 1px solid var(--color-dark-accent);
+            border-radius: 0.25rem;
+            background: #fff;
+            padding: 0 0.15rem 0 0;
+            overflow: hidden;
+        }
+        .page-student-documents .document-add-fields .arabic-date-field-wrap {
+            width: auto;
+            min-width: 12rem;
+            height: 2.15rem;
+        }
+        .page-student-documents .students-table .arabic-date-field-wrap {
+            height: 2rem;
+        }
+        .page-student-documents .arabic-date-dmy {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.1rem;
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 0 0.35rem;
+            direction: rtl;
+        }
+        .page-student-documents .arabic-date-part {
+            border: 0 !important;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            font: inherit;
+            color: #200f1b;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: auto !important;
+            min-width: 0 !important;
+            box-shadow: none !important;
+            direction: rtl;
+        }
+        .page-student-documents .arabic-date-day,
+        .page-student-documents .arabic-date-month {
+            width: 1.6rem;
+        }
+        .page-student-documents .arabic-date-year {
+            width: 2.6rem;
+        }
+        .page-student-documents .arabic-date-sep {
+            color: #4a545e;
+            user-select: none;
+            flex: 0 0 auto;
+        }
+        .page-student-documents .arabic-date-field-wrap input[type="date"].arabic-date-field {
+            position: relative;
+            flex: 0 0 2rem;
+            width: 2rem !important;
+            min-width: 2rem !important;
+            max-width: 2rem !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            background: transparent;
+            color: transparent;
+            cursor: pointer;
+        }
+        .page-student-documents .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-calendar-picker-indicator {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            opacity: 1;
+        }
+        .page-student-documents .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-datetime-edit {
+            display: none;
+        }
+
+        /* جدول الوثائق: إخفاء أيقونة التاريخ بالكامل */
+        .page-student-documents .students-table .arabic-date-field-wrap input[type="date"].arabic-date-field {
+            position: absolute !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            height: 0 !important;
+            flex: 0 0 0 !important;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .page-student-documents .students-table .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-calendar-picker-indicator {
+            display: none !important;
+        }
+
+        /* إضافة وثيقة: أيقونة تاريخ صغيرة جداً */
+        .page-student-documents .document-add-fields .arabic-date-field-wrap input[type="date"].arabic-date-field {
+            flex: 0 0 0.85rem;
+            width: 1.85rem !important;
+            min-width: 1.85rem !important;
+            max-width: 1.85rem !important;
+        }
+        .page-student-documents .document-add-fields .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-calendar-picker-indicator {
+            transform: scale(0.45);
+            transform-origin: center;
+            opacity: 0.85;
+        }
+        .page-student-documents .document-add-fields input[type="text"]:not(.arabic-date-part) {
+            height: 2.15rem;
+            box-sizing: border-box;
+        }
+        .page-student-documents .students-table input[type="text"]:not(.arabic-date-part) {
+            height: 2rem;
+            box-sizing: border-box;
+        }
+        .page-student-documents .students-table th:nth-child(3),
+        .page-student-documents .students-table td:nth-child(3) {
+            min-width: 11rem;
+            width: 20%;
+        }
+        .page-student-documents .document-add-fields textarea.doc-field-addressee,
+        .page-student-documents .students-table textarea.doc-field-addressee,
+        .page-student-documents .students-table textarea[name="addressee"] {
+            width: 100%;
+            min-width: 25rem;
+            min-height: 2rem;
+            height: 2rem;
+            max-height: 4.5rem;
+            resize: vertical;
+            box-sizing: border-box;
+            padding: 0.2rem 0.4rem;
+            border: 1px solid var(--color-dark-accent);
+            border-radius: 0.25rem;
+            font: inherit;
+            line-height: 1.25;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            overflow-y: auto;
+        }
+        .page-student-documents .document-add-fields textarea.doc-field-addressee {
+            min-height: 2.15rem;
+            height: 2.15rem;
+            flex: 0 1 10rem;
+            max-width: 14rem;
+        }
+    </style>
+@endsection
+
+@section('scripts')
+    <script src="{{ url('js/arabic-date.js') }}?v={{ file_exists(public_path('js/arabic-date.js')) ? filemtime(public_path('js/arabic-date.js')) : time() }}"></script>
 @endsection

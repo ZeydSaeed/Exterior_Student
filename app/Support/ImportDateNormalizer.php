@@ -34,6 +34,8 @@ final class ImportDateNormalizer
             return null;
         }
 
+        $str = ArabicDigits::toWestern($str);
+
         // قيم قاعدة البيانات مثل 2006-06-15 أو 2006-06-15 00:00:00
         if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $str, $m) === 1) {
             $year = (int) $m[1];
@@ -96,6 +98,6 @@ final class ImportDateNormalizer
 
         [$year, $month, $day] = explode('-', $ymd);
 
-        return sprintf('%02d / %02d / %04d', (int) $day, (int) $month, (int) $year);
+        return sprintf('%d / %d / %04d', (int) $day, (int) $month, (int) $year);
     }
 }

@@ -286,9 +286,11 @@ body.page-students .dashboard-main {
     max-width: min(520px, 90vw);
     width: 100%;
     height: auto;
-    margin: 2rem auto;
+    margin: 5.5rem auto 2rem;
     border-radius: 0.5rem;
     background: transparent;
+    /* تنزيل بسيط لجعل الأشخاص أقرب لمنتصف مساحة العرض */
+    transform: translateY(1.25rem);
 }
 .dashboard-main h1 {
     color: var(--color-dark-accent);
@@ -1285,6 +1287,17 @@ body.grades-modal-open {
     box-sizing: border-box;
     direction: rtl;
 }
+.page-add-student .form-group input[type="text"].arabic-date-part {
+    width: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+}
+.page-add-student .form-group .arabic-date-field-wrap input[type="date"] {
+    width: auto;
+    padding: 0;
+    border: 0;
+}
 .page-add-student .form-group-radio .radio-group {
     display: flex;
     flex-wrap: wrap;
@@ -1392,7 +1405,9 @@ body.grades-modal-open {
 .page-student-profile .students-table input[type="text"] {
     width: 100%;
     min-width: 5rem;
+    height: 2rem;
     box-sizing: border-box;
+    padding: 0.25rem 0.4rem;
     text-align: start;
     direction: rtl;
 }
@@ -1414,7 +1429,25 @@ body.grades-modal-open {
     box-sizing: border-box;
     text-align: start;
     direction: rtl;
-    min-height: 40px;
+    height: auto;
+    min-height: 0;
+    padding: 0.25rem 0.4rem;
+}
+.page-student-profile .students-table .arabic-date-field-wrap {
+    height: 2rem;
+    box-sizing: border-box;
+}
+.page-student-profile .employees-card-left .students-table .arabic-date-field-wrap {
+    width: max-content;
+    min-width: 8.75rem;
+    height: auto;
+    min-height: 1.5rem;
+}
+.page-student-profile .students-table .arabic-date-field-wrap input[type="date"] {
+    height: 100%;
+    min-height: 0;
+    padding: 0.25rem 0.4rem;
+    box-sizing: border-box;
 }
 .page-student-profile .students-table .profile-field-small {
     max-width: 2.5rem;
@@ -1427,6 +1460,17 @@ body.grades-modal-open {
     max-width: 7rem;
     min-width: 4rem;
     width: 100%;
+}
+.page-student-profile .employees-card-right .students-table .arabic-date-field-wrap {
+    width: max-content;
+    min-width: 6.75rem;
+    height: auto;
+    min-height: 1.5rem;
+}
+.page-student-profile .employees-card-right .students-table .profile-field-date.arabic-date-field {
+    max-width: none;
+    min-width: 0;
+    width: 0;
 }
 /* عمود النوع أصغر */
 .page-student-profile .employees-card-right .students-table th:nth-child(1),
@@ -1443,8 +1487,12 @@ body.grades-modal-open {
     white-space: normal;
 }
 
-.page-student-documents .employees-page-header { margin-bottom: 1rem; }
-.page-student-documents .employees-success { color: #0d7d0d; margin-bottom: 0.75rem; }
+.page-student-documents .employees-page-header { margin-bottom: 0.15rem; }
+.page-student-documents .employees-page-header h1 {
+    margin: 0;
+    line-height: 1.2;
+}
+.page-student-documents .employees-success { color: #0d7d0d; margin-bottom: 0.35rem; }
 .page-student-documents .employees-card-documents {
     background: rgba(113, 121, 128, 0.12);
     border: 2px solid var(--color-primary);
@@ -1453,9 +1501,19 @@ body.grades-modal-open {
     margin-bottom: 1rem;
 }
 .page-student-documents .employees-card-title { margin: 1rem 0 0.75rem 0; }
+.page-student-documents .dashboard-content {
+    padding-top: 0.35rem;
+}
+.page-student-documents .students-layout {
+    margin-top: 0;
+}
+.page-student-documents .students-table-area {
+    padding-top: 0.25rem;
+}
 .documents-student-info {
-    margin-bottom: 1rem;
-    padding: 0.75rem 0;
+    margin-top: -0.35rem;
+    margin-bottom: 0.45rem;
+    padding: 0.15rem 0 0.35rem;
     border-bottom: 1px solid rgba(74, 84, 94, 0.2);
     text-align: start;
     padding-inline: 0;
@@ -1465,7 +1523,7 @@ body.grades-modal-open {
 .documents-student-info-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem 2rem;
+    gap: 0.05rem 1.5rem;
     align-items: baseline;
     justify-content: flex-start;
     width: 100%;
@@ -1473,8 +1531,9 @@ body.grades-modal-open {
 
 .documents-student-info-row .documents-student-line {
     flex: 0 1 auto;
-    margin: 0.25rem 0;
+    margin: 0.05rem 0;
     text-align: start;
+    line-height: 1.35;
 }
 .document-add-fields {
     display: flex;
@@ -1490,6 +1549,29 @@ body.grades-modal-open {
     min-width: 8rem;
 }
 .document-add-fields input[type="date"] { min-width: 10rem; }
+.document-add-fields input[name="addressee"],
+.document-add-fields textarea[name="addressee"],
+.document-add-fields textarea.doc-field-addressee {
+    min-width: 10rem;
+    max-width: 14rem;
+    flex: 0 1 10rem;
+}
+
+.page-student-documents .students-table input[name="addressee"],
+.page-student-documents .students-table textarea[name="addressee"],
+.page-student-documents .students-table textarea.doc-field-addressee {
+    width: 100%;
+    min-width: 10rem;
+    min-height: 2rem;
+    height: 2rem;
+    max-height: 4.5rem;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    resize: vertical;
+    overflow-y: auto;
+}
 .documents-back-link { margin-top: 1rem; }
 
 /* أزرار إغلاق/التالي — الركن العلوي الأيسر داخل المحتوى */
@@ -1523,6 +1605,10 @@ body.grades-modal-open {
 }
 .page-student-documents .documents-page-wrap .employees-page-header {
     padding-inline-start: 9rem;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    
 }
 
 /* ========== Responsive ========== */

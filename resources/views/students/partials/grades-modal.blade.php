@@ -96,7 +96,7 @@
                 <div class="grades-field">
                     <label>المجموع</label>
                     <span class="grades-readonly" id="grades-total"></span>
-                    <input type="text" name="total" id="grades-total-input" class="grades-edit grades-edit-hidden" aria-label="المجموع">
+                    <input type="text" name="total" id="grades-total-input" class="grades-edit grades-edit-hidden" aria-label="المجموع" readonly data-auto-sum="1" title="يُحسب تلقائياً بجمع درجات المواد">
                 </div>
                 <div class="grades-field">
                     <label>المعدل</label>

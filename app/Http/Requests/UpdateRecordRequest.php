@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ArabicDigits;
 use App\Support\ImportDateNormalizer;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,7 +15,12 @@ class UpdateRecordRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $raw = trim((string) $this->input('document_date', ''));
+        $number = trim(ArabicDigits::toWestern((string) $this->input('document_number', '')));
+        $this->merge([
+            'document_number' => $number !== '' ? $number : null,
+        ]);
+
+        $raw = trim(ArabicDigits::toWestern((string) $this->input('document_date', '')));
         if ($raw === '') {
             $this->merge(['document_date' => null]);
 
@@ -30,7 +36,7 @@ class UpdateRecordRequest extends FormRequest
         return [
             'document_number' => ['nullable', 'string', 'max:255'],
             'document_date' => ['nullable', 'date'],
-            'addressee' => ['nullable', 'string', 'max:255'],
+            'addressee' => ['nullable', 'string', 'max:2000'],
             'purpose' => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -43,7 +49,7 @@ class UpdateRecordRequest extends FormRequest
         return [
             'document_date.date' => 'تاريخ الوثيقة غير صالح. استخدم يوم / شهر / سنة مثل 15 / 06 / 2006.',
             'document_number.max' => 'رقم الوثيقة طويل جداً.',
-            'addressee.max' => 'حقل الجهة المعنونة إليها طويل جداً.',
+            'addressee.max' => 'حقل الجهة المعنونة إليها طويل جداً (الحد الأقصى 2000 حرف).',
             'purpose.max' => 'حقل الغرض من الوثيقة طويل جداً.',
         ];
     }

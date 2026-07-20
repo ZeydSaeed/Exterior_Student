@@ -13,9 +13,9 @@
     <style>
         .page-documents-bulk .documents-bulk-top-bar {
             position: fixed;
-            top: 3.25rem;
+            top: 4.5rem;
             left: 12rem;
-            right: auto;
+            right: 3rem;
             z-index: 45;
             display: flex;
             flex-direction: row;
@@ -23,9 +23,18 @@
             align-items: center;
             gap: 0.02rem;
             margin: 0;
+            direction: ltr;
+        }
+        .page-documents-bulk .documents-bulk-top-bar-actions {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            direction: rtl;
         }
         .page-documents-bulk .documents-bulk-top-bar .btn-primary {
-            margin: 0 0 0 0.75rem;
+            margin: 0;
             text-decoration: none;
             font-weight: 700;
             white-space: nowrap;
@@ -34,24 +43,68 @@
             opacity: 0.65;
             cursor: wait;
         }
+        .page-documents-bulk .documents-bulk-count {
+            margin: 0;
+            margin-left: auto;
+            margin-right: 0.85rem;
+            padding: 0.40rem 0.75rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #200f1b;
+            background: #f1ebe3;
+            border: 1px solid #d6d2cd;
+            border-radius: 0.35rem;
+            white-space: nowrap;
+            direction: rtl;
+        }
+
+        /* خلفية موحّدة لصفحة القيود = نفس لون خلفية الداشبورد */
+        body.page-documents-bulk,
+        body.page-documents-bulk .dashboard-wrap,
+        body.page-documents-bulk .dashboard-main,
+        body.page-documents-bulk .dashboard-content,
+        body.page-documents-bulk .employees-page-wrap,
+        body.page-documents-bulk .students-layout,
+        body.page-documents-bulk .students-table-area,
+        body.page-documents-bulk .student-document-layout,
+        body.page-documents-bulk .doc-bulk-page-break,
+        body.page-documents-bulk .doc-bulk-placeholder {
+            background: var(--color-light-accent) !important;
+        }
 
         .page-documents-bulk .employees-page-wrap {
-            padding-top: 3rem;
+            padding-top: 2.35rem;
         }
         .page-documents-bulk .students-table-area {
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 0.15rem;
+            border-radius: 0;
+            min-height: calc(100vh - 6.5rem);
+            box-shadow: none;
+            overflow-x: hidden;
         }
         .page-documents-bulk .student-document-layout {
-            max-width: 100%;
+            max-width: none;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .page-documents-bulk .student-document-paper {
-            margin-inline: auto;
+            margin: 0;
+            background: #fff;
+            width: 42rem !important;
+            max-width: 42rem !important;
+            min-width: 42rem !important;
+            box-sizing: border-box;
+        }
+        .page-documents-bulk .doc-bulk-placeholder-inner {
+            width: 42rem !important;
+            max-width: 42rem !important;
+            min-width: 42rem !important;
+            box-sizing: border-box;
         }
 
         .page-documents-bulk .doc-bulk-page-break {
@@ -60,6 +113,8 @@
             width: 100%;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
         }
         .page-documents-bulk .doc-bulk-page-break:last-child {
             page-break-after: auto;
@@ -70,21 +125,24 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            min-height: 1050px;
-            margin-bottom: 1.5rem;
+            align-items: flex-start;
+            min-height: 0;
+            margin-bottom: 0.75rem;
         }
         .doc-bulk-placeholder-inner {
-            width: 42rem;
-            max-width: 100%;
+            width: 42rem !important;
+            max-width: 42rem !important;
+            min-width: 42rem !important;
             min-height: 1050px;
-            border: 1px dashed #c5c0b8;
+            border: 1px dashed #b8b3ad;
             border-radius: 0.35rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #8a8580;
+            color: #4a545e;
             font-size: 0.95rem;
-            background: #faf9f7;
+            background: var(--color-light-accent);
+            box-sizing: border-box;
         }
         .doc-bulk-placeholder.is-loading .doc-bulk-placeholder-inner {
             color: #4a545e;
@@ -164,6 +222,25 @@
             .page-documents-bulk .employees-page-wrap {
                 padding-top: 0 !important;
             }
+            .page-documents-bulk .students-table-area {
+                min-height: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+            }
+            .page-documents-bulk .doc-bulk-page-break {
+                height: auto !important;
+                width: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+            }
+            .page-documents-bulk .student-document-paper,
+            .page-documents-bulk .doc-bulk-placeholder-inner {
+                zoom: 1 !important;
+                transform: none !important;
+                width: auto !important;
+                max-width: none !important;
+                min-width: 0 !important;
+            }
             .doc-bulk-placeholder {
                 display: none !important;
             }
@@ -175,8 +252,16 @@
     @php $students_filter_form_action = route('students.documents.bulk-print'); @endphp
 
     <div class="documents-bulk-top-bar no-print" aria-label="إجراءات القيود">
-        <button type="button" class="btn-primary" id="documents-bulk-btn-print">طباعة</button>
-        <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary" title="إغلاق الصفحة والرجوع">إغلاق</a>
+        @php
+            $documentsBulkCount = ! empty($showBlankDocument) ? 0 : count($studentIds ?? []);
+        @endphp
+        <div class="documents-bulk-top-bar-actions">
+            <button type="button" class="btn-primary" id="documents-bulk-btn-print">طباعة</button>
+            <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary" title="إغلاق الصفحة والرجوع">إغلاق</a>
+        </div>
+        <span class="documents-bulk-count" aria-label="عدد القيود المتوفرة">
+            عدد القيود: {{ \App\Support\ArabicDigits::toArabic((string) $documentsBulkCount) }}
+        </span>
     </div>
 
     <div id="documents-bulk-progress" class="documents-bulk-progress-overlay no-print" hidden aria-hidden="true" role="dialog" aria-labelledby="documents-bulk-progress-title">

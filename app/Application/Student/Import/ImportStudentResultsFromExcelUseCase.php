@@ -2,6 +2,8 @@
 
 namespace App\Application\Student\Import;
 
+use App\Application\Student\Service\FirstRoundSubjectsLocker;
+use App\Application\Student\Service\GradesTotalCalculator;
 use App\Domain\Student\BranchMajorCatalogInterface;
 use App\Domain\Student\StudentCommandRepository;
 use App\Domain\Student\StudentQueryRepository;
@@ -21,7 +23,9 @@ final class ImportStudentResultsFromExcelUseCase
         private StudentQueryRepository $queryRepository,
         private StudentCommandRepository $commandRepository,
         private BranchMajorCatalogInterface $branchMajorCatalog,
-        private SubjectCatalogInterface $subjectCatalog
+        private SubjectCatalogInterface $subjectCatalog,
+        private FirstRoundSubjectsLocker $firstRoundSubjectsLocker,
+        private GradesTotalCalculator $gradesTotalCalculator,
     ) {}
 
     /**
@@ -95,13 +99,14 @@ final class ImportStudentResultsFromExcelUseCase
                     'branch' => (string) ($row->branch ?? ''),
                     'major' => (string) ($row->major ?? ''),
                     'academic_year' => (string) ($row->academic_year ?? ''),
-                    'total' => $this->normalizeNumericText((string) ($row->total ?? '')),
+                    'total' => (string) $this->gradesTotalCalculator->sum($subjects),
                     'average' => $this->normalizeNumericText((string) ($row->average ?? '')),
                     'result' => (string) ($row->result ?? ''),
                     'grades' => $subjects,
                 ];
                 $ok = $this->commandRepository->updateGrades((int) $row->student_id, $payload);
                 if ($ok) {
+                    $this->firstRoundSubjectsLocker->lock((int) $row->student_id);
                     $success++;
                 } else {
                     $errors[] = "صف {$row->row_index}: تعذر تحديث نتيجة الطالب";

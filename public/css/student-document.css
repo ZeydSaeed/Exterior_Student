@@ -1,27 +1,66 @@
-/**
+﻿/**
  * تنسيقات صفحة سجل قيد الطالب (قيد الطالب)
  * مطابقة لتخطيط سجل القيد الرسمي — RTL، حدود، جداول بخلفية رمادية للرأس.
  */
 
+.page-student-document,
+.page-student-document .dashboard-wrap,
+.page-student-document .dashboard-main,
+.page-student-document .dashboard-content,
+.page-student-document .student-document-layout {
+    background: var(--color-light-accent);
+}
+
+.page-student-document .dashboard-wrap,
+.page-student-document .dashboard-main {
+    overflow: hidden;
+}
+
 .page-student-document .dashboard-content {
-    padding: 1rem;
+    padding: 0.1rem 0.35rem 0.15rem;
     direction: rtl;
+    overflow: hidden;
+}
+
+/* معاينة الشاشة فقط: تقليل الفراغ العلوي لاستغلال المساحة (الطباعة لها قواعدها) */
+.page-student-document .student-document-layout {
+    margin-top: 0;
+    height: 100%;
 }
 
 .student-document-layout {
-    max-width: 56rem;
+    max-width: none;
+    width: 100%;
     margin: 0 auto;
+    margin-top: 2.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     font-family: "Times New Roman", Times, serif;
     color: #0a0a0b;
+}
+
+.page-student-document .student-document-actions {
+    max-width: none;
+    margin-bottom: 0.1rem;
+    flex-shrink: 0;
+}
+
+.page-student-document .student-document-paper {
+    margin-top: -1.15rem;
+    flex-shrink: 0;
 }
 
 .student-document-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.2rem;
     flex-wrap: wrap;
     text-decoration: none;
+    width: 100%;
+    max-width: 56rem;
 }
 
 .student-document-actions .btn-primary {
@@ -35,6 +74,7 @@
     padding: 1.25rem;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
     width: 42rem;
+    margin-top: -1.15rem;
 }
 
 /* القيد الفارغ: نفس مقاسات القيد المملوء لضمان الطباعة اليدوية */
@@ -49,11 +89,11 @@
 }
 
 .student-document-paper-blank .doc-docs-table tbody td {
-    height: 1.45rem;
+    height: 1.85rem;
 }
 
 .student-document-paper-blank .doc-completed-row {
-    min-height: 1.45rem;
+    min-height: 1.9rem;
 }
 
 /* ========== الهيدر ========== */
@@ -64,6 +104,7 @@
     gap: 0.5rem 1rem;
     align-items: start;
     margin-bottom: 0;
+    margin-top: 1.15rem;
 }
 
 .doc-title {
@@ -109,11 +150,48 @@
     font-size: 0.9rem;
     margin-top: -0.9rem;
     margin-bottom: 2rem;
+    /* رفع الصورة فقط دون التأثير على تخطيط بقية الحقول */
+    transform: translateY(-1.3rem);
 }
 
 /* ========== صفوف البيانات ========== */
 .doc-header + .doc-row {
     margin-top: -1.8rem;
+}
+
+/* رقم الصفحة: هامش علوي سالب للمعاينة فقط — الطباعة لها قاعدتها في @media print */
+@media screen {
+    .doc-header + .doc-row.doc-row-page-meta {
+        margin-top: -3.25rem;
+        padding-top: 0;
+    }
+}
+
+/* صفحة القيد الواحد: خانة رقم الصفحة بعرض ضيق جداً */
+.page-student-document .doc-label-page-number {
+    min-width: 0 !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    padding: 0.08rem 0.2rem;
+}
+
+.page-student-document .doc-value-page-number {
+    width: 5.25rem !important;
+    min-width: 5.25rem !important;
+    max-width: 5.25rem !important;
+    flex: 0 0 3.25rem !important;
+}
+
+/* الرقم الامتحاني: حشو علوي أكبر وارتفاع أكبر لخانة القيمة */
+.doc-row-exam-number {
+    padding-top: 0.75rem;
+    align-items: stretch;
+}
+
+.doc-row-exam-number .doc-label,
+.doc-row-exam-number .doc-value {
+    min-height: 2rem;
+    align-items: center;
 }
 
 .doc-row {
@@ -181,7 +259,78 @@
     background: transparent;
     border: none;
     font-size: 0.95rem;
-    }
+}
+
+/* تظليل العنوان فقط بحجم النص (بدون تظليل خانة القيمة) */
+.doc-text-title {
+    display: inline;
+    background: #d1d5db;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.02rem 0.15rem;
+    border: none;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.doc-completed-value {
+    display: inline;
+    background: transparent;
+    font-weight: 400;
+    padding: 0 0.15rem;
+    box-sizing: border-box;
+    min-height: 1.28rem;
+    vertical-align: baseline;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* العنوان والمواد على نفس السطر — ومحاذاة موحّدة مع «الوثائق التي زود بها» */
+.doc-completed-row,
+.doc-section-title {
+    padding-right: 0.35rem;
+    padding-left: 0.35rem;
+    margin-right: 0;
+    margin-left: 0;
+    box-sizing: border-box;
+    width: 100%;
+    text-align: right;
+}
+
+.doc-completed-row {
+    min-height: 1.9rem;
+    margin-bottom: 0.02rem;
+    margin-top: 0.35rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    background: transparent;
+    display: block;
+    line-height: 1.45;
+}
+
+.doc-completed-row .doc-text-title,
+.doc-section-title .doc-text-title {
+    display: inline;
+    white-space: nowrap;
+}
+
+.doc-completed-row .doc-text-title {
+    margin-inline-end: 0.35rem;
+}
+
+.doc-section-title {
+    margin-top: 1rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    background: transparent;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    line-height: 1.45;
+}
+
+.doc-completed-row + .doc-section-title {
+    margin-top: 0.02rem;
+}
 
 .doc-value {
     padding: 0.08rem 0.28rem;
@@ -360,6 +509,12 @@
     text-align: center;
 }
 
+/* رأس جدولي الدرجات والوثائق: بدون تظليل على الشاشة (التظليل للطباعة فقط) */
+.doc-grades-table th,
+.doc-docs-table th {
+    background: #fff;
+}
+
 .doc-grades-table td:first-child {
     text-align: right;
 }
@@ -367,6 +522,35 @@
 .doc-grades-table .doc-grade-num,
 .doc-docs-table td:nth-child(2) {
     text-align: center;
+}
+
+/* جدول الوثائق: الجهة أوسع، الغرض أضيق */
+.doc-docs-table th:nth-child(1),
+.doc-docs-table td:nth-child(1) {
+    width: 16%;
+}
+
+.doc-docs-table th:nth-child(2),
+.doc-docs-table td:nth-child(2) {
+    width: 20%;
+}
+
+.doc-docs-table th:nth-child(3),
+.doc-docs-table td:nth-child(3) {
+    width: 48%;
+}
+
+.doc-docs-table th:nth-child(4),
+.doc-docs-table td:nth-child(4) {
+    width: 24%;
+}
+
+/* جدول الوثائق: صفوف البيانات بارتفاع أكبر (ما عدا صف العنوان) */
+.doc-docs-table tbody td {
+    height: 1.85rem;
+    min-height: 1.85rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
 }
 
 .doc-grade-subject {
@@ -384,22 +568,6 @@
 
 .doc-total-row td {
     border-width: 2px;
-}
-
-.doc-section-title {
-    font-weight: 700;
-    margin-top: 1rem;
-    margin-bottom: 0.35rem;
-    font-size: 0.95rem;
-}
-
-/* تباعد ضيق بين «الدروس التي أكمل بها» و«الوثائق التي زود بها» */
-.doc-completed-row {
-    margin-bottom: 0.02rem;
-}
-
-.doc-completed-row + .doc-section-title {
-    margin-top: 0.02rem;
 }
 
 /* ========== التواقيع ========== */
@@ -432,8 +600,7 @@
     @page {
         size: A4;
         margin: 0.5cm;
-        margin-right: 1cm; /* هامش أيمن قليل */
-        
+        margin-right: 2cm; /* هامش أيمن للطباعة فقط */
     }
 
     /* السماح بمواصلة المحتوى على أكثر من ورقة (عدم قصه بسبب overflow/height) */
@@ -491,14 +658,15 @@
         overflow: visible !important;
         page-break-inside: auto;
         break-inside: auto;
-        
+        zoom: 1 !important;
+        transform: none !important;
     }
 
     /* الجداول عبر الصفحات مع تكرار رأس الجدول */
     .doc-table {
         page-break-inside: auto;
         break-inside: auto;
-        line-height: 1.38 !important;
+        line-height: 1.15 !important;
     }
 
     .doc-table thead {
@@ -538,10 +706,99 @@
         box-shadow: none !important;
     }
 
-    /* ضمان عدم طباعة خلفيات ملونة في المتصفح */
+    /* صفحة القيود + صفحة القيد الواحد: تظليل خفيف جداً لعناوين الحقول فقط عند الطباعة */
+    .page-documents-bulk .doc-label,
+    .page-documents-bulk .doc-label-page-number,
+    .page-student-document .doc-label,
+    .page-student-document .doc-label-page-number {
+        background: #fafafa !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .page-documents-bulk .doc-value,
+    .page-student-document .doc-value {
+        background: #fff !important;
+    }
+
+    /* ضمان عدم طباعة خلفيات ملونة في المتصفح (ما عدا رأس جدول الدرجات) */
     * {
         -webkit-print-color-adjust: economy;
         print-color-adjust: economy;
+    }
+
+    /* صف عناوين جدولي الدرجات والوثائق: رمادي عند الطباعة فقط */
+    .doc-grades-table thead th,
+    .doc-docs-table thead th {
+        background: #d1d5db !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* صف المجموع في جدول الدرجات: مضلل عند الطباعة */
+    .doc-grades-table .doc-total-row,
+    .doc-grades-table .doc-total-row td {
+        background: #d1d5db !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* عناوين «الدروس التي أكمل بها» و«الوثائق التي زود بها»: تظليل النص فقط */
+    .doc-text-title {
+        background: #d1d5db !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .doc-completed-row,
+    .doc-section-title,
+    .doc-completed-value {
+        background: transparent !important;
+    }
+
+    .doc-completed-row {
+        min-height: 1.9rem !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important;
+        padding-right: 0.35rem !important;
+        padding-left: 0.35rem !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        line-height: 1.4 !important;
+        text-align: right !important;
+    }
+
+    .doc-section-title {
+        padding-right: 0.35rem !important;
+        padding-left: 0.35rem !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        line-height: 1.4 !important;
+        text-align: right !important;
+    }
+
+    .doc-completed-row .doc-text-title,
+    .doc-section-title .doc-text-title {
+        display: inline !important;
+        white-space: nowrap !important;
+    }
+
+    .doc-completed-row .doc-text-title {
+        margin-inline-end: 0.35rem !important;
+    }
+
+    .doc-completed-value {
+        display: inline !important;
+        min-width: 0 !important;
+        width: auto !important;
+        vertical-align: baseline !important;
     }
 
     .no-print,
@@ -561,26 +818,60 @@
         box-shadow: none;
         border: none;
         padding: 0.5rem;
-        line-height: 1.4 !important;
+        line-height: 1 !important;
     }
 
     .doc-title {
-        line-height: 1.38 !important;
+        line-height: 1.25 !important;
     }
 
     .doc-org {
-        line-height: 1.35 !important;
+        line-height: 1 !important;
     }
 
     .doc-row {
-        margin-bottom: 0.18rem !important;
+        margin-bottom: 0.1rem !important;
     }
 
-    /* ثبات أبعاد خلايا القيد عند الطباعة (لا انكماش للحقول الفارغة) */
+    /* رقم الصفحة: هامش علوي قليل عند الطباعة */
+    .doc-header + .doc-row.doc-row-page-meta {
+        margin-top: -3.5rem !important;
+        padding-top: 0.2rem !important;
+    }
+
+    /* رفع صورة القيد للأعلى عند الطباعة دون التأثير على الحقول */
+    .doc-photo {
+        margin-top: -0.9rem !important;
+        transform: translateY(-1.3rem) !important;
+    }
+
+    /* الرقم الامتحاني: حشو علوي وارتفاع أكبر لخانة القيمة عند الطباعة */
+    
+
+    .doc-row-exam-number .doc-label,
+    .doc-row-exam-number .doc-value {
+        min-height: 1rem !important;
+        padding-top: 0.2rem !important;
+    }
+
+    /**
+     * جدول الدرجات بمحاذاة الحقول العلوية يميناً ويساراً عند الطباعة
+     * (نفس الحشو الأفقي لصفوف .doc-row: 0.35rem)
+     */
+    .doc-grades-table {
+        width: calc(100% - 0.7rem) !important;
+        margin-right: 0.35rem !important;
+        margin-left: 0.35rem !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ارتفاع أقل لكل الحقول عند الطباعة */
     .doc-value,
     .doc-label {
-        min-height: 1.28rem !important;
-        line-height: 1.38 !important;
+        min-height: 1.05rem !important;
+        padding-top: 0.02rem !important;
+        padding-bottom: 0.02rem !important;
+        line-height: 1.15 !important;
         box-sizing: border-box !important;
     }
 
@@ -608,10 +899,11 @@
         flex: 0 0 8rem !important;
     }
 
+    /* خانة نص الدور (وليس العنوان): عرض أقل عند الطباعة */
     .doc-value.doc-value-round {
-        width: 13.5rem !important;
-        min-width: 13.5rem !important;
-        max-width: 13.5rem !important;
+        width: 12.6rem !important;
+        min-width: 12.6rem !important;
+        max-width: 12.6rem !important;
         flex: 0 0 6.5rem !important;
     }
 
@@ -629,9 +921,9 @@
     }
 
     .doc-value.doc-value-birth-place {
-        width: 14.75rem !important;
-        min-width: 14.75rem !important;
-        max-width: 14.75rem !important;
+        width: 13.8rem !important;
+        min-width: 13.8rem !important;
+        max-width: 13.8rem !important;
         flex: 0 0 8.75rem !important;
     }
 
@@ -642,9 +934,9 @@
     }
 
     .doc-value.doc-value-specialization {
-        width: 12.5rem !important;
-        min-width: 12.5rem !important;
-        max-width: 12.5rem !important;
+        width: 11.6rem !important;
+        min-width: 11.6rem !important;
+        max-width: 11.6rem !important;
         flex: 0 0 8.5rem !important;
     }
 
@@ -670,5 +962,171 @@
         padding-top: 0.2rem !important;
         padding-bottom: 0.2rem !important;
         line-height: 1.35 !important;
+    }
+
+    /* جدول الدرجات: ارتفاع صفوف أقل عند الطباعة فقط */
+    .doc-grades-table th,
+    .doc-grades-table td {
+        min-height: 0.95rem !important;
+        padding-top: 0.04rem !important;
+        padding-bottom: 0.04rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .student-document-paper-blank .doc-grades-table tbody tr:not(.doc-total-row) td {
+        height: 0.95rem !important;
+        min-height: 0.95rem !important;
+    }
+
+    /* جدول الوثائق: صفوف البيانات بارتفاع أكبر (ما عدا صف العنوان) */
+    .doc-docs-table tbody td {
+        height: 1.9rem !important;
+        min-height: 1.9rem !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        line-height: 2.2 !important;
+    }
+
+    .doc-docs-table thead th {
+        height: auto !important;
+        min-height: 1.05rem !important;
+        padding-top: 0.1rem !important;
+        padding-bottom: 0.1rem !important;
+    }
+
+    /* هامش علوي أكبر للمنظم ومدير القسم المهني أسفل الورقة */
+    .doc-signatures {
+        margin-top: 5rem !important;
+    }
+}
+
+/**
+ * صفحة القيود — تنسيقات المعاينة فقط (بدون المساس بالطباعة العامة)
+ */
+@media screen {
+    /* تظليل خفيف جداً لعناوين الحقول فقط (وليس خانات النص) — القيود + القيد الواحد */
+    .page-documents-bulk .doc-label,
+    .page-documents-bulk .doc-label-page-number,
+    .page-student-document .doc-label,
+    .page-student-document .doc-label-page-number {
+        background: #fafafa;
+    }
+
+    .page-documents-bulk .doc-value,
+    .page-student-document .doc-value {
+        background: #fff;
+    }
+
+    .page-documents-bulk .doc-row-exam-number .doc-value {
+        flex: 0 0 8rem;
+        width: 8rem;
+        min-width: 40rem;
+        max-width: 40rem;
+        box-sizing: border-box;
+    }
+
+    /* الاسم الرباعي */
+    .page-documents-bulk .doc-value-full-name {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 40rem;
+        max-width: 40rem;
+    }
+
+    /* التولد */
+    .page-documents-bulk .doc-value.doc-w-18 {
+        flex: 0 0 5.5rem;
+        width: 7.5rem;
+        min-width: 7.5rem;
+        max-width: 7.5rem;
+    }
+
+    /* محل الولادة */
+    .page-documents-bulk .doc-row-two .doc-value.doc-value-birth-place {
+        flex: 0 0 8rem;
+        width: 9.8rem;
+        min-width: 9.8rem;
+        max-width: 9.8rem;
+    }
+
+    /* اسم الام الكامل */
+    .page-documents-bulk .doc-value-mother-name {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 40rem;
+        max-width: 40rem;
+    }
+
+    /* الفرع */
+    .page-documents-bulk .doc-value.doc-value-branch {
+        flex: 0 0 7rem;
+        width: 8rem;
+        min-width: 8rem;
+        max-width: 8rem;
+    }
+
+    /* الاختصاص */
+    .page-documents-bulk .doc-row-two .doc-value.doc-value-specialization {
+        flex: 0 0 8rem;
+        width: 9.3rem;
+        min-width: 9.3rem;
+        max-width: 9.3rem;
+    }
+
+    /* آخر مدرسة كان فيها الطالب */
+    .page-documents-bulk .doc-value-last-school {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 28.2rem;
+        max-width: 28.2rem;
+    }
+
+    /* رقم وثيقة المتوسطة */
+    .page-documents-bulk .doc-value.doc-w-13 {
+        flex: 0 0 9rem;
+        width: 9rem;
+        min-width: 9rem;
+        max-width: 9rem;
+    }
+
+    /* تاريخها */
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-middle-doc-date {
+        flex: 0 0 6rem;
+        width: 6.3rem;
+        min-width: 6.3rem;
+        max-width: 6.3rem;
+    }
+
+    /* جهة الإصدار */
+    .page-documents-bulk .doc-value.doc-w-15,
+    .page-documents-bulk .doc-value-issuing-authority {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 30rem;
+        max-width: 30rem;
+    }
+
+    /* العام الدراسي */
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-academic-year {
+        flex: 0 0 6.5rem;
+        width: 8.5rem;
+        min-width: 8.5rem;
+        max-width: 8.5rem;
+    }
+
+    /* الدور */
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-round {
+        flex: 0 0 6.5rem;
+        width: 8.8rem;
+        min-width: 8.8rem;
+        max-width: 8.8rem;
+    }
+
+    /* النتيجة */
+    .page-documents-bulk .doc-value-result {
+        flex: 0 0 7rem;
+        width: 30rem;
+        min-width: 30rem;
+        max-width: 30rem;
     }
 }

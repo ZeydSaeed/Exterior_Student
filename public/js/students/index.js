@@ -27,8 +27,8 @@
         var s = String(value).trim();
         var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
         if (m) {
-            var day = m[3].length === 1 ? '0' + m[3] : m[3];
-            var month = m[2].length === 1 ? '0' + m[2] : m[2];
+            var day = String(parseInt(m[3], 10));
+            var month = String(parseInt(m[2], 10));
             return day + ' / ' + month + ' / ' + m[1];
         }
         return s;
@@ -53,8 +53,9 @@
         });
         document.querySelectorAll('.grades-edit').forEach(function (el) {
             el.style.display = edit ? 'block' : 'none';
-            el.readOnly = !edit;
-            if (edit) el.removeAttribute('readonly');
+            var isAutoSum = el.getAttribute('data-auto-sum') === '1';
+            el.readOnly = !edit || isAutoSum;
+            if (edit && !isAutoSum) el.removeAttribute('readonly');
             else el.setAttribute('readonly', 'readonly');
         });
         document.querySelectorAll('.grades-row-score').forEach(function (el) {
@@ -69,6 +70,23 @@
         if (btnEdit) btnEdit.style.display = edit ? 'none' : '';
         if (btnSave) btnSave.style.display = edit ? '' : 'none';
         if (btnCancel) btnCancel.style.display = edit ? '' : 'none';
+        if (edit) {
+            recalculateTotal();
+        }
+    }
+
+    /** المجموع بدالة الجمع من درجات المواد */
+    function recalculateTotal() {
+        var sum = 0;
+        document.querySelectorAll('.grades-row-score').forEach(function (el) {
+            var v = String(el.value || '').trim();
+            if (v !== '' && !isNaN(v)) {
+                sum += Math.round(Number(v));
+            }
+        });
+        var totalStr = String(sum);
+        setText('grades-total', totalStr);
+        setVal('grades-total-input', totalStr);
     }
 
     function setText(id, v) {
@@ -99,6 +117,8 @@
         i2.name = 'grades[' + i + '][score]';
         i2.value = score != null ? String(score) : '';
         i2.readOnly = true;
+        i2.addEventListener('input', recalculateTotal);
+        i2.addEventListener('change', recalculateTotal);
         td2.appendChild(i2);
         tr.appendChild(td2);
         tbody.appendChild(tr);
@@ -133,8 +153,6 @@
         setVal('grades-major-input', data.major);
         setText('grades-year', data.academic_year);
         setVal('grades-year-input', data.academic_year);
-        setText('grades-total', data.total);
-        setVal('grades-total-input', data.total);
         setText('grades-average', data.average);
         setVal('grades-average-input', data.average);
         setText('grades-result', data.result);
@@ -152,6 +170,7 @@
                 addRow(i, r.subject, r.score);
             });
         }
+        recalculateTotal();
         setEditMode(false);
     }
 
@@ -239,6 +258,7 @@
     if (btnSave) {
         btnSave.addEventListener('click', function () {
             if (!currentData || !form) return;
+            recalculateTotal();
             var grades = [];
             tbody.querySelectorAll('tr').forEach(function (tr) {
                 var sub = tr.querySelector('.grades-row-subject');

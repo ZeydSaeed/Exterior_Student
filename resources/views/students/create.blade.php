@@ -60,7 +60,7 @@
                 </div>
                 <div class="form-group">
                     <label for="birth_date">التولد <span class="required">*</span></label>
-                    <input type="date" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" required />
+                    <input type="date" id="birth_date" name="birth_date" class="arabic-date-field" lang="ar-IQ" value="{{ old('birth_date') ? \App\Support\ImportDateNormalizer::toYmd(old('birth_date')) : '' }}" required autocomplete="off" />
                 </div>
                 <div class="form-group">
                     <label for="mother_full_name">اسم الام الكامل</label>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="form-group">
                     <label for="middle_doc_date">تاريخها</label>
-                    <input type="date" id="middle_doc_date" name="middle_doc_date" value="{{ old('middle_doc_date') }}" />
+                    <input type="date" id="middle_doc_date" name="middle_doc_date" class="arabic-date-field" lang="ar-IQ" value="{{ old('middle_doc_date') ? \App\Support\ImportDateNormalizer::toYmd(old('middle_doc_date')) : '' }}" autocomplete="off" />
                 </div>
                 <div class="form-group">
                     <label for="issuing_authority">جهة الاصدار</label>
@@ -125,7 +125,93 @@
     </div>
 @endsection
 
+@section('styles')
+<style>
+    .page-add-student .arabic-date-field-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        width: 100%;
+        min-height: 2.15rem;
+        direction: rtl;
+        box-sizing: border-box;
+        border: 1px solid var(--color-dark-accent);
+        border-radius: 0.25rem;
+        background: #fff;
+        overflow: hidden;
+    }
+    .page-add-student .arabic-date-dmy {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.1rem;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0 0.4rem;
+        direction: rtl;
+    }
+    .page-add-student .arabic-date-part {
+        border: 0 !important;
+        outline: none;
+        background: transparent;
+        text-align: center;
+        font: inherit;
+        color: #200f1b;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-width: 0 !important;
+        width: auto !important;
+        box-shadow: none !important;
+        direction: rtl;
+    }
+    .page-add-student .arabic-date-day,
+    .page-add-student .arabic-date-month {
+        width: 1.7rem !important;
+    }
+    .page-add-student .arabic-date-year {
+        width: 2.8rem !important;
+    }
+    .page-add-student .arabic-date-sep {
+        color: #4a545e;
+        user-select: none;
+        flex: 0 0 auto;
+    }
+    .page-add-student .arabic-date-field-wrap input[type="date"].arabic-date-field {
+        position: relative;
+        flex: 0 0 0.85rem;
+        width: 0.85rem !important;
+        min-width: 0.85rem !important;
+        max-width: 0.85rem !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent;
+        color: transparent;
+        cursor: pointer;
+    }
+    .page-add-student .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-calendar-picker-indicator {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+        transform: scale(0.45);
+        transform-origin: center;
+        opacity: 0.85;
+    }
+    .page-add-student .arabic-date-field-wrap input[type="date"].arabic-date-field::-webkit-datetime-edit {
+        display: none;
+    }
+</style>
+@endsection
+
 @section('scripts')
+<script src="{{ url('js/arabic-date.js') }}?v={{ file_exists(public_path('js/arabic-date.js')) ? filemtime(public_path('js/arabic-date.js')) : time() }}"></script>
 <script>
 (function () {
     var subjectObject = @json(\App\Support\StudentBranchMajors::subjectObjectForJs());

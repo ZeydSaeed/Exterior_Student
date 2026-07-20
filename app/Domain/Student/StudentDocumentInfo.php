@@ -25,5 +25,12 @@ final readonly class StudentDocumentInfo
         public string $gender,
         public string $pageNumber,
         public string $enrollmentNumber,
+        /**
+         * الدروس التي أكمل بها المثبتة من الدور الأول.
+         * NULL = غير مثبتة (تُحسب ديناميكياً)؛ مصفوفة (قد تكون فارغة) = مثبتة.
+         *
+         * @var list<string>|null
+         */
+        public ?array $lockedSubjectsCompleted = null,
     ) {}
 }
