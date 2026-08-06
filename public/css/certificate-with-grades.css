@@ -359,6 +359,24 @@
     line-height: 1.2;
 }
 
+.support-paper input.signature-title,
+.support-paper input.signature-name {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    border: none;
+    border-bottom: 1px dotted transparent;
+    background: transparent;
+    padding: 0.05rem 0.15rem;
+}
+
+.support-paper input.signature-title:focus,
+.support-paper input.signature-name:focus {
+    border-bottom-color: #4a545e;
+    outline: none;
+}
+
 .signature-date {
     font-size: 0.9rem;
     color: #0a0a0a;

@@ -48,8 +48,13 @@
 }
 
 .page-student-document .student-document-paper {
-    margin-top: -1.15rem;
+    margin-top: 0;
     flex-shrink: 0;
+    width: 42rem;
+    max-width: 42rem;
+    min-width: 42rem;
+    box-sizing: border-box;
+    background: #fff;
 }
 
 .student-document-actions {
@@ -165,21 +170,6 @@
         margin-top: -3.25rem;
         padding-top: 0;
     }
-}
-
-/* صفحة القيد الواحد: خانة رقم الصفحة بعرض ضيق جداً */
-.page-student-document .doc-label-page-number {
-    min-width: 0 !important;
-    width: auto !important;
-    flex: 0 0 auto !important;
-    padding: 0.08rem 0.2rem;
-}
-
-.page-student-document .doc-value-page-number {
-    width: 5.25rem !important;
-    min-width: 5.25rem !important;
-    max-width: 5.25rem !important;
-    flex: 0 0 3.25rem !important;
 }
 
 /* الرقم الامتحاني: حشو علوي أكبر وارتفاع أكبر لخانة القيمة */
@@ -380,30 +370,35 @@
     min-height: 1.28rem;
 }
 
-/* قيمة الفرع: عرض أقل من رقم وثيقة المتوسطة */
+/* قيمة الفرع: بعرض النص فقط */
 .doc-value.doc-value-branch {
-    width: 9rem;
-    min-width: 9rem;
-    flex: 0 0 9rem;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    flex: 0 0 auto;
     min-height: 1.28rem;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    white-space: nowrap;
 }
 
 /* قيم بعرض 13rem: رقم وثيقة المتوسطة */
 .doc-value.doc-w-13 {
-    width: 13rem;
-    min-width: 13rem;
-    flex: 0 0 13rem;
+    width: 10rem;
+    min-width: 10rem;
+    flex: 0 0 10rem;
     min-height: 1.28rem;
 }
 
-/* الاختصاص بجانب الفرع: عرض أقل وثابت */
+/* صف الفرع/الاختصاص: بدون لف حتى يمتد الاختصاص لنهاية الورقة */
+.doc-row.doc-row-two:has(.doc-value-branch) {
+    flex-wrap: nowrap;
+}
+
+/* قيمة الاختصاص: تمتد لنهاية الورقة بمحاذاة حقل اسم الام فوقه */
 .doc-row-two .doc-value.doc-value-specialization {
-    flex: 0 0 8.5rem;
-    width: 10.7rem;
-    min-width: 10.7rem;
-    max-width: 10.7rem;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
     min-height: 1.28rem;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -459,6 +454,29 @@
     text-align: right;
     font-size: 0.95rem;
 }
+
+/* عنوان الفرع: نفس عرض عنوان/حقل اسم الام الكامل */
+.doc-label.doc-label-branch {
+    width: 10rem;
+    min-width: 10rem;
+    max-width: 10rem;
+    flex: 0 0 10rem;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* عنوان الاختصاص: بعرض النص فقط */
+.doc-label.doc-label-specialization {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    flex: 0 0 auto;
+    padding-left: 0.18rem;
+    padding-right: 0.18rem;
+    white-space: nowrap;
+    text-align: right;
+}
+
 .doc-label.doc-w-17 {
     width: 5.3rem;
 }
@@ -928,16 +946,18 @@
     }
 
     .doc-value.doc-value-branch {
-        width: 9rem !important;
-        min-width: 9rem !important;
-        flex: 0 0 9rem !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
     }
 
     .doc-value.doc-value-specialization {
-        width: 11.6rem !important;
-        min-width: 11.6rem !important;
-        max-width: 11.6rem !important;
-        flex: 0 0 8.5rem !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
     }
 
     .doc-row:not(.doc-row-two):not(.doc-row-three):not(.doc-row-wide) .doc-value:not(.doc-value-page-number) {
@@ -1001,10 +1021,11 @@
 }
 
 /**
- * صفحة القيود — تنسيقات المعاينة فقط (بدون المساس بالطباعة العامة)
+ * معاينة الشاشة — نفس تنسيق الحقول لصفحة القيود وصفحة القيد الواحد
+ * (بدون المساس بقواعد الطباعة العامة)
  */
 @media screen {
-    /* تظليل خفيف جداً لعناوين الحقول فقط (وليس خانات النص) — القيود + القيد الواحد */
+    /* تظليل خفيف جداً لعناوين الحقول فقط (وليس خانات النص) */
     .page-documents-bulk .doc-label,
     .page-documents-bulk .doc-label-page-number,
     .page-student-document .doc-label,
@@ -1017,7 +1038,8 @@
         background: #fff;
     }
 
-    .page-documents-bulk .doc-row-exam-number .doc-value {
+    .page-documents-bulk .doc-row-exam-number .doc-value,
+    .page-student-document .doc-row-exam-number .doc-value {
         flex: 0 0 8rem;
         width: 8rem;
         min-width: 40rem;
@@ -1026,7 +1048,8 @@
     }
 
     /* الاسم الرباعي */
-    .page-documents-bulk .doc-value-full-name {
+    .page-documents-bulk .doc-value-full-name,
+    .page-student-document .doc-value-full-name {
         flex: 1 1 auto;
         width: auto;
         min-width: 40rem;
@@ -1034,7 +1057,8 @@
     }
 
     /* التولد */
-    .page-documents-bulk .doc-value.doc-w-18 {
+    .page-documents-bulk .doc-value.doc-w-18,
+    .page-student-document .doc-value.doc-w-18 {
         flex: 0 0 5.5rem;
         width: 7.5rem;
         min-width: 7.5rem;
@@ -1042,7 +1066,8 @@
     }
 
     /* محل الولادة */
-    .page-documents-bulk .doc-row-two .doc-value.doc-value-birth-place {
+    .page-documents-bulk .doc-row-two .doc-value.doc-value-birth-place,
+    .page-student-document .doc-row-two .doc-value.doc-value-birth-place {
         flex: 0 0 8rem;
         width: 9.8rem;
         min-width: 9.8rem;
@@ -1050,48 +1075,65 @@
     }
 
     /* اسم الام الكامل */
-    .page-documents-bulk .doc-value-mother-name {
+    .page-documents-bulk .doc-value-mother-name,
+    .page-student-document .doc-value-mother-name {
         flex: 1 1 auto;
         width: auto;
         min-width: 40rem;
         max-width: 40rem;
     }
 
-    /* الفرع */
-    .page-documents-bulk .doc-value.doc-value-branch {
-        flex: 0 0 7rem;
-        width: 8rem;
-        min-width: 8rem;
-        max-width: 8rem;
+    /* الفرع: بعرض النص */
+    .page-documents-bulk .doc-value.doc-value-branch,
+    .page-student-document .doc-value.doc-value-branch {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        white-space: nowrap;
     }
 
-    /* الاختصاص */
-    .page-documents-bulk .doc-row-two .doc-value.doc-value-specialization {
-        flex: 0 0 8rem;
-        width: 9.3rem;
-        min-width: 9.3rem;
-        max-width: 9.3rem;
+    /* الاختصاص: يمتد لنهاية الورقة بمحاذاة حقل اسم الام */
+    .page-documents-bulk .doc-row-two .doc-value.doc-value-specialization,
+    .page-student-document .doc-row-two .doc-value.doc-value-specialization {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        max-width: none;
     }
 
     /* آخر مدرسة كان فيها الطالب */
-    .page-documents-bulk .doc-value-last-school {
+    .page-documents-bulk .doc-value-last-school,
+    .page-student-document .doc-value-last-school {
         flex: 1 1 auto;
         width: auto;
-        min-width: 28.2rem;
-        max-width: 28.2rem;
+        min-width: 28rem;
+        max-width: 28rem;
     }
 
     /* رقم وثيقة المتوسطة */
-    .page-documents-bulk .doc-value.doc-w-13 {
-        flex: 0 0 9rem;
-        width: 9rem;
-        min-width: 9rem;
-        max-width: 9rem;
+    .page-documents-bulk .doc-value.doc-w-13,
+    .page-student-document .doc-value.doc-w-13 {
+        flex: 0 0 5.5rem;
+        width: 5.5rem;
+        min-width: 5.5rem;
+        max-width: 5.5rem;
+    }
+
+    /* عنوان تاريخها */
+    .page-documents-bulk .doc-label.doc-w-14,
+    .page-student-document .doc-label.doc-w-14 {
+        width: 9.9rem;
+        min-width: 9.9rem;
+        max-width: 9.9rem;
+        flex: 0 0 9.9rem;
+        white-space: nowrap;
     }
 
     /* تاريخها */
-    .page-documents-bulk .doc-row-three .doc-value.doc-value-middle-doc-date {
-        flex: 0 0 6rem;
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-middle-doc-date,
+    .page-student-document .doc-row-three .doc-value.doc-value-middle-doc-date {
+        flex: 0 0 6.3rem;
         width: 6.3rem;
         min-width: 6.3rem;
         max-width: 6.3rem;
@@ -1099,7 +1141,9 @@
 
     /* جهة الإصدار */
     .page-documents-bulk .doc-value.doc-w-15,
-    .page-documents-bulk .doc-value-issuing-authority {
+    .page-documents-bulk .doc-value-issuing-authority,
+    .page-student-document .doc-value.doc-w-15,
+    .page-student-document .doc-value-issuing-authority {
         flex: 1 1 auto;
         width: auto;
         min-width: 30rem;
@@ -1107,7 +1151,8 @@
     }
 
     /* العام الدراسي */
-    .page-documents-bulk .doc-row-three .doc-value.doc-value-academic-year {
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-academic-year,
+    .page-student-document .doc-row-three .doc-value.doc-value-academic-year {
         flex: 0 0 6.5rem;
         width: 8.5rem;
         min-width: 8.5rem;
@@ -1115,18 +1160,33 @@
     }
 
     /* الدور */
-    .page-documents-bulk .doc-row-three .doc-value.doc-value-round {
-        flex: 0 0 6.5rem;
-        width: 8.8rem;
-        min-width: 8.8rem;
-        max-width: 8.8rem;
+    .page-documents-bulk .doc-row-three .doc-value.doc-value-round,
+    .page-student-document .doc-row-three .doc-value.doc-value-round {
+        flex: 0 0 8.5rem;
+        width: 8.5rem;
+        min-width: 8.5rem;
+        max-width: 8.5rem;
     }
 
     /* النتيجة */
-    .page-documents-bulk .doc-value-result {
+    .page-documents-bulk .doc-value-result,
+    .page-student-document .doc-value-result {
         flex: 0 0 7rem;
         width: 30rem;
         min-width: 30rem;
         max-width: 30rem;
+    }
+
+    /* تذييل الترقيم — معاينة فقط */
+    .page-student-document .doc-bulk-view-footer {
+        display: block;
+        width: 42rem;
+        max-width: 42rem;
+        margin-top: 0.45rem;
+        text-align: center;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #4a545e;
+        font-family: "Times New Roman", Times, serif;
     }
 }

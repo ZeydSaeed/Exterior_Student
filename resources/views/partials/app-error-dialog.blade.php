@@ -11,6 +11,9 @@
     if (! is_array($resolvedDialog) && session()->has('warning')) {
         $resolvedDialog = AppUserMessage::fromText((string) session('warning'), AppUserMessage::TYPE_WARNING);
     }
+    if (! is_array($resolvedDialog) && session()->has('status')) {
+        $resolvedDialog = AppUserMessage::fromText((string) session('status'), AppUserMessage::TYPE_INFO);
+    }
     if (! is_array($resolvedDialog) && isset($errors) && $errors->any()) {
         $resolvedDialog = AppUserMessage::fromLines($errors->all(), AppUserMessage::TYPE_WARNING);
     }

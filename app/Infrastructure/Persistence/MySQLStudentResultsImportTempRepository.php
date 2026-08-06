@@ -27,6 +27,7 @@ final class MySQLStudentResultsImportTempRepository implements StudentResultsImp
                 'total' => $row['total'] ?? null,
                 'average' => $row['average'] ?? null,
                 'result' => $row['result'] ?? null,
+                'round' => $row['round'] ?? null,
                 'status' => 'pending',
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -56,10 +57,12 @@ final class MySQLStudentResultsImportTempRepository implements StudentResultsImp
                 'total' => $row->total,
                 'average' => $row->average,
                 'result' => $row->result,
+                'round' => $row->round ?? null,
                 'status' => $row->status,
                 'error' => $row->error,
             ];
         }
+
         return $out;
     }
 

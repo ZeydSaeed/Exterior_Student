@@ -78,12 +78,12 @@
             availH = Math.max(240, window.innerHeight - topFallback - 12);
         }
 
-        // تكبير/تصغير للمعاينة فقط — الطباعة تُصفَّر عبر clearDocumentFit
+        // تكبير/تصغير للمعاينة فقط — نفس حدود صفحة القيود؛ الطباعة تُصفَّر عبر clearDocumentFit
         var scale = Math.min(availW / naturalW, availH / naturalH);
         if (!isFinite(scale) || scale <= 0) {
             scale = 1;
         }
-        scale = Math.max(0.35, Math.min(scale, 3));
+        scale = Math.max(0.25, Math.min(scale, 2.8));
         paper.style.zoom = String(scale);
     }
 

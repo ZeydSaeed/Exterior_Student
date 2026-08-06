@@ -9,12 +9,25 @@
 
 @section('content')
     @php
+        $isEdit = ! empty($isEdit) && isset($attestation) && $attestation !== null;
         $organizer = $dto->employees[0]['name'] ?? 'غير محدد';
         $organizerTitle = $dto->employees[0]['type'] ?? 'منظم التأييد';
         $manager = $dto->employees[1]['name'] ?? 'غير محدد';
         $managerTitle = $dto->employees[1]['type'] ?? 'مسؤول شعبة شؤون الطلبة';
         $genderTrim = trim($dto->gender ?? '');
         $isFemale = in_array($genderTrim, ['انثى', 'أنثى'], true);
+        $certDateYmd = $isEdit
+            ? (\App\Support\ImportDateNormalizer::toYmd($attestation->date) ?? now()->format('Y-m-d'))
+            : now()->format('Y-m-d');
+        $certDateDisplay = $isEdit
+            ? (\App\Support\ImportDateNormalizer::toDisplayDmy($attestation->date) ?: now()->format('j / n / Y'))
+            : now()->format('j / n / Y');
+        $closeUrl = $isEdit
+            ? route('students.profile.show', $studentId)
+            : ($students_index_url ?? route('students.index'));
+        $saveAction = $isEdit
+            ? route('students.profile.attestations.update', [$studentId, $attestation->id])
+            : route('students.profile.attestations.store', $studentId);
     @endphp
 
     <div class="students-layout">
@@ -23,11 +36,22 @@
                 <div class="certificate-fit-wrapper">
                     <div class="support-paper support-paper-with-grades print-area" contenteditable="true">
                         <div class="form-actions no-print" contenteditable="false">
+                            @if($isEdit)
+                                <button type="button" class="btn-primary" id="certificate-btn-save">حفظ</button>
+                            @endif
                             <button type="button" class="btn-primary btn-print" id="certificate-btn-print">طباعة</button>
-                            <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary btn-close">إغلاق</a>
+                            <a href="{{ $closeUrl }}" class="btn-primary btn-close">إغلاق</a>
                         </div>
-                        <form id="certificate-save-form" method="POST" action="{{ route('students.profile.attestations.store', $studentId) }}" style="display: none;">
+                        <form id="certificate-save-form"
+                              method="POST"
+                              action="{{ $saveAction }}"
+                              data-mode="{{ $isEdit ? 'edit' : 'create' }}"
+                              data-return-url="{{ route('students.profile.show', $studentId) }}"
+                              style="display: none;">
                             @csrf
+                            @if($isEdit)
+                                @method('PUT')
+                            @endif
                             <input type="hidden" name="type" value="with_grades" />
                             <input type="text" name="date" id="cert-save-date" />
                             <input type="text" name="number" id="cert-save-number" />
@@ -46,8 +70,8 @@
                         <div class="photo-frame">@if($isFemale)صورة الطالبة@elseصورة الطالب@endif</div>
 
                         {{-- العدد: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.number --}}
-                        <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-number" data-cert-db="number" placeholder="" /></div>
-                        <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('j / n / Y') }}</span></div>
+                        <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-number" data-cert-db="number" placeholder="" value="{{ $isEdit ? ($attestation->number ?? '') : '' }}" /></div>
+                        <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ $certDateYmd }}">{{ $certDateDisplay }}</span></div>
                         <div class="meta-line">الرقم الامتحاني: <span class="arabic-number" data-number="{{ $dto->examNumber }}">{{ $dto->examNumber }}</span></div>
 
                         <br>
@@ -55,7 +79,7 @@
                         {{-- الى: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.issued_to --}}
                         <div class="meta-line to-line">
                             <strong>الى /</strong>
-                            <input type="text" id="cert-field-issued-to" class="cert-field-input cert-field-issued-to" data-cert-db="issued_to" placeholder="" />
+                            <input type="text" id="cert-field-issued-to" class="cert-field-input cert-field-issued-to" data-cert-db="issued_to" placeholder="" value="{{ $isEdit ? ($attestation->issuedTo ?? '') : '' }}" />
                         </div>
 
                         <div class="subject-line">
@@ -100,14 +124,14 @@
 
                         <div class="signature-columns">
                             <div class="signature-col">
-                                <div id="cert-field-right-title" class="signature-title">{{ $organizerTitle }}</div>
-                                <div id="cert-field-right-name" class="signature-name">{{ $organizer }}</div>
-                                <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
+                                <input type="text" id="cert-field-right-title" class="cert-field-input signature-title" value="{{ $organizerTitle }}" autocomplete="off" aria-label="منظم التأييد" />
+                                <input type="text" id="cert-field-right-name" class="cert-field-input signature-name" value="{{ $organizer }}" autocomplete="off" aria-label="اسم الموظف" />
+                                <div class="signature-date arabic-date" data-date="{{ $certDateYmd }}">{{ $certDateYmd }}</div>
                             </div>
                             <div class="signature-col">
-                                <div id="cert-field-left-title" class="signature-title">{{ $managerTitle }}</div>
-                                <div id="cert-field-left-name" class="signature-name">{{ $manager }}</div>
-                                <div class="signature-date arabic-date" data-date="{{ now()->format('Y-m-d') }}">{{ now()->format('Y-m-d') }}</div>
+                                <input type="text" id="cert-field-left-title" class="cert-field-input signature-title" value="{{ $managerTitle }}" autocomplete="off" aria-label="المسؤول" />
+                                <input type="text" id="cert-field-left-name" class="cert-field-input signature-name" value="{{ $manager }}" autocomplete="off" aria-label="اسم الموظف المسؤول" />
+                                <div class="signature-date arabic-date" data-date="{{ $certDateYmd }}">{{ $certDateYmd }}</div>
                             </div>
                         </div>
 

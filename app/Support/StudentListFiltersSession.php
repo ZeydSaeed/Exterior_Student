@@ -180,6 +180,22 @@ final class StudentListFiltersSession
     }
 
     /**
+     * رابط صفحة الإحصائيات مع الفلاتر المحفوظة.
+     *
+     * @param  array<string, string>|null  $merged
+     */
+    public static function statisticsUrl(Request $request, ?array $merged = null): string
+    {
+        $params = $merged !== null
+            ? self::queryParamsFromMerged($merged)
+            : self::queryFromSession($request);
+
+        unset($params[self::PAGE_KEY]);
+
+        return route('students.statistics.index', $params);
+    }
+
+    /**
      * @param  array<string, string>  $merged
      * @return array<string, string>
      */

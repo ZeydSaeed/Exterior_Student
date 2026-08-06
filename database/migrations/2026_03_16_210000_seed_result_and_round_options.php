@@ -6,12 +6,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * النتيجة: ناجح، ناجحة، راسب، راسبة، معيد، معيده
+ * النتيجة: ناجح، ناجحة، راسب، راسبة، معيد، معيده، معيدة
  * الدور: الاول، الثاني، الثالث، الاول تكميلي، الثاني تكميلي، الثالث تكميلي
  */
 return new class extends Migration
 {
-    private const RESULT_OPTIONS = ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده'];
+    private const RESULT_OPTIONS = ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة'];
 
     private const ROUND_OPTIONS = ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي'];
 

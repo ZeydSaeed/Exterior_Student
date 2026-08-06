@@ -62,9 +62,9 @@
         <span class="doc-value doc-value-mother-name">{!! $cell($ad($dto->motherName)) !!}</span>
     </div>
     <div class="doc-row doc-row-two">
-        <span class="doc-label doc-w-11">الفرع</span>
+        <span class="doc-label doc-label-branch">الفرع</span>
         <span class="doc-value doc-value-branch">{!! $cell($ad($dto->branch)) !!}</span>
-        <span class="doc-label doc-w-16">الاختصاص</span>
+        <span class="doc-label doc-label-specialization">الاختصاص</span>
         <span class="doc-value doc-value-specialization">{!! $cell($ad($dto->specialization)) !!}</span>
     </div>
     <div class="doc-row doc-row-wide">
@@ -143,7 +143,7 @@
 
     <div class="doc-signatures">
         <div class="doc-sig-cell">
-            <div class="doc-sig-title">المنظم</div>
+            <div class="doc-sig-title">الموظف المسؤول</div>
         </div>
         <div class="doc-sig-cell">
             <div class="doc-sig-title">مدير القسم المهني</div>

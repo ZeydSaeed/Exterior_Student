@@ -264,14 +264,28 @@
             var row = btn.closest('tr');
             if (!row || !row.cells || row.cells.length < 3) return;
             var fullName = [payload.name_student, payload.name_father, payload.name_grandfather, payload.name_surname].filter(Boolean).join(' ').trim() || payload.name_student || '';
-            row.cells[1].textContent = payload.exam_number != null ? payload.exam_number : '';
+            var examWestern = (function (value) {
+                if (window.ArabicDate && typeof window.ArabicDate.toWesternDigits === 'function') {
+                    return window.ArabicDate.toWesternDigits(value);
+                }
+                var s = value == null ? '' : String(value);
+                var arabic = '٠١٢٣٤٥٦٧٨٩';
+                var out = '';
+                for (var i = 0; i < s.length; i++) {
+                    var c = s.charAt(i);
+                    var idx = arabic.indexOf(c);
+                    out += idx >= 0 ? String(idx) : c;
+                }
+                return out;
+            })(payload.exam_number != null ? payload.exam_number : '');
+            row.cells[1].textContent = examWestern;
             row.cells[2].textContent = fullName;
             if (row.setAttribute) {
                 row.setAttribute('data-name', fullName);
-                row.setAttribute('data-exam', payload.exam_number != null ? String(payload.exam_number) : '');
+                row.setAttribute('data-exam', examWestern);
             }
             btn.setAttribute('data-name', fullName);
-            btn.setAttribute('data-exam-number', payload.exam_number != null ? String(payload.exam_number) : '');
+            btn.setAttribute('data-exam-number', examWestern);
             btn.setAttribute('data-gender', payload.gender != null ? String(payload.gender) : '');
             btn.setAttribute('data-branch', payload.branch != null ? String(payload.branch) : '');
             btn.setAttribute('data-major', payload.major != null ? String(payload.major) : '');

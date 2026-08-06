@@ -39,6 +39,9 @@
             font-weight: 700;
             white-space: nowrap;
         }
+        .page-documents-bulk .documents-bulk-top-bar #documents-bulk-btn-print {
+            margin-right: 0.75rem;
+        }
         .page-documents-bulk .documents-bulk-top-bar .btn-primary:disabled {
             opacity: 0.65;
             cursor: wait;
@@ -56,6 +59,11 @@
             border-radius: 0.35rem;
             white-space: nowrap;
             direction: rtl;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+            line-height: 1.35;
         }
 
         /* خلفية موحّدة لصفحة القيود = نفس لون خلفية الداشبورد */
@@ -112,9 +120,23 @@
             break-after: page;
             width: 100%;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             margin-bottom: 0.75rem;
+        }
+
+        /* تذييل ترقيم الصفحات — عرض القيود فقط */
+        .page-documents-bulk .doc-bulk-view-footer {
+            display: block;
+            width: 42rem;
+            max-width: 42rem;
+            margin-top: 0.45rem;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #4a545e;
+            font-family: "Times New Roman", Times, serif;
         }
         .page-documents-bulk .doc-bulk-page-break:last-child {
             page-break-after: auto;
@@ -241,7 +263,8 @@
                 max-width: none !important;
                 min-width: 0 !important;
             }
-            .doc-bulk-placeholder {
+            .doc-bulk-placeholder,
+            .doc-bulk-view-footer {
                 display: none !important;
             }
         }
@@ -254,13 +277,17 @@
     <div class="documents-bulk-top-bar no-print" aria-label="إجراءات القيود">
         @php
             $documentsBulkCount = ! empty($showBlankDocument) ? 0 : count($studentIds ?? []);
+            $maleDocumentsCount = ! empty($showBlankDocument) ? 0 : (int) ($maleDocumentsCount ?? 0);
+            $femaleDocumentsCount = ! empty($showBlankDocument) ? 0 : (int) ($femaleDocumentsCount ?? 0);
         @endphp
         <div class="documents-bulk-top-bar-actions">
             <button type="button" class="btn-primary" id="documents-bulk-btn-print">طباعة</button>
             <a href="{{ $students_index_url ?? route('students.index') }}" class="btn-primary" title="إغلاق الصفحة والرجوع">إغلاق</a>
         </div>
-        <span class="documents-bulk-count" aria-label="عدد القيود المتوفرة">
-            عدد القيود: {{ \App\Support\ArabicDigits::toArabic((string) $documentsBulkCount) }}
+        <span class="documents-bulk-count" aria-label="عدد القيود المتوفرة حسب الجنس">
+            <span>عدد القيود: {{ \App\Support\ArabicDigits::toArabic((string) $documentsBulkCount) }}</span>
+            <span>الذكور: {{ \App\Support\ArabicDigits::toArabic((string) $maleDocumentsCount) }}</span>
+            <span>الإناث: {{ \App\Support\ArabicDigits::toArabic((string) $femaleDocumentsCount) }}</span>
         </span>
     </div>
 
@@ -280,27 +307,38 @@
         <div class="students-layout">
             <section class="students-table-area" aria-label="معاينة القيود وطباعتها">
                 @if(!empty($showBlankDocument))
-                    <div id="documents-bulk-root" class="student-document-layout" data-chunk-url="" data-chunk-size="5" data-total="0">
+                    <div id="documents-bulk-root" class="student-document-layout" data-chunk-url="" data-chunk-size="5" data-total="1">
                         <div class="doc-bulk-page-break doc-bulk-loaded" data-index="0" data-student-id="0">
                             @include('students.partials.document-paper', ['dto' => $blankDto, 'editable' => false])
+                            <div class="doc-bulk-view-footer no-print" aria-label="رقم الصفحة">
+                                {{ \App\Support\ArabicDigits::toArabic('1') }} / {{ \App\Support\ArabicDigits::toArabic('1') }}
+                            </div>
                         </div>
                     </div>
                 @else
+                    @php $documentsBulkTotal = count($studentIds); @endphp
                     <div
                         id="documents-bulk-root"
                         class="student-document-layout"
                         data-chunk-url="{{ route('students.documents.bulk-print.chunk', request()->query()) }}"
                         data-chunk-size="5"
-                        data-total="{{ count($studentIds) }}"
+                        data-total="{{ $documentsBulkTotal }}"
                     >
                         @forelse($studentIds as $index => $studentId)
+                            @php
+                                $pageLabel = \App\Support\ArabicDigits::toArabic((string) ($index + 1))
+                                    .' / '
+                                    .\App\Support\ArabicDigits::toArabic((string) $documentsBulkTotal);
+                            @endphp
                             @if(isset($initialDtosById[$studentId]))
                                 <div class="doc-bulk-page-break doc-bulk-loaded" data-index="{{ $index }}" data-student-id="{{ $studentId }}">
                                     @include('students.partials.document-paper', ['dto' => $initialDtosById[$studentId], 'editable' => false])
+                                    <div class="doc-bulk-view-footer no-print" aria-label="رقم الصفحة">{{ $pageLabel }}</div>
                                 </div>
                             @else
                                 <div class="doc-bulk-page-break doc-bulk-placeholder" data-index="{{ $index }}" data-student-id="{{ $studentId }}" data-loaded="0">
                                     <div class="doc-bulk-placeholder-inner">—</div>
+                                    <div class="doc-bulk-view-footer no-print" aria-label="رقم الصفحة">{{ $pageLabel }}</div>
                                 </div>
                             @endif
                         @empty

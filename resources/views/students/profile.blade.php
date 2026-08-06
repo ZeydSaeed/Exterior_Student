@@ -67,6 +67,12 @@
                                     </td>
                                     <td class="students-table-actions">
                                         <div class="students-table-actions-inner">
+                                            @php
+                                                $attestationEditUrl = $att->type === 'with_grades'
+                                                    ? route('students.certificate-with-grades', ['id' => $dto->studentId, 'attestation' => $att->id])
+                                                    : route('students.certificate', ['id' => $dto->studentId, 'attestation' => $att->id]);
+                                            @endphp
+                                            <a href="{{ $attestationEditUrl }}" class="btn-primary btn-edit-row">تعديل</a>
                                             <button type="submit" class="btn-primary btn-edit-row">حفظ</button>
                                         </form>
                                         <form method="POST" action="{{ route('students.profile.attestations.destroy', [$dto->studentId, $att->id]) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">

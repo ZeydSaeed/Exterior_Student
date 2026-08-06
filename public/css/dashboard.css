@@ -1654,3 +1654,53 @@ body.grades-modal-open {
         font-size: 0.875rem;
     }
 }
+
+/* صفحة الإحصائيات */
+.page-students-statistics .students-statistics-panel {
+    background: #fff;
+    border: 1px solid rgba(74, 84, 94, 0.18);
+    border-radius: 0.35rem;
+    padding: 1.25rem 1.5rem;
+    min-height: 12rem;
+}
+.page-students-statistics .students-statistics-header {
+    margin-bottom: 1.25rem;
+}
+.page-students-statistics .students-statistics-header h1 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    color: #4a545e;
+}
+.page-students-statistics .students-statistics-count {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #4a545e;
+}
+.page-students-statistics .students-statistics-count strong {
+    color: #717980;
+    font-size: 1.4rem;
+}
+.page-students-statistics .students-statistics-filters-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem 1rem;
+}
+.page-students-statistics .students-statistics-filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0.9rem;
+    background: #d6d2cd;
+    border-radius: 0.25rem;
+}
+.page-students-statistics .students-statistics-filter-key {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4a545e;
+}
+.page-students-statistics .students-statistics-filter-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #717980;
+    word-break: break-word;
+}

@@ -13,4 +13,9 @@ interface AttestationQueryRepository
      * @return list<Attestation>
      */
     public function listByStudentId(int $studentId): array;
+
+    /**
+     * جلب تأييد واحد لطالب محدد، أو null إن لم يوجد أو لا يتبعه.
+     */
+    public function findByStudentAndId(int $studentId, int $attestationId): ?Attestation;
 }

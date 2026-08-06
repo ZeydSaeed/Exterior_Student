@@ -12,6 +12,7 @@ use App\Http\Controllers\StudentRecordPrintController;
 use App\Http\Controllers\StudentRecordsController;
 use App\Http\Controllers\StudentRepeatersController;
 use App\Http\Controllers\StudentResultsExcelImportController;
+use App\Http\Controllers\StudentStatisticsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,6 +36,9 @@ Route::delete('/students/failures', StudentFailuresBulkDeleteController::class)
 
 Route::get('/students/repeaters', [StudentRepeatersController::class, 'index'])
     ->name('students.repeaters.index');
+
+Route::get('/students/statistics', [StudentStatisticsController::class, 'index'])
+    ->name('students.statistics.index');
 
 Route::get('/students/create', [StudentController::class, 'create'])
     ->name('students.create');

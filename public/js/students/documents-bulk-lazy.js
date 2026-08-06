@@ -147,6 +147,37 @@
 
     var scaleLockedFromRealPaper = false;
 
+    function toArabicDigits(value) {
+        return String(value).replace(/\d/g, function (d) {
+            return '٠١٢٣٤٥٦٧٨٩'[parseInt(d, 10)];
+        });
+    }
+
+    function formatBulkPageFooter(index, total) {
+        return toArabicDigits(index + 1) + ' / ' + toArabicDigits(total);
+    }
+
+    function refreshBulkPageFooters() {
+        var total = totalCount > 0
+            ? totalCount
+            : root.querySelectorAll('.doc-bulk-page-break').length;
+
+        root.querySelectorAll('.doc-bulk-page-break').forEach(function (el) {
+            var idx = parseInt(el.getAttribute('data-index') || '0', 10);
+            if (isNaN(idx) || idx < 0) {
+                idx = 0;
+            }
+            var footer = el.querySelector('.doc-bulk-view-footer');
+            if (!footer) {
+                footer = document.createElement('div');
+                footer.className = 'doc-bulk-view-footer no-print';
+                footer.setAttribute('aria-label', 'رقم الصفحة');
+                el.appendChild(footer);
+            }
+            footer.textContent = formatBulkPageFooter(idx, total > 0 ? total : 1);
+        });
+    }
+
     function applyChunkHtml(html) {
         var temp = document.createElement('div');
         temp.innerHTML = html.trim();
@@ -159,9 +190,20 @@
             }
             var placeholder = root.querySelector('.doc-bulk-placeholder[data-student-id="' + studentId + '"]');
             if (placeholder) {
+                var pageIndex = placeholder.getAttribute('data-index');
+                if (pageIndex !== null) {
+                    item.setAttribute('data-index', pageIndex);
+                }
+                var existingFooter = placeholder.querySelector('.doc-bulk-view-footer');
+                var newFooter = item.querySelector('.doc-bulk-view-footer');
+                if (existingFooter && newFooter) {
+                    newFooter.textContent = existingFooter.textContent;
+                }
                 placeholder.replaceWith(item);
             }
         });
+
+        refreshBulkPageFooters();
 
         // أول ورقة حقيقية: أعد حساب مقياس ملء الشاشة بدقة، ثم ثبّته
         if (!scaleLockedFromRealPaper && root.querySelector('.student-document-paper')) {
@@ -462,6 +504,7 @@
     });
     layoutObserver.observe(root, { childList: true, subtree: true });
 
+    refreshBulkPageFooters();
     loadVisibleChunks();
     fitDocumentsToViewport(true);
     setTimeout(function () {

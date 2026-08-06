@@ -37,7 +37,7 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
-            $this->syncSigners((int) $certId, $rightEmployeeName, $leftEmployeeName);
+            $this->syncSigners((int) $certId, $rightEmployeeName, $leftEmployeeName, $rightTitle, $leftTitle);
         });
     }
 
@@ -60,7 +60,7 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
                 'left_title' => $leftTitle,
                 'updated_at' => now(),
             ]);
-            $this->syncSigners($id, $rightEmployeeName, $leftEmployeeName);
+            $this->syncSigners($id, $rightEmployeeName, $leftEmployeeName, $rightTitle, $leftTitle);
         });
     }
 
@@ -72,20 +72,68 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
         });
     }
 
-    private function syncSigners(int $certificateId, ?string $rightEmployeeName, ?string $leftEmployeeName): void
-    {
+    /**
+     * ربط موقّعي التأييد بالموظفين؛ إنشاء موظف بالاسم إن لم يوجد حتى تُحفظ أسماء المعدَّلة.
+     */
+    private function syncSigners(
+        int $certificateId,
+        ?string $rightEmployeeName,
+        ?string $leftEmployeeName,
+        ?string $rightTitle = null,
+        ?string $leftTitle = null,
+    ): void {
         if (! Schema::hasTable('certificate_signers')) {
             return;
         }
+
         DB::table('certificate_signers')->where('certificate_id', $certificateId)->delete();
         $now = now();
-        $rightId = $rightEmployeeName !== null && $rightEmployeeName !== '' ? DB::table('employees')->where('name', $rightEmployeeName)->value('id') : null;
-        $leftId = $leftEmployeeName !== null && $leftEmployeeName !== '' ? DB::table('employees')->where('name', $leftEmployeeName)->value('id') : null;
+
+        $rightId = $this->resolveEmployeeId($rightEmployeeName, $rightTitle, 1);
+        $leftId = $this->resolveEmployeeId($leftEmployeeName, $leftTitle, 2);
+
         if ($rightId !== null) {
-            DB::table('certificate_signers')->insert(['certificate_id' => $certificateId, 'employee_id' => $rightId, 'position' => 'right', 'created_at' => $now, 'updated_at' => $now]);
+            DB::table('certificate_signers')->insert([
+                'certificate_id' => $certificateId,
+                'employee_id' => $rightId,
+                'position' => 'right',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
         }
+
         if ($leftId !== null) {
-            DB::table('certificate_signers')->insert(['certificate_id' => $certificateId, 'employee_id' => $leftId, 'position' => 'left', 'created_at' => $now, 'updated_at' => $now]);
+            DB::table('certificate_signers')->insert([
+                'certificate_id' => $certificateId,
+                'employee_id' => $leftId,
+                'position' => 'left',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
         }
+    }
+
+    private function resolveEmployeeId(?string $name, ?string $type, int $tableGroup): ?int
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return null;
+        }
+
+        $type = trim((string) $type);
+        if ($type === '') {
+            $type = 'موظف';
+        }
+
+        $existingId = DB::table('employees')->where('name', $name)->value('id');
+        if ($existingId !== null) {
+            return (int) $existingId;
+        }
+
+        return (int) DB::table('employees')->insertGetId([
+            'name' => $name,
+            'type' => $type,
+            'table_group' => $tableGroup,
+        ]);
     }
 }

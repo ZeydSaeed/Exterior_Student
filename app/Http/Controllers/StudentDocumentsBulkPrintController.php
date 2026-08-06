@@ -65,12 +65,15 @@ final class StudentDocumentsBulkPrintController extends Controller
                 'initialDtosById' => [],
                 'showBlankDocument' => true,
                 'blankDto' => StudentDocumentPageDTO::blank(),
+                'maleDocumentsCount' => 0,
+                'femaleDocumentsCount' => 0,
             ]);
         }
 
         $listResponse = $this->listHandler->handle($query);
 
         $studentIds = $this->handler->listIds($query);
+        $genderCounts = $this->handler->genderCounts($query);
         $focusId = $request->query('focus_id');
         $focusIdInt = is_numeric($focusId) ? (int) $focusId : null;
         $window = GetBulkStudentDocumentsPrintQueryHandler::initialWindow($studentIds, $focusIdInt);
@@ -93,6 +96,8 @@ final class StudentDocumentsBulkPrintController extends Controller
             'initialDtosById' => $initialDtosById,
             'showBlankDocument' => false,
             'blankDto' => null,
+            'maleDocumentsCount' => (int) ($genderCounts['male'] ?? 0),
+            'femaleDocumentsCount' => (int) ($genderCounts['female'] ?? 0),
         ]);
     }
 

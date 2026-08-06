@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 final class ListRepeatersReportResponseDTO
 {
     /**
-     * @param  list<array{branch:string,major:string,students:list<array{id:int,exam_number:string,full_name:string,subjects:list<array{subject:string,score:string}>,total:string,average:string,result:string}>,count:int}>  $groups
+     * @param  list<array{branch:string,major:string,students:list<array{id:int,exam_number:string,full_name:string,subjects:list<array{subject:string,score:string}>,total:string,average:string,result:string}>,count:int,subject_columns:list<string>,subject_repeater_counts:array<string,int>}>  $groups
      */
     public function __construct(
         public readonly array $groups,

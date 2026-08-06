@@ -10,3 +10,7 @@ it('converts arabic digits to western', function () {
     expect(ArabicDigits::toWestern('١٨٨١٨'))->toBe('18818');
     expect(ArabicDigits::toWestern('١٥ / ٦ / ٢٠٠٦'))->toBe('15 / 6 / 2006');
 });
+
+it('keeps already western exam numbers unchanged', function () {
+    expect(ArabicDigits::toWestern('18818'))->toBe('18818');
+});

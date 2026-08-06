@@ -1175,6 +1175,18 @@ body.grades-modal-open {
     display: block;
     font-weight: 600;
     margin-bottom: 0.35rem;
+    color: #4a545e;
+}
+.import-excel-select {
+    display: block;
+    width: 100%;
+    max-width: 20rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(74, 84, 94, 0.35);
+    border-radius: 0.25rem;
+    background: #fff;
+    color: #4a545e;
+    font-size: 0.95rem;
 }
 .import-excel-file-wrap {
     position: relative;

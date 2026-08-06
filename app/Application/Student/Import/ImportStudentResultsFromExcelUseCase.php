@@ -31,7 +31,7 @@ final class ImportStudentResultsFromExcelUseCase
     /**
      * @return array{batch_id:string,total:int,valid:int,failed:int}
      */
-    public function uploadAndStage(UploadedFile $file): array
+    public function uploadAndStage(UploadedFile $file, string $round): array
     {
         $data = Excel::toArray(new \App\Imports\StudentsExcelImport, $file);
         $rows = $data[0] ?? [];
@@ -43,7 +43,7 @@ final class ImportStudentResultsFromExcelUseCase
         $tempRows = [];
         $rowIndex = 1;
         foreach (array_slice($rows, 1) as $excelRow) {
-            $mapped = $this->mapRow($excelRow, $headerRow, $rowIndex);
+            $mapped = $this->mapRow($excelRow, $headerRow, $rowIndex, $round);
             if ($mapped !== null) {
                 $tempRows[] = $mapped;
             }
@@ -102,6 +102,7 @@ final class ImportStudentResultsFromExcelUseCase
                     'total' => (string) $this->gradesTotalCalculator->sum($subjects),
                     'average' => $this->normalizeNumericText((string) ($row->average ?? '')),
                     'result' => (string) ($row->result ?? ''),
+                    'round' => (string) ($row->round ?? ''),
                     'grades' => $subjects,
                 ];
                 $ok = $this->commandRepository->updateGrades((int) $row->student_id, $payload);
@@ -124,14 +125,14 @@ final class ImportStudentResultsFromExcelUseCase
     /**
      * @param  array<int,mixed>  $excelRow
      * @param  array<int,mixed>  $headerRow
-     * @return array{row_index:int,exam_number:?string,student_name:?string,branch:?string,major:?string,academic_year:?string,subjects_json:?string,total:?string,average:?string,result:?string}|null
+     * @return array{row_index:int,exam_number:?string,student_name:?string,branch:?string,major:?string,academic_year:?string,subjects_json:?string,total:?string,average:?string,result:?string,round:?string}|null
      */
-    private function mapRow(array $excelRow, array $headerRow, int $rowIndex): ?array
+    private function mapRow(array $excelRow, array $headerRow, int $rowIndex, string $round): ?array
     {
         $get = static fn (int $i) => array_key_exists($i, $excelRow) ? trim((string) $excelRow[$i]) : '';
         $exam = $get(0);
         $name = $get(1);
-        if ($exam === '' && $name === '') {
+        if ($exam === '') {
             return null;
         }
         $rawScores = [];
@@ -152,6 +153,7 @@ final class ImportStudentResultsFromExcelUseCase
             'total' => ($t = $get(13)) !== '' ? $t : null,
             'average' => ($a = $get(14)) !== '' ? $a : null,
             'result' => ($r = $get(15)) !== '' ? $r : null,
+            'round' => $round !== '' ? $round : null,
         ];
     }
 
@@ -162,15 +164,11 @@ final class ImportStudentResultsFromExcelUseCase
     {
         $errors = [];
         $exam = trim((string) ($row->exam_number ?? ''));
-        $name = trim((string) ($row->student_name ?? ''));
         $branch = trim((string) ($row->branch ?? ''));
         $major = trim((string) ($row->major ?? ''));
         $year = trim((string) ($row->academic_year ?? ''));
         if ($exam === '') {
             $errors[] = 'الرقم الامتحاني مطلوب';
-        }
-        if ($name === '') {
-            $errors[] = 'اسم الطالب مطلوب';
         }
         if ($branch === '' || $major === '') {
             $errors[] = 'الفرع والاختصاص مطلوبان';
@@ -188,9 +186,6 @@ final class ImportStudentResultsFromExcelUseCase
             $errors[] = 'الرقم الامتحاني غير موجود';
         } else {
             $studentId = (int) $student->id;
-            if ($this->normalize($student->full_name) !== $this->normalize($name)) {
-                $errors[] = 'اسم الطالب لا يطابق السجل';
-            }
             if (trim((string) $student->branch) !== $branch) {
                 $errors[] = 'الفرع لا يطابق بيانات الطالب';
             }
@@ -209,14 +204,6 @@ final class ImportStudentResultsFromExcelUseCase
         }
         if (count($catalogSubjects) > count($rawScores)) {
             $errors[] = 'عدد درجات الأعمدة أقل من عدد مواد الاختصاص';
-        }
-        $subjects = $this->buildGradesForRow($branch, $major, $rawScores);
-        foreach ($subjects as $s) {
-            $subject = trim((string) ($s['subject'] ?? ''));
-            $score = $this->normalizeNumericText((string) ($s['score'] ?? ''));
-            if ($score !== '' && ! is_numeric($score)) {
-                $errors[] = "درجة المادة {$subject} غير رقمية";
-            }
         }
 
         return [$studentId, array_values(array_unique($errors))];
@@ -300,12 +287,5 @@ final class ImportStudentResultsFromExcelUseCase
         ]);
 
         return trim($value);
-    }
-
-    private function normalize(string $v): string
-    {
-        $v = trim(preg_replace('/\s+/u', ' ', $v));
-
-        return str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $v);
     }
 }

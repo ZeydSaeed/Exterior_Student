@@ -21,6 +21,35 @@ interface StudentQueryRepository
     public function listIdsWithFilters(array $filters): array;
 
     /**
+     * عدد الطلاب المطابقين للفلاتر (للإحصائيات).
+     *
+     * @param  array{branch?: string|null, major?: string|null, gender?: string|null, year?: string|null, round?: string|null, result?: string|null, search?: string|null}  $filters
+     */
+    public function countWithFilters(array $filters): int;
+
+    /**
+     * عدد الذكور والإناث ضمن الطلاب المطابقين لنفس الفلاتر.
+     *
+     * @param  array{branch?: string|null, major?: string|null, gender?: string|null, year?: string|null, round?: string|null, result?: string|null, search?: string|null}  $filters
+     * @return array{male:int,female:int}
+     */
+    public function countGendersWithFilters(array $filters): array;
+
+    /**
+     * قوائم خيارات الفلترة للواجهة.
+     *
+     * @return array{
+     *   academicYears:\Illuminate\Support\Collection,
+     *   branches:\Illuminate\Support\Collection,
+     *   majors:\Illuminate\Support\Collection,
+     *   genders:\Illuminate\Support\Collection,
+     *   resultOptions:\Illuminate\Support\Collection,
+     *   roundOptions:\Illuminate\Support\Collection
+     * }
+     */
+    public function getFilterLists(): array;
+
+    /**
      * معرفات الطلاب الراسبين/المعيدين المطابقة للفلاتر (لحذف جماعي).
      *
      * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters

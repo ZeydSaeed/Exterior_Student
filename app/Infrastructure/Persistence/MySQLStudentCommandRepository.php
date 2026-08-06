@@ -212,6 +212,36 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return null;
     }
 
+    /**
+     * إرجاع معرف نوع النتيجة من name_ar؛ إن لم يُوجَد يُدرَج سطر جديد ويُرجع معرفه.
+     */
+    private function resolveResultTypeId(string $nameAr): ?int
+    {
+        if (! Schema::hasTable('result_types')) {
+            return null;
+        }
+        $nameAr = trim($nameAr);
+        if ($nameAr === '') {
+            return null;
+        }
+        $id = DB::table('result_types')->where('name_ar', $nameAr)->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
+        $now = now();
+        $sortOrder = (int) (DB::table('result_types')->max('sort_order') ?? 0) + 1;
+        DB::table('result_types')->insert([
+            'name_ar' => $nameAr,
+            'sort_order' => $sortOrder,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $newId = DB::table('result_types')->where('name_ar', $nameAr)->value('id');
+
+        return $newId !== null ? (int) $newId : null;
+    }
+
     private const BASIC_FIELDS = [
         'name_student' => 'اسم الطالب',
         'name_father' => 'اسم الاب',
@@ -447,7 +477,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 $subject = trim((string) ($row['subject'] ?? ''));
                 $score = trim((string) ($row['score'] ?? ''));
                 if ($subject !== '' && isset($allowedGrades[$subject])) {
-                    $data[$subject] = is_numeric($score) ? (string) (int) round((float) $score) : '0';
+                    $data[$subject] = $this->normalizeScoreForStorage($score, false);
                 }
             }
             if (array_key_exists('grades', $payload) && is_array($payload['grades'])) {
@@ -535,7 +565,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 $resultName = trim((string) $payload['result']);
                 $allowedResults = Config::get('grades_catalog.result_options', []);
                 if ($resultName !== '' && in_array($resultName, $allowedResults, true)) {
-                    $acUp['result_type_id'] = DB::table('result_types')->where('name_ar', $resultName)->value('id');
+                    $acUp['result_type_id'] = $this->resolveResultTypeId($resultName);
                 }
             }
             foreach (['total', 'average', 'round'] as $k) {
@@ -576,11 +606,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                         $score = trim((string) ($row['score'] ?? ''));
                         $majorSubjectId = $subject !== '' ? ($subjectToMajorSubject[$subject] ?? null) : null;
                         if ($majorSubjectId !== null) {
-                            $scoreInt = is_numeric($score) ? (int) round((float) $score) : 0;
-                            $scoreInt = max(0, min(100, $scoreInt));
                             DB::table('student_grades')->updateOrInsert(
                                 ['student_id' => $id, 'major_subject_id' => $majorSubjectId, 'academic_year_id' => $academicYearId],
-                                ['score' => $scoreInt, 'updated_at' => now()]
+                                ['score' => $this->normalizeScoreForStorage($score, true), 'updated_at' => now()]
                             );
                             $any = true;
                         }
@@ -598,7 +626,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     if ($subject !== '' && isset($subjectIds[$subject])) {
                         DB::table('student_grades')->updateOrInsert(
                             ['student_id' => $id, 'subject_id' => $subjectIds[$subject]],
-                            ['score' => is_numeric($score) ? (int) round((float) $score) : 0, 'updated_at' => now()]
+                            ['score' => $this->normalizeScoreForStorage($score, false), 'updated_at' => now()]
                         );
                         $any = true;
                     }
@@ -733,5 +761,25 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
 
             return $affected;
         });
+    }
+
+    /**
+     * تطبيع درجة مادة للتخزين: أرقام تُحفظ كعدد صحيح، والنصوص (مثل غ / حجب) تُحفظ كما هي.
+     */
+    private function normalizeScoreForStorage(string $score, bool $clampNumeric): string
+    {
+        $score = trim($score);
+        if ($score === '') {
+            return '0';
+        }
+        if (! is_numeric($score)) {
+            return $score;
+        }
+        $value = (int) round((float) $score);
+        if ($clampNumeric) {
+            $value = max(0, min(100, $value));
+        }
+
+        return (string) $value;
     }
 }

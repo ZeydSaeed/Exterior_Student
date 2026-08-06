@@ -11,6 +11,9 @@
 
         <p class="import-excel-stats">
             المجموع: {{ $total }} | صالح: <strong>{{ $validCount }}</strong> | فاشل: <strong>{{ $failedCount }}</strong>
+            @if(($selectedRound ?? '') !== '')
+                | الدور: <strong>{{ $selectedRound }}</strong>
+            @endif
         </p>
 
         <div class="import-excel-preview-actions">
@@ -35,6 +38,7 @@
                         <th>الفرع</th>
                         <th>الاختصاص</th>
                         <th>العام الدراسي</th>
+                        <th>الدور</th>
                         <th>الحالة</th>
                         <th>الخطأ</th>
                     </tr>
@@ -48,6 +52,7 @@
                             <td>{{ e($row->branch ?? '') }}</td>
                             <td>{{ e($row->major ?? '') }}</td>
                             <td>{{ e($row->academic_year ?? '') }}</td>
+                            <td>{{ e($row->round ?? '') }}</td>
                             <td>
                                 @if($row->status === 'valid')
                                     <span class="status-badge status-valid">صالح</span>

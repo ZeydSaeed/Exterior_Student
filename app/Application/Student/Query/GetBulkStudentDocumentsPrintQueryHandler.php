@@ -30,6 +30,14 @@ final class GetBulkStudentDocumentsPrintQueryHandler
     }
 
     /**
+     * @return array{male:int,female:int}
+     */
+    public function genderCounts(ListStudentsQuery $query): array
+    {
+        return $this->studentRepository->countGendersWithFilters($query->filtersForRepository());
+    }
+
+    /**
      * @param  list<int>  $ids
      * @return list<StudentDocumentPageDTO>
      */

@@ -29,14 +29,16 @@
             @endif
 
             @forelse($groups as $group)
+                @php
+                    $subjectColumns = $group['subject_columns'] ?? [];
+                    $subjectCounts = $group['subject_repeater_counts'] ?? [];
+                @endphp
                 <div class="repeaters-group-meta" style="margin-bottom: .75rem;">
                     <strong>الفرع:</strong> {{ $group['branch'] !== '' ? $group['branch'] : 'غير محدد' }}
                     <span style="display:inline-block; margin-inline: .5rem;">|</span>
                     <strong>الاختصاص:</strong> {{ $group['major'] !== '' ? $group['major'] : 'غير محدد' }}
                     <span style="display:inline-block; margin-inline: .5rem;">|</span>
                     <strong>العام الدراسي:</strong> {{ $selectedYear ?? request('year') ?? 'غير محدد' }}
-                    <!-- <span style="display:inline-block; margin-inline: .5rem;">|</span> -->
-                    <!-- <strong>عدد الطلبة المعيدين:</strong> {{ $group['count'] }} -->
                 </div>
 
                 <div class="students-table-wrapper" style="margin-bottom: 1rem;">
@@ -44,57 +46,20 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>الرقم الامتحاني</th>
-                                <th>اسم الطالب</th>
-@php
-    $subjectColumns = [];
-    foreach ($group['students'] as $studTmp) {
-        foreach ($studTmp['subjects'] as $subTmp) {
-            $name = (string) ($subTmp['subject'] ?? '');
-            $rawScore = $subTmp['score'] ?? null;
-            if (! is_numeric($rawScore) || (float) $rawScore >= 50) {
-                continue;
-            }
-            if ($name === '') {
-                continue;
-            }
-            if (! in_array($name, $subjectColumns, true)) {
-                $subjectColumns[] = $name;
-            }
-        }
-    }
-@endphp
-@foreach($subjectColumns as $subjectName)
-                                <th>{{ $subjectName }}</th>
-@endforeach
-                                <th>النتيجة</th>
+                                <th>اسم المادة</th>
+                                <th>عدد الطلبة المعيدين</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($group['students'] as $student)
-@php
-    $scoresBySubject = [];
-    foreach ($student['subjects'] as $subRow) {
-        $subjectName = (string) ($subRow['subject'] ?? '');
-        $rawScore = $subRow['score'] ?? null;
-        if ($subjectName === '' || ! is_numeric($rawScore) || (float) $rawScore >= 50) {
-            continue;
-        }
-        $scoresBySubject[$subjectName] = $subRow['score'] ?? '';
-    }
-@endphp
+                            @forelse($subjectColumns as $subjectName)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $student['exam_number'] }}</td>
-                                    <td>{{ $student['full_name'] }}</td>
-@foreach($subjectColumns as $subjectName)
-                                    <td>{{ $scoresBySubject[$subjectName] ?? '' }}</td>
-@endforeach
-                                    <td>{{ $student['result'] }}</td>
+                                    <td>{{ $subjectName }}</td>
+                                    <td>{{ (int) ($subjectCounts[$subjectName] ?? 0) }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ 4 + count($subjectColumns) }}">لا توجد بيانات معيدين ضمن هذا الجدول.</td>
+                                    <td colspan="3">لا توجد مواد لهذا الاختصاص حسب الفلاتر الحالية.</td>
                                 </tr>
                             @endforelse
                         </tbody>

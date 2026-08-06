@@ -28,7 +28,7 @@
         </thead>
         <tbody id="students-table-body">
             @forelse($students as $student)
-                @php $examNum = (string)($student->exam_number ?? ''); @endphp
+                @php $examNum = \App\Support\ArabicDigits::toWestern((string) ($student->exam_number ?? '')); @endphp
                 @php $attestWithoutCount = (int)($student->attest_without_count ?? 0); @endphp
                 @php $attestWithCount = (int)($student->attest_with_count ?? 0); @endphp
                 @php $docsCount = (int)($student->docs_count ?? 0); @endphp
@@ -41,7 +41,7 @@
                     <td>
                         <button type="button" class="btn-primary btn-grades-open btn-grades" title="عرض الدرجات"
                             data-student-id="{{ $student->id }}"
-                            data-exam-number="{{ e($student->exam_number ?? '') }}"
+                            data-exam-number="{{ e($examNum) }}"
                             data-name="{{ e($student->full_name ?? '') }}"
                             data-gender="{{ e($student->gender ?? '') }}"
                             data-branch="{{ e($student->branch ?? '') }}"

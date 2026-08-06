@@ -22,10 +22,14 @@ final class StudentResultsExcelImportController extends Controller
 
     public function upload(ImportStudentResultsExcelRequest $request): RedirectResponse
     {
-        $result = $this->useCase->uploadAndStage($request->file('file'));
+        $result = $this->useCase->uploadAndStage(
+            $request->file('file'),
+            (string) $request->validated('round')
+        );
         if ($result['total'] === 0) {
             return redirect()->route('students.results-import-excel')->with('error', 'الملف فارغ أو لا يحتوي صفوفاً.');
         }
+
         return redirect()->route('students.results-import-excel.preview', ['batch_id' => $result['batch_id']])->with('import_result', $result);
     }
 
@@ -40,12 +44,22 @@ final class StudentResultsExcelImportController extends Controller
             return redirect()->route('students.results-import-excel')->with('error', 'لا توجد دفعة مطابقة.');
         }
         $result = session('import_result', ['total' => count($rows), 'valid' => 0, 'failed' => 0]);
+        $selectedRound = '';
+        foreach ($rows as $row) {
+            $round = trim((string) ($row->round ?? ''));
+            if ($round !== '') {
+                $selectedRound = $round;
+                break;
+            }
+        }
+
         return view('students.import-results-excel-preview', [
             'batchId' => $batchId,
             'rows' => $rows,
             'total' => $result['total'],
             'validCount' => $result['valid'],
             'failedCount' => $result['failed'],
+            'selectedRound' => $selectedRound,
         ]);
     }
 
@@ -64,6 +78,7 @@ final class StudentResultsExcelImportController extends Controller
             $msg .= ' تفاصيل: '.implode('؛ ', array_slice($result['errors'], 0, 3));
         }
         $request->session()->forget(StudentListFiltersSession::SESSION_KEY);
+
         return redirect()->route('students.index')->with('status', $msg);
     }
 }

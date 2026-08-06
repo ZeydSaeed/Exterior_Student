@@ -288,7 +288,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                     ->pluck('gender')->sortBy(fn ($g) => ['ذكر' => 0, 'أنثى' => 1][$g] ?? 2)->values();
             }
 
-            $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده']);
+            $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
             $resultOptions = Schema::hasTable('result_types')
                 ? DB::table('result_types')->whereIn('name_ar', $allowedResults)->orderBy('sort_order')->pluck('name_ar')
                 : collect($allowedResults);
@@ -331,6 +331,68 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
     }
 
+    public function countWithFilters(array $filters): int
+    {
+        if ($this->useNormalizedSchema()) {
+            $query = DB::table('students as s')
+                ->join('student_personal as p', 'p.student_id', '=', 's.id')
+                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
+                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
+                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
+                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id');
+            $this->applyListFiltersNormalized($query, $filters);
+
+            return (int) $query->count('s.id');
+        }
+
+        $query = DB::table('main_table');
+        $this->applyListFilters($query, $filters);
+
+        return (int) $query->count('id');
+    }
+
+    public function countGendersWithFilters(array $filters): array
+    {
+        $male = 0;
+        $female = 0;
+
+        if ($this->useNormalizedSchema()) {
+            $query = DB::table('students as s')
+                ->join('student_personal as p', 'p.student_id', '=', 's.id')
+                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
+                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
+                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
+                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
+                ->selectRaw('TRIM(p.gender) AS gender_label, COUNT(*) AS total');
+            $this->applyListFiltersNormalized($query, $filters);
+            $rows = $query->groupByRaw('TRIM(p.gender)')->get();
+        } else {
+            $query = DB::table('main_table')
+                ->selectRaw('TRIM(`الجنس`) AS gender_label, COUNT(*) AS total');
+            $this->applyListFilters($query, $filters);
+            $rows = $query->groupByRaw('TRIM(`الجنس`)')->get();
+        }
+
+        foreach ($rows as $row) {
+            $label = trim((string) ($row->gender_label ?? ''));
+            $total = (int) ($row->total ?? 0);
+            if ($label === 'ذكر') {
+                $male += $total;
+            } elseif ($label === 'أنثى' || $label === 'انثى') {
+                $female += $total;
+            }
+        }
+
+        return ['male' => $male, 'female' => $female];
+    }
+
+    public function getFilterLists(): array
+    {
+        return $this->getFilterListsFromCache();
+    }
+
     public function listFailedIdsWithFilters(array $filters): array
     {
         if ($this->useNormalizedSchema()) {
@@ -342,7 +404,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->select('s.id')
-                ->whereIn('rt.name_ar', ['راسب', 'راسبة', 'معيد', 'معيده']);
+                ->whereIn('rt.name_ar', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
             $this->applyListFiltersNormalized($query, $filters);
             $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
 
@@ -350,7 +412,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
         $query = DB::table('main_table')->select('id');
         $this->applyListFilters($query, $filters);
-        $query->whereIn('النتيجة', ['راسب', 'راسبة', 'معيد', 'معيده']);
+        $query->whereIn('النتيجة', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
         $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
 
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
@@ -709,7 +771,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
             ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
             ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
-            ->whereIn('rt.name_ar', ['معيد', 'معيده']);
+            ->whereIn('rt.name_ar', ['معيد', 'معيده', 'معيدة']);
         $this->applyListFiltersNormalized($base, $filters);
 
         $rows = $base
@@ -784,7 +846,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     /** @return list<array{branch:string,major:string,students:list<array{id:int,exam_number:string,full_name:string,subjects:list<array{subject:string,score:string}>,total:string,average:string,result:string}>,count:int}> */
     private function listRepeatersReportLegacy(array $filters): array
     {
-        $base = DB::table('main_table')->whereIn('النتيجة', ['معيد', 'معيده']);
+        $base = DB::table('main_table')->whereIn('النتيجة', ['معيد', 'معيده', 'معيدة']);
         $this->applyListFilters($base, $filters);
 
         $rows = $base

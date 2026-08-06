@@ -32,7 +32,7 @@ class UpdateStudentGradesRequest extends FormRequest
             'branch' => ['nullable', 'string', 'max:255'],
             'major' => ['nullable', 'string', 'max:255'],
             'academic_year' => ['nullable', 'string', 'max:255'],
-            'result' => ['nullable', 'string', Rule::in(config('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده']))],
+            'result' => ['nullable', 'string', Rule::in(config('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']))],
             'total' => ['nullable', 'string', 'max:255'],
             'average' => ['nullable', 'string', 'max:255'],
             'round' => ['nullable', 'string', Rule::in(config('grades_catalog.round_options', ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي']))],

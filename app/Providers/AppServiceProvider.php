@@ -97,6 +97,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.dashboard', function ($view) {
             $view->with('students_index_url', StudentListFiltersSession::indexUrl(request()));
+            $view->with('students_statistics_url', StudentListFiltersSession::statisticsUrl(request()));
             $view->with('students_bulk_print_url', route('students.documents.bulk-print'));
         });
 

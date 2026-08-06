@@ -53,11 +53,9 @@ class StudentController extends Controller
 
     public function store(StoreStudentRequest $request, CreateStudentCommandHandler $handler): RedirectResponse
     {
-        $id = $handler->handle($request->dataForCreate());
+        $handler->handle($request->dataForCreate());
 
-        return redirect()
-            ->route('students.index')
-            ->with('status', 'تمت إضافة الطالب بنجاح.');
+        return redirect()->route('students.create');
     }
 
     public function grades(int $id, GetStudentGradesQueryHandler $handler)

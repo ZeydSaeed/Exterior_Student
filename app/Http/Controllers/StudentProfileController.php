@@ -8,6 +8,7 @@ use App\Application\Profile\Command\UpdateAttestationCommandHandler;
 use App\Application\Profile\Query\GetStudentProfileQueryHandler;
 use App\Http\Requests\StoreAttestationRequest;
 use App\Http\Requests\UpdateAttestationRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -34,7 +35,7 @@ final class StudentProfileController
         return view('students.profile', compact('dto'));
     }
 
-    public function storeAttestation(int $id, StoreAttestationRequest $request): RedirectResponse
+    public function storeAttestation(int $id, StoreAttestationRequest $request): RedirectResponse|JsonResponse
     {
         $dto = $this->profileQueryHandler->handle($id);
         if ($dto === null) {
@@ -60,10 +61,14 @@ final class StudentProfileController
             leftEmployeeName: isset($validated['left_employee_name']) && $validated['left_employee_name'] !== '' ? trim((string) $validated['left_employee_name']) : null,
         );
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['ok' => true]);
+        }
+
         return redirect()->route('students.profile.show', ['id' => $id]);
     }
 
-    public function updateAttestation(int $id, int $attestationId, UpdateAttestationRequest $request): RedirectResponse
+    public function updateAttestation(int $id, int $attestationId, UpdateAttestationRequest $request): RedirectResponse|JsonResponse
     {
         if ($this->profileQueryHandler->handle($id) === null) {
             abort(404, 'لم يتم العثور على الطالب.');
@@ -79,6 +84,10 @@ final class StudentProfileController
             leftTitle: $request->validated('left_title'),
             leftEmployeeName: $request->validated('left_employee_name'),
         );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['ok' => true]);
+        }
 
         return redirect()->route('students.profile.show', ['id' => $id]);
     }
