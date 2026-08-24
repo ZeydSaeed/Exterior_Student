@@ -22,6 +22,10 @@ final class StudentGradesView
         public readonly string $branch,
         public readonly string $major,
         public readonly string $academicYear,
+        public readonly string $lastSchool,
+        public readonly string $middleDocNumber,
+        public readonly string $middleDocDate,
+        public readonly string $issuingAuthority,
         public readonly string $result,
         /** @var array<int, array{subject: string, score: string}> */
         public readonly array $grades,

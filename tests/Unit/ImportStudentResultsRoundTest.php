@@ -1,6 +1,7 @@
 <?php
 
 use App\Application\Student\Import\ImportStudentResultsFromExcelUseCase;
+use App\Application\Student\Service\AllBlockedGradesResultResolver;
 use App\Application\Student\Service\CompletedSubjectsCalculator;
 use App\Application\Student\Service\FirstRoundSubjectsLocker;
 use App\Application\Student\Service\GradesTotalCalculator;
@@ -23,6 +24,7 @@ it('maps the selected round into each staged results-import row', function () {
         $subjects,
         new FirstRoundSubjectsLocker($query, $command, $subjects, new CompletedSubjectsCalculator),
         new GradesTotalCalculator,
+        new AllBlockedGradesResultResolver($subjects),
     );
 
     $method = new ReflectionMethod(ImportStudentResultsFromExcelUseCase::class, 'mapRow');
@@ -57,6 +59,7 @@ it('includes the staged round when processing valid results import rows', functi
         $subjects,
         $locker,
         new GradesTotalCalculator,
+        new AllBlockedGradesResultResolver($subjects),
     );
 
     $temp->shouldReceive('getByBatchId')->once()->with('batch-1')->andReturn([
@@ -83,7 +86,7 @@ it('includes the staged round when processing valid results import rows', functi
             ], JSON_UNESCAPED_UNICODE),
         ],
     ]);
-    $subjects->shouldReceive('getSubjectsFor')->once()->with('الصناعي', 'سيارات')->andReturn([
+    $subjects->shouldReceive('getSubjectsFor')->with('الصناعي', 'سيارات')->andReturn([
         'اللغة العربية',
         'التربية الاسلامية',
         'اللغة الانكليزية',

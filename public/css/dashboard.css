@@ -978,7 +978,7 @@ body.grades-modal-open {
     --grades-font: 1rem;
     --grades-pad: 0.35rem 0.5rem;
     --grades-gap: 0.4rem;
-    max-width: min(560px, 96vw);
+    max-width: min(920px, 96vw);
     width: 96%;
     max-height: 98vh;
     height: 92vh;
@@ -1023,7 +1023,7 @@ body.grades-modal-open {
 }
 .grades-form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--grades-gap);
     margin-bottom: var(--grades-gap);
     flex-shrink: 0;
@@ -1119,6 +1119,9 @@ body.grades-modal-open {
     grid-template-columns: repeat(4, 1fr);
     gap: var(--grades-gap);
     flex-shrink: 0;
+}
+@media (max-width: 768px) {
+    .grades-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 500px) {
     .grades-form-grid { grid-template-columns: 1fr; }

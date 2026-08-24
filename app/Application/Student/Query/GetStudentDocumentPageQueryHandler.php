@@ -32,7 +32,10 @@ final class GetStudentDocumentPageQueryHandler
         }
 
         $gradesView = $this->studentRepository->getGradesById($id);
-        $subjects = $this->subjectCatalog->getSubjectsFor($info->branch, $info->specialization);
+        $subjects = $this->orderSubjectsForDocument(
+            $info->branch,
+            $this->subjectCatalog->getSubjectsFor($info->branch, $info->specialization),
+        );
 
         $scoreBySubject = $this->buildScoreMap($gradesView);
         $gradesTable = [];
@@ -153,5 +156,25 @@ final class GetStudentDocumentPageQueryHandler
         $t = str_replace(['أ', 'إ', 'آ', 'ى'], 'ا', $t);
 
         return $t;
+    }
+
+    /**
+     * ترتيب مواد جدول القيد — الفرع الصناعي: التربية الإسلامية ثم اللغة العربية.
+     *
+     * @param  list<string>  $subjects
+     * @return list<string>
+     */
+    private function orderSubjectsForDocument(string $branch, array $subjects): array
+    {
+        if (trim($branch) !== 'الصناعي' || count($subjects) < 2) {
+            return $subjects;
+        }
+
+        $first = $subjects[0];
+        $second = $subjects[1];
+        $subjects[0] = $second;
+        $subjects[1] = $first;
+
+        return $subjects;
     }
 }

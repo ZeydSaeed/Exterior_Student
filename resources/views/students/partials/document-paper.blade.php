@@ -53,9 +53,9 @@
     </div>
     <div class="doc-row doc-row-two">
         <span class="doc-label doc-w-17">التولد</span>
-        <span class="doc-value doc-w-18 arabic-date" data-date="{{ $dateYmd($dto->birthDate) }}" dir="ltr">{!! $cell($dateDisplay($dto->birthDate)) !!}</span>
+        <span class="doc-value doc-w-18 doc-value-centered arabic-date" data-date="{{ $dateYmd($dto->birthDate) }}" dir="ltr">{!! $cell($dateDisplay($dto->birthDate)) !!}</span>
         <span class="doc-label">محل الولادة</span>
-        <span class="doc-value doc-value-birth-place">{!! $cell($dto->birthPlace) !!}</span>
+        <span class="doc-value doc-value-birth-place doc-value-centered">{!! $cell($dto->birthPlace) !!}</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">اسم الام الكامل</span>
@@ -73,9 +73,9 @@
     </div>
     <div class="doc-row doc-row-three">
         <span class="doc-label doc-w-11">رقم وثيقة المتوسطة</span>
-        <span class="doc-value doc-w-13">{!! $cell($ad($dto->middleDocNumber)) !!}</span>
+        <span class="doc-value doc-w-13 doc-value-centered">{!! $cell($ad($dto->middleDocNumber)) !!}</span>
         <span class="doc-label doc-w-14">تاريخها</span>
-        <span class="doc-value doc-value-middle-doc-date arabic-date" data-date="{{ $dateYmd($dto->middleDocDate) }}" dir="ltr">{!! $cell($dateDisplay($dto->middleDocDate)) !!}</span>
+        <span class="doc-value doc-value-middle-doc-date doc-value-centered arabic-date" data-date="{{ $dateYmd($dto->middleDocDate) }}" dir="ltr">{!! $cell($dateDisplay($dto->middleDocDate)) !!}</span>
     </div>
     <div class="doc-row">
         <span class="doc-label">جهة الإصدار</span>
@@ -83,9 +83,9 @@
     </div>
     <div class="doc-row doc-row-three">
         <span class="doc-label doc-w-11">العام الدراسي</span>
-        <span class="doc-value doc-value-academic-year">{!! $cell($ad($dto->academicYear)) !!}</span>
+        <span class="doc-value doc-value-academic-year doc-value-centered">{!! $cell($ad($dto->academicYear)) !!}</span>
         <span class="doc-label">الدور</span>
-        <span class="doc-value doc-value-round">{!! $cell($ad($dto->round)) !!}</span>
+        <span class="doc-value doc-value-round doc-value-centered">{!! $cell($ad($dto->round)) !!}</span>
         <span class="doc-label">النتيجة</span>
         <span class="doc-value doc-value-result">{!! $cell($ad($dto->result)) !!}</span>
     </div>

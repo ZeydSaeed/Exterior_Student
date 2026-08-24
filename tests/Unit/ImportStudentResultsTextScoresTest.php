@@ -1,6 +1,7 @@
 <?php
 
 use App\Application\Student\Import\ImportStudentResultsFromExcelUseCase;
+use App\Application\Student\Service\AllBlockedGradesResultResolver;
 use App\Application\Student\Service\CompletedSubjectsCalculator;
 use App\Application\Student\Service\FirstRoundSubjectsLocker;
 use App\Application\Student\Service\GradesTotalCalculator;
@@ -49,6 +50,7 @@ it('does not reject textual subject scores during results import validation', fu
         $subjects,
         $locker,
         $totals,
+        new AllBlockedGradesResultResolver($subjects),
     );
 
     $student = (object) [
@@ -120,6 +122,7 @@ it('accepts results import without matching the student full name', function () 
         $subjects,
         $locker,
         new GradesTotalCalculator,
+        new AllBlockedGradesResultResolver($subjects),
     );
 
     $query->shouldReceive('findByExamNumber')->once()->with('12345')->andReturn((object) [

@@ -442,6 +442,12 @@
     word-break: break-word;
 }
 
+/* محاذاة وسط لخانات النص فقط (بدون العناوين) — كل صفحات القيد */
+.student-document-paper .doc-value.doc-value-centered {
+    text-align: center;
+    justify-content: center;
+}
+
 .doc-value.doc-w-15 {
     width: 28.6rem;
     min-width: 28.6rem;
@@ -930,6 +936,13 @@
         min-width: 7.25rem !important;
         max-width: 7.25rem !important;
         flex: 0 0 7.25rem !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+
+    .student-document-paper .doc-value.doc-value-centered {
+        text-align: center !important;
+        justify-content: center !important;
     }
 
     .doc-value.doc-w-18 {
@@ -1031,6 +1044,13 @@
     .page-student-document .doc-label,
     .page-student-document .doc-label-page-number {
         background: #fafafa;
+    }
+
+    /* محاذاة وسط — صفحة القيود وصفحة القيد من جدول الطلبة */
+    .page-documents-bulk .student-document-paper .doc-value.doc-value-centered,
+    .page-student-document .student-document-paper .doc-value.doc-value-centered {
+        text-align: center !important;
+        justify-content: center !important;
     }
 
     .page-documents-bulk .doc-value,

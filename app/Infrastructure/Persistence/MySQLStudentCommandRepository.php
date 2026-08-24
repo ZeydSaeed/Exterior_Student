@@ -255,6 +255,10 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         'branch' => 'الفرع',
         'major' => 'الاختصاص',
         'academic_year' => 'العام الدراسي',
+        'last_school' => 'اخر مدرسة كان فيها الطالب',
+        'middle_doc_number' => 'رقم الوثيقة المتوسطة',
+        'middle_doc_date' => 'تاريخها',
+        'issuing_authority' => 'جهة الاصدار',
         'result' => 'النتيجة',
         'total' => 'المجموع',
         'average' => 'المعدل',
@@ -461,7 +465,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                         $data[$column] = $v;
                     } elseif ($key === 'round' && ($v === '' || in_array($v, $allowedRounds, true))) {
                         $data[$column] = $v;
-                    } elseif ($key === 'birth_date') {
+                    } elseif ($key === 'birth_date' || $key === 'middle_doc_date') {
                         $data[$column] = $v !== '' ? $v : '1000-01-01';
                     } elseif ($key !== 'result' && $key !== 'round') {
                         $data[$column] = $v;
@@ -568,7 +572,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     $acUp['result_type_id'] = $this->resolveResultTypeId($resultName);
                 }
             }
-            foreach (['total', 'average', 'round'] as $k) {
+            foreach (['total', 'average', 'round', 'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority'] as $k) {
                 if (array_key_exists($k, $payload)) {
                     $v = trim((string) $payload[$k]);
                     if ($k === 'total') {
@@ -579,6 +583,8 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                         $acUp[$k] = ($v !== '' && is_numeric($v))
                             ? (float) $v
                             : 0;
+                    } elseif ($k === 'middle_doc_date') {
+                        $acUp[$k] = $v !== '' ? $v : null;
                     } else {
                         $acUp[$k] = $v;
                     }

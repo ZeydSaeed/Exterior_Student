@@ -7,6 +7,7 @@ use App\Domain\Student\StudentDocumentInfo;
 use App\Domain\Student\StudentGradesView;
 use App\Domain\Student\StudentListProjection;
 use App\Domain\Student\StudentQueryRepository;
+use App\Support\ResultFilterVariants;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -241,7 +242,12 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             $query->where('a.round', $filters['round']);
         }
         if (! empty($filters['result'])) {
-            $query->where('rt.name_ar', $filters['result']);
+            $resultValues = ResultFilterVariants::expand((string) $filters['result']);
+            if (count($resultValues) === 1) {
+                $query->where('rt.name_ar', $resultValues[0]);
+            } else {
+                $query->whereIn('rt.name_ar', $resultValues);
+            }
         }
         if (! empty($filters['search'])) {
             $pattern = '%'.$filters['search'].'%';
@@ -288,7 +294,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                     ->pluck('gender')->sortBy(fn ($g) => ['ذكر' => 0, 'أنثى' => 1][$g] ?? 2)->values();
             }
 
-            $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
+            $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'ناجحه', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة', 'حجب']);
             $resultOptions = Schema::hasTable('result_types')
                 ? DB::table('result_types')->whereIn('name_ar', $allowedResults)->orderBy('sort_order')->pluck('name_ar')
                 : collect($allowedResults);
@@ -445,7 +451,13 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         if (! empty($filters['result'])) {
-            $query->whereRaw('TRIM(`النتيجة`) = ?', [$filters['result']]);
+            $resultValues = ResultFilterVariants::expand((string) $filters['result']);
+            if (count($resultValues) === 1) {
+                $query->whereRaw('TRIM(`النتيجة`) = ?', [$resultValues[0]]);
+            } else {
+                $placeholders = implode(', ', array_fill(0, count($resultValues), '?'));
+                $query->whereRaw('TRIM(`النتيجة`) IN ('.$placeholders.')', $resultValues);
+            }
         }
 
         if (! empty($filters['search'])) {
@@ -468,7 +480,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         $gradeColumns = Config::get('grades_catalog.grade_columns', []);
-        $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'التولد', 'محل الولادة', 'اسم الام الكامل', 'الفرع', 'الاختصاص', 'العام الدراسي', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
+        $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'التولد', 'محل الولادة', 'اسم الام الكامل', 'الفرع', 'الاختصاص', 'العام الدراسي', 'اخر مدرسة كان فيها الطالب', 'رقم الوثيقة المتوسطة', 'تاريخها', 'جهة الاصدار', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
         foreach ($gradeColumns as $col) {
             $select[] = $col;
         }
@@ -501,6 +513,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             branch: isset($row->{'الفرع'}) ? trim((string) $row->{'الفرع'}) : '',
             major: isset($row->{'الاختصاص'}) ? trim((string) $row->{'الاختصاص'}) : '',
             academicYear: (string) ($row->{'العام الدراسي'} ?? ''),
+            lastSchool: trim((string) ($row->{'اخر مدرسة كان فيها الطالب'} ?? '')),
+            middleDocNumber: trim((string) ($row->{'رقم الوثيقة المتوسطة'} ?? '')),
+            middleDocDate: $this->formatBirthDateForInput($row->{'تاريخها'} ?? null),
+            issuingAuthority: trim((string) ($row->{'جهة الاصدار'} ?? '')),
             result: $this->sanitizeResult($row->{'النتيجة'} ?? ''),
             grades: $grades,
             total: (string) $this->sumGradeScores($grades),
@@ -519,7 +535,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
             ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
             ->where('s.id', $id)
-            ->selectRaw('s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round')
+            ->selectRaw('s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority')
             ->first();
         if (! $row) {
             return null;
@@ -577,6 +593,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             branch: trim((string) ($row->branch ?? '')),
             major: trim((string) ($row->major ?? '')),
             academicYear: (string) ($row->academic_year ?? ''),
+            lastSchool: trim((string) ($row->last_school ?? '')),
+            middleDocNumber: trim((string) ($row->middle_doc_number ?? '')),
+            middleDocDate: $this->formatBirthDateForInput($row->middle_doc_date ?? null),
+            issuingAuthority: trim((string) ($row->issuing_authority ?? '')),
             result: $this->sanitizeResult($row->result ?? ''),
             grades: $grades,
             total: (string) $this->sumGradeScores($grades),

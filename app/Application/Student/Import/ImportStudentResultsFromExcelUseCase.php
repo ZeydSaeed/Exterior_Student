@@ -2,6 +2,7 @@
 
 namespace App\Application\Student\Import;
 
+use App\Application\Student\Service\AllBlockedGradesResultResolver;
 use App\Application\Student\Service\FirstRoundSubjectsLocker;
 use App\Application\Student\Service\GradesTotalCalculator;
 use App\Domain\Student\BranchMajorCatalogInterface;
@@ -26,6 +27,7 @@ final class ImportStudentResultsFromExcelUseCase
         private SubjectCatalogInterface $subjectCatalog,
         private FirstRoundSubjectsLocker $firstRoundSubjectsLocker,
         private GradesTotalCalculator $gradesTotalCalculator,
+        private AllBlockedGradesResultResolver $allBlockedGradesResultResolver,
     ) {}
 
     /**
@@ -95,7 +97,7 @@ final class ImportStudentResultsFromExcelUseCase
                     (string) ($row->major ?? ''),
                     $rawScores
                 );
-                $payload = [
+                $payload = $this->allBlockedGradesResultResolver->applyToPayload([
                     'branch' => (string) ($row->branch ?? ''),
                     'major' => (string) ($row->major ?? ''),
                     'academic_year' => (string) ($row->academic_year ?? ''),
@@ -104,7 +106,7 @@ final class ImportStudentResultsFromExcelUseCase
                     'result' => (string) ($row->result ?? ''),
                     'round' => (string) ($row->round ?? ''),
                     'grades' => $subjects,
-                ];
+                ]);
                 $ok = $this->commandRepository->updateGrades((int) $row->student_id, $payload);
                 if ($ok) {
                     $this->firstRoundSubjectsLocker->lock((int) $row->student_id);

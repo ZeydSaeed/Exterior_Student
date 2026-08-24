@@ -76,6 +76,26 @@
                     <span class="grades-readonly" id="grades-year"></span>
                     <input type="text" name="academic_year" id="grades-year-input" class="grades-edit grades-edit-hidden" aria-label="العام الدراسي">
                 </div>
+                <div class="grades-field">
+                    <label for="grades-last-school-input">اخر مدرسة كان فيها الطالب</label>
+                    <span class="grades-readonly" id="grades-last-school"></span>
+                    <input type="text" name="last_school" id="grades-last-school-input" class="grades-edit grades-edit-hidden" aria-label="اخر مدرسة كان فيها الطالب" maxlength="500">
+                </div>
+                <div class="grades-field">
+                    <label for="grades-middle-doc-number-input">رقم وثيقة المتوسطة</label>
+                    <span class="grades-readonly" id="grades-middle-doc-number"></span>
+                    <input type="text" name="middle_doc_number" id="grades-middle-doc-number-input" class="grades-edit grades-edit-hidden" aria-label="رقم وثيقة المتوسطة" maxlength="255">
+                </div>
+                <div class="grades-field">
+                    <label for="grades-middle-doc-date-input">تاريخها</label>
+                    <span class="grades-readonly" id="grades-middle-doc-date"></span>
+                    <input type="date" name="middle_doc_date" id="grades-middle-doc-date-input" class="grades-edit grades-edit-hidden" aria-label="تاريخها">
+                </div>
+                <div class="grades-field">
+                    <label for="grades-issuing-authority-input">جهة الاصدار</label>
+                    <span class="grades-readonly" id="grades-issuing-authority"></span>
+                    <input type="text" name="issuing_authority" id="grades-issuing-authority-input" class="grades-edit grades-edit-hidden" aria-label="جهة الاصدار" maxlength="500">
+                </div>
             </div>
 
             <div class="grades-table-wrap">

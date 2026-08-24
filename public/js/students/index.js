@@ -168,6 +168,14 @@
         setVal('grades-major-input', data.major);
         setText('grades-year', data.academic_year);
         setVal('grades-year-input', data.academic_year);
+        setText('grades-last-school', data.last_school != null ? data.last_school : '');
+        setVal('grades-last-school-input', data.last_school != null ? data.last_school : '');
+        setText('grades-middle-doc-number', data.middle_doc_number != null ? data.middle_doc_number : '');
+        setVal('grades-middle-doc-number-input', data.middle_doc_number != null ? data.middle_doc_number : '');
+        setText('grades-middle-doc-date', formatDisplayDate(data.middle_doc_date));
+        setVal('grades-middle-doc-date-input', data.middle_doc_date != null ? data.middle_doc_date : '');
+        setText('grades-issuing-authority', data.issuing_authority != null ? data.issuing_authority : '');
+        setVal('grades-issuing-authority-input', data.issuing_authority != null ? data.issuing_authority : '');
         setText('grades-average', data.average);
         setVal('grades-average-input', data.average);
         setText('grades-result', data.result);
@@ -215,6 +223,10 @@
                     branch: btn ? btn.getAttribute('data-branch') : '',
                     major: btn ? btn.getAttribute('data-major') : '',
                     academic_year: btn ? btn.getAttribute('data-year') : '',
+                    last_school: '',
+                    middle_doc_number: '',
+                    middle_doc_date: '',
+                    issuing_authority: '',
                     result: btn ? btn.getAttribute('data-result') : '',
                     total: '', average: '', round: '',
                     grades: [{ subject: '', score: '' }, { subject: '', score: '' }, { subject: '', score: '' }]
@@ -294,6 +306,10 @@
                 branch: (document.getElementById('grades-branch-input') || {}).value || '',
                 major: (document.getElementById('grades-major-input') || {}).value || '',
                 academic_year: (document.getElementById('grades-year-input') || {}).value || '',
+                last_school: (document.getElementById('grades-last-school-input') || {}).value || '',
+                middle_doc_number: (document.getElementById('grades-middle-doc-number-input') || {}).value || '',
+                middle_doc_date: (document.getElementById('grades-middle-doc-date-input') || {}).value || '',
+                issuing_authority: (document.getElementById('grades-issuing-authority-input') || {}).value || '',
                 total: (document.getElementById('grades-total-input') || {}).value || '',
                 average: (document.getElementById('grades-average-input') || {}).value || '',
                 result: (document.getElementById('grades-result-input') || {}).value || '',

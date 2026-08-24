@@ -1,4 +1,5 @@
 @php
+    use App\Support\ResultFilterVariants;
     use App\Support\StudentBranchMajors;
     use App\Support\StudentListFiltersSession;
 
@@ -26,7 +27,7 @@
     $filterGenderVal = trim((string) ($merged['gender'] ?? ''));
     $filterYearVal = trim((string) ($merged['year'] ?? ''));
     $filterRoundVal = trim((string) ($merged['round'] ?? ''));
-    $filterResultVal = trim((string) ($merged['result'] ?? ''));
+    $filterResultVal = ResultFilterVariants::resolveFilterOption(trim((string) ($merged['result'] ?? '')));
 @endphp
 <aside class="students-filter-sidebar" aria-label="فلاتر البحث">
     <script type="application/json" id="student-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
@@ -88,7 +89,7 @@
                 <label class="students-filter-card-title" for="students-filter-result">النتيجة</label>
                 <select name="result" id="students-filter-result" class="students-filter-select students-filter-control" aria-label="النتيجة">
                     <option value="" @selected($filterResultVal === '')>الكل</option>
-                    @foreach($resultOptions ?? [] as $result)
+                    @foreach(ResultFilterVariants::filterOptions() as $result)
                         <option value="{{ $result }}" @selected($filterResultVal === $result)>{{ $result }}</option>
                     @endforeach
                 </select>

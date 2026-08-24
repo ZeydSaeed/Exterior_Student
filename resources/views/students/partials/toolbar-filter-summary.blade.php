@@ -1,4 +1,5 @@
 @php
+    use App\Support\ResultFilterVariants;
     use App\Support\StudentListFiltersSession;
 
     if ($useStudentListSessionMerge ?? true) {
@@ -8,14 +9,14 @@
         $year = trim((string) ($merged['year'] ?? ''));
         $gender = trim((string) ($merged['gender'] ?? ''));
         $round = trim((string) ($merged['round'] ?? ''));
-        $result = trim((string) ($merged['result'] ?? ''));
+        $result = ResultFilterVariants::resolveFilterOption(trim((string) ($merged['result'] ?? '')));
     } else {
         $branch = trim((string) request('branch', ''));
         $major = trim((string) request('major', ''));
         $year = trim((string) request('year', ''));
         $gender = trim((string) request('gender', ''));
         $round = trim((string) request('round', ''));
-        $result = trim((string) request('result', ''));
+        $result = ResultFilterVariants::resolveFilterOption(trim((string) request('result', '')));
     }
     $allLabel = 'الكل';
 @endphp

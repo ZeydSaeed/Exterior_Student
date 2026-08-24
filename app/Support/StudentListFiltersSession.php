@@ -100,7 +100,11 @@ final class StudentListFiltersSession
             if (array_key_exists($key, $filters) && ($filters[$key] === '' || $filters[$key] === null)) {
                 unset($stored[$key]);
             } elseif (isset($filters[$key]) && $filters[$key] !== '' && $filters[$key] !== null) {
-                $stored[$key] = (string) $filters[$key];
+                $value = (string) $filters[$key];
+                if ($key === 'result') {
+                    $value = ResultFilterVariants::resolveFilterOption($value);
+                }
+                $stored[$key] = $value;
             }
         }
 
@@ -138,6 +142,9 @@ final class StudentListFiltersSession
                 continue;
             }
             $v = $merged[$key];
+            if ($key === 'result' && $v !== '' && $v !== null) {
+                $v = ResultFilterVariants::resolveFilterOption((string) $v);
+            }
             $out[$key] = ($v === '' || $v === null) ? null : (string) $v;
         }
         if (array_key_exists('search', $merged)) {

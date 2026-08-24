@@ -2,6 +2,7 @@
 
 namespace App\Application\Student\Command;
 
+use App\Application\Student\Service\AllBlockedGradesResultResolver;
 use App\Application\Student\Service\FirstRoundSubjectsLocker;
 use App\Application\Student\Service\GradesTotalCalculator;
 use App\Domain\Student\StudentCommandRepository;
@@ -15,6 +16,7 @@ final class UpdateStudentGradesCommandHandler
         private StudentCommandRepository $commandRepository,
         private FirstRoundSubjectsLocker $firstRoundSubjectsLocker,
         private GradesTotalCalculator $gradesTotalCalculator,
+        private AllBlockedGradesResultResolver $allBlockedGradesResultResolver,
     ) {}
 
     /**
@@ -52,7 +54,7 @@ final class UpdateStudentGradesCommandHandler
     private function normalizePayload(array $payload): array
     {
         $out = [];
-        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'birth_date', 'birth_place', 'mother_full_name', 'gender', 'branch', 'major', 'academic_year', 'result', 'total', 'average', 'round'];
+        $basic = ['name_student', 'name_father', 'name_grandfather', 'name_surname', 'exam_number', 'birth_date', 'birth_place', 'mother_full_name', 'gender', 'branch', 'major', 'academic_year', 'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority', 'result', 'total', 'average', 'round'];
         foreach ($basic as $key) {
             if (array_key_exists($key, $payload)) {
                 $out[$key] = trim((string) $payload[$key]);
@@ -74,6 +76,6 @@ final class UpdateStudentGradesCommandHandler
             $out['total'] = (string) $this->gradesTotalCalculator->sum($out['grades']);
         }
 
-        return $out;
+        return $this->allBlockedGradesResultResolver->applyToPayload($out);
     }
 }
