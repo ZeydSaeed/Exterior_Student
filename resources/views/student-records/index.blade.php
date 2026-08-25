@@ -63,8 +63,11 @@
                             <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic(old('document_number')) }}" placeholder="رقم الوثيقة..." />
                             <input type="date" name="document_date" class="arabic-date-field" lang="ar-IQ" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toYmd(old('document_date')) : '' }}" autocomplete="off" />
                             <textarea name="addressee" class="doc-field-addressee" rows="1" placeholder="الجهة المعنونة إليها...">{{ old('addressee') }}</textarea>
-                            <input type="text" name="purpose" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
+                            <input type="text" name="purpose" class="doc-field-purpose" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
                             <button type="submit" class="btn-primary">إضافة وثيقة</button>
+                            <div class="document-add-notes">
+                                <textarea id="document-notes" name="notes" class="doc-field-notes" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ old('notes') }}</textarea>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -78,14 +81,15 @@
                                 <th>تاريخها</th>
                                 <th>الجهة المعنونة إليها</th>
                                 <th>الغرض من الوثيقة</th>
+                                <th>الملاحظات</th>
                                 <th>إجراءات</th>
                             </tr>
                         </thead>
-                        <tbody>
                             @forelse($dto->records as $record)
+                                <tbody class="document-record">
                                 <tr>
                                     <td>
-                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form">
+                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form" id="document-form-{{ $record->id }}">
                                             @csrf
                                             @method('PUT')
                                             <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic($record->documentNumber ?? '') }}" />
@@ -97,7 +101,10 @@
                                             <textarea name="addressee" class="doc-field-addressee" rows="1">{{ $record->addressee ?? '' }}</textarea>
                                     </td>
                                     <td>
-                                            <input type="text" name="purpose" value="{{ $record->purpose ?? '' }}" />
+                                            <input type="text" name="purpose" class="doc-field-purpose" value="{{ $record->purpose ?? '' }}" />
+                                    </td>
+                                    <td class="document-notes-cell">
+                                            <textarea id="document-notes-{{ $record->id }}" name="notes" class="doc-field-notes" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ $record->notes ?? '' }}</textarea>
                                     </td>
                                     <td class="students-table-actions">
                                         <div class="students-table-actions-inner">
@@ -111,12 +118,14 @@
                                         </div>
                                     </td>
                                 </tr>
+                                </tbody>
                             @empty
+                                <tbody>
                                 <tr>
-                                    <td colspan="5">لا توجد وثائق مسجلة لهذا الطالب.</td>
+                                    <td colspan="6">لا توجد وثائق مسجلة لهذا الطالب.</td>
                                 </tr>
+                                </tbody>
                             @endforelse
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -253,14 +262,24 @@
         }
         .page-student-documents .students-table th:nth-child(3),
         .page-student-documents .students-table td:nth-child(3) {
-            min-width: 11rem;
-            width: 20%;
+            min-width: 28rem;
+            width: 42%;
+        }
+        .page-student-documents .students-table th:nth-child(4),
+        .page-student-documents .students-table td:nth-child(4) {
+            min-width: 12rem;
+            width: 16%;
+        }
+        .page-student-documents .students-table th:nth-child(5),
+        .page-student-documents .students-table td:nth-child(5) {
+            min-width: 12rem;
+            width: 16%;
         }
         .page-student-documents .document-add-fields textarea.doc-field-addressee,
         .page-student-documents .students-table textarea.doc-field-addressee,
         .page-student-documents .students-table textarea[name="addressee"] {
             width: 100%;
-            min-width: 25rem;
+            min-width: 28rem;
             min-height: 2rem;
             height: 2rem;
             max-height: 4.5rem;
@@ -279,8 +298,56 @@
         .page-student-documents .document-add-fields textarea.doc-field-addressee {
             min-height: 2.15rem;
             height: 2.15rem;
-            flex: 0 1 10rem;
-            max-width: 14rem;
+            flex: 1 1 28rem;
+            min-width: 28rem;
+            max-width: 42rem;
+        }
+        .page-student-documents .document-add-fields input.doc-field-purpose,
+        .page-student-documents .document-add-fields input[name="purpose"] {
+            min-width: 12rem;
+            max-width: none;
+            flex: 1 1 12rem;
+        }
+        .page-student-documents .students-table input.doc-field-purpose,
+        .page-student-documents .students-table input[name="purpose"] {
+            width: 100%;
+            min-width: 12rem;
+            box-sizing: border-box;
+        }
+        .page-student-documents .document-add-fields {
+            display: grid;
+            grid-template-columns: minmax(8rem, max-content) minmax(12rem, max-content) minmax(28rem, 2fr) minmax(12rem, 1fr) auto;
+            align-items: start;
+        }
+        .page-student-documents .document-add-notes {
+            grid-column: 1 / 4;
+            width: 100%;
+            min-width: 0;
+        }
+        .page-student-documents .doc-field-notes {
+            width: 100%;
+            min-height: 2rem;
+            height: 2rem;
+        }
+        .page-student-documents .document-add-fields .doc-field-notes {
+            min-width: 0;
+            min-height: 2.15rem;
+            height: 2.15rem;
+        }
+        @media (max-width: 700px) {
+            .page-student-documents .document-add-fields textarea.doc-field-addressee,
+            .page-student-documents .document-add-fields input.doc-field-purpose,
+            .page-student-documents .document-add-fields input[name="purpose"] {
+                min-width: 100%;
+                max-width: 100%;
+                flex: 1 1 100%;
+            }
+            .page-student-documents .document-add-fields {
+                grid-template-columns: 1fr;
+            }
+            .page-student-documents .document-add-notes {
+                grid-column: 1 / -1;
+            }
         }
     </style>
 @endsection

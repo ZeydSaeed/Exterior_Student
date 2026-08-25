@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>#</th>
+                <th>رقم القيد</th>
                 <th>الرقم الامتحاني</th>
                 <th>اسم الطالب </th>
                 <th>الدرجات</th>
@@ -36,8 +37,9 @@
                 @php $profileTotalCount = (int)($student->profile_total_count ?? ($attestWithoutCount + $attestWithCount + $docsCount)); @endphp
                 <tr class="students-data-row" data-exam="{{ e($examNum) }}" data-name="{{ e($student->full_name ?? '') }}">
                     <td>{{ $loop->iteration + ($students->currentPage() - 1) * $students->perPage() }}</td>
-                    <td>{!! \App\Support\Highlight::render($examNum, $searchPattern ?? null) !!}</td>
-                    <td>{!! \App\Support\Highlight::render($student->full_name ?? '', $searchPattern ?? null) !!}</td>
+                    <td class="students-enrollment-cell">{{ $enrollmentNumber }}</td>
+                    <td class="students-exam-cell">{!! \App\Support\Highlight::render($examNum, $searchPattern ?? null) !!}</td>
+                    <td class="students-name-cell">{!! \App\Support\Highlight::render($student->full_name ?? '', $searchPattern ?? null) !!}</td>
                     <td>
                         <button type="button" class="btn-primary btn-grades-open btn-grades" title="عرض الدرجات"
                             data-student-id="{{ $student->id }}"
@@ -47,7 +49,8 @@
                             data-branch="{{ e($student->branch ?? '') }}"
                             data-major="{{ e($student->major ?? '') }}"
                             data-year="{{ e($student->academic_year ?? '') }}"
-                            data-result="{{ e($student->result ?? '') }}">
+                            data-result="{{ e($student->result ?? '') }}"
+                            data-enrollment-number="{{ e($enrollmentNumber) }}">
                             <span class="btn-label">الدرجات</span>
                         </button>
                     </td>
@@ -72,9 +75,6 @@
                            class="btn-primary btn-enroll"
                            title="قيد الطالب">
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">قيد</span>
-                            @if($enrollmentNumber !== '')
-                                <span class="students-action-badge students-action-badge-enroll" aria-label="رقم القيد">{{ $enrollmentNumber }}</span>
-                            @endif
                         </a>
                     </td>
                     <td>
@@ -97,7 +97,7 @@
                                 <path d="M6 20c0-3 2.5-5 6-5s6 2 6 5"/>
                             </svg>
                             <span class="btn-label" style="font-family: 'Times New Roman', Times, serif;">سجل</span>
-                            <span class="students-action-badge students-action-badge-profile" aria-label="مجموع التأييدات والوثائق">{{ $profileTotalCount }}</span>
+                            <span class="students-action-badge students-action-badge-profile" aria-label="مجموع التأييدات والوثائق والملاحظات">{{ $profileTotalCount }}</span>
                         </a>
                     </td>
                     <td class="students-table-actions">
@@ -126,7 +126,7 @@
                 </tr>
             @empty
                 <tr class="students-table-empty-row">
-                    <td colspan="10">لا توجد بيانات طلبة حالياً.</td>
+                    <td colspan="11">لا توجد بيانات طلبة حالياً.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -104,14 +104,15 @@
                                 <th>تاريخها</th>
                                 <th>الجهة المعنونة إليها</th>
                                 <th>الغرض من الوثيقة</th>
+                                <th>الملاحظات</th>
                                 <th>إجراءات</th>
                             </tr>
                         </thead>
-                        <tbody>
                             @forelse($dto->records as $record)
+                                <tbody class="document-record">
                                 <tr>
                                     <td>
-                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form">
+                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form" id="profile-document-form-{{ $record->id }}">
                                             @csrf
                                             @method('PUT')
                                             <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic($record->documentNumber ?? '') }}" />
@@ -125,6 +126,9 @@
                                     <td>
                                             <input type="text" name="purpose" value="{{ $record->purpose ?? '' }}" />
                                     </td>
+                                    <td class="document-notes-cell">
+                                            <textarea id="profile-document-notes-{{ $record->id }}" name="notes" class="doc-field-notes" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ $record->notes ?? '' }}</textarea>
+                                    </td>
                                     <td class="students-table-actions">
                                         <div class="students-table-actions-inner">
                                             <button type="submit" class="btn-primary btn-edit-row">حفظ</button>
@@ -137,9 +141,65 @@
                                         </div>
                                     </td>
                                 </tr>
+                                </tbody>
+                            @empty
+                                <tbody>
+                                <tr>
+                                    <td colspan="6">لا توجد وثائق مسجلة.</td>
+                                </tr>
+                                </tbody>
+                            @endforelse
+                    </table>
+                </div>
+            </div>
+
+            {{-- ملاحظات السجل الشخصي --}}
+            <div class="employees-card employees-card-notes">
+                <h2 class="employees-card-title">الملاحظات</h2>
+                <div class="employees-card-add">
+                    <form method="POST" action="{{ route('students.profile.notes.store', $dto->studentId) }}" class="students-search-form student-notes-add-form">
+                        @csrf
+                        <div class="student-notes-add-fields">
+                            <textarea id="student-note-body" name="body" class="student-note-field" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ old('body') }}</textarea>
+                            <button type="submit" class="btn-primary">إضافة ملاحظة</button>
+                        </div>
+                    </form>
+                    @error('body')
+                        <p class="student-notes-error">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="students-table-wrapper">
+                    <table class="students-table student-notes-table">
+                        <thead>
+                            <tr>
+                                <th>الملاحظات</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($dto->notes as $note)
+                                <tr>
+                                    <td>
+                                        <form method="POST" action="{{ route('students.profile.notes.update', [$dto->studentId, $note->id]) }}" class="inline-form" id="student-note-form-{{ $note->id }}">
+                                            @csrf
+                                            @method('PUT')
+                                            <textarea name="body" class="student-note-field" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ $note->body }}</textarea>
+                                    </td>
+                                    <td class="students-table-actions">
+                                        <div class="students-table-actions-inner">
+                                            <button type="submit" class="btn-primary btn-edit-row">حفظ</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('students.profile.notes.destroy', [$dto->studentId, $note->id]) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذه الملاحظة؟');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-primary btn-delete-row">حذف</button>
+                                        </form>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5">لا توجد وثائق مسجلة.</td>
+                                    <td colspan="2">لا توجد ملاحظات مسجلة.</td>
                                 </tr>
                             @endforelse
                         </tbody>

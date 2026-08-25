@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Application\Profile\Command\CreateAttestationCommandHandler;
+use App\Application\Profile\Command\CreateStudentNoteCommandHandler;
 use App\Application\Profile\Command\DeleteAttestationCommandHandler;
+use App\Application\Profile\Command\DeleteStudentNoteCommandHandler;
 use App\Application\Profile\Command\UpdateAttestationCommandHandler;
+use App\Application\Profile\Command\UpdateStudentNoteCommandHandler;
 use App\Application\Profile\Query\GetStudentProfileQueryHandler;
 use App\Http\Requests\StoreAttestationRequest;
+use App\Http\Requests\StoreStudentNoteRequest;
 use App\Http\Requests\UpdateAttestationRequest;
+use App\Http\Requests\UpdateStudentNoteRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * السجل الشخصي للطالب = التأييدات + الوثائق.
+ * السجل الشخصي للطالب = التأييدات + الوثائق + الملاحظات.
  */
 final class StudentProfileController
 {
@@ -21,7 +26,10 @@ final class StudentProfileController
         private GetStudentProfileQueryHandler $profileQueryHandler,
         private CreateAttestationCommandHandler $createAttestationHandler,
         private UpdateAttestationCommandHandler $updateAttestationHandler,
-        private DeleteAttestationCommandHandler $deleteAttestationHandler
+        private DeleteAttestationCommandHandler $deleteAttestationHandler,
+        private CreateStudentNoteCommandHandler $createNoteHandler,
+        private UpdateStudentNoteCommandHandler $updateNoteHandler,
+        private DeleteStudentNoteCommandHandler $deleteNoteHandler
     ) {}
 
     public function show(int $id): View|RedirectResponse
@@ -95,6 +103,46 @@ final class StudentProfileController
     public function destroyAttestation(int $id, int $attestationId): RedirectResponse
     {
         $this->deleteAttestationHandler->handle($attestationId);
+
+        return redirect()->route('students.profile.show', ['id' => $id]);
+    }
+
+    public function storeNote(int $id, StoreStudentNoteRequest $request): RedirectResponse
+    {
+        if ($this->profileQueryHandler->handle($id) === null) {
+            abort(404, 'لم يتم العثور على الطالب.');
+        }
+
+        $this->createNoteHandler->handle(
+            studentId: $id,
+            body: (string) $request->validated('body'),
+        );
+
+        return redirect()->route('students.profile.show', ['id' => $id]);
+    }
+
+    public function updateNote(int $id, int $noteId, UpdateStudentNoteRequest $request): RedirectResponse
+    {
+        if ($this->profileQueryHandler->handle($id) === null) {
+            abort(404, 'لم يتم العثور على الطالب.');
+        }
+
+        $this->updateNoteHandler->handle(
+            studentId: $id,
+            noteId: $noteId,
+            body: (string) $request->validated('body'),
+        );
+
+        return redirect()->route('students.profile.show', ['id' => $id]);
+    }
+
+    public function destroyNote(int $id, int $noteId): RedirectResponse
+    {
+        if ($this->profileQueryHandler->handle($id) === null) {
+            abort(404, 'لم يتم العثور على الطالب.');
+        }
+
+        $this->deleteNoteHandler->handle($id, $noteId);
 
         return redirect()->route('students.profile.show', ['id' => $id]);
     }

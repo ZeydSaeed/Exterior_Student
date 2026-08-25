@@ -3,21 +3,24 @@
 namespace App\Application\Profile\Query;
 
 use App\Application\Profile\DTO\AttestationDTO;
+use App\Application\Profile\DTO\StudentNoteDTO;
 use App\Application\Profile\DTO\StudentProfileDTO;
 use App\Application\Record\DTO\RecordDTO;
 use App\Domain\Attestation\AttestationQueryRepository;
 use App\Domain\Record\RecordQueryRepository;
 use App\Domain\Student\StudentQueryRepository;
+use App\Domain\StudentNote\StudentNoteQueryRepository;
 
 /**
- * استعلام السجل الشخصي للطالب (تأييدات + وثائق).
+ * استعلام السجل الشخصي للطالب (تأييدات + وثائق + ملاحظات).
  */
 final class GetStudentProfileQueryHandler
 {
     public function __construct(
         private StudentQueryRepository $studentRepository,
         private AttestationQueryRepository $attestationRepository,
-        private RecordQueryRepository $recordRepository
+        private RecordQueryRepository $recordRepository,
+        private StudentNoteQueryRepository $noteRepository
     ) {}
 
     public function handle(int $studentId): ?StudentProfileDTO
@@ -29,6 +32,7 @@ final class GetStudentProfileQueryHandler
 
         $attestations = $this->attestationRepository->listByStudentId($studentId);
         $records = $this->recordRepository->listByStudentId($studentId);
+        $notes = $this->noteRepository->listByStudentId($studentId);
 
         $attestationDTOs = array_map(
             static fn ($a) => new AttestationDTO(
@@ -52,8 +56,17 @@ final class GetStudentProfileQueryHandler
                 documentDate: $r->documentDate,
                 addressee: $r->addressee,
                 purpose: $r->purpose,
+                notes: $r->notes,
             ),
             $records
+        );
+
+        $noteDTOs = array_map(
+            static fn ($n) => new StudentNoteDTO(
+                id: $n->id,
+                body: $n->body,
+            ),
+            $notes
         );
 
         return new StudentProfileDTO(
@@ -62,6 +75,7 @@ final class GetStudentProfileQueryHandler
             studentName: $student->full_name,
             attestations: $attestationDTOs,
             records: $recordDTOs,
+            notes: $noteDTOs,
         );
     }
 }

@@ -17,6 +17,8 @@ use App\Domain\Student\StudentQueryRepository;
 use App\Domain\Student\StudentReadRepository;
 use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\SubjectCatalogInterface;
+use App\Domain\StudentNote\StudentNoteCommandRepository;
+use App\Domain\StudentNote\StudentNoteQueryRepository;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
 use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
 use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
@@ -29,6 +31,8 @@ use App\Infrastructure\Persistence\MySQLRecordCommandRepository;
 use App\Infrastructure\Persistence\MySQLRecordQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentCommandRepository;
 use App\Infrastructure\Persistence\MySQLStudentImportTempRepository;
+use App\Infrastructure\Persistence\MySQLStudentNoteCommandRepository;
+use App\Infrastructure\Persistence\MySQLStudentNoteQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
 use App\Infrastructure\Persistence\MySQLStudentResultsImportTempRepository;
@@ -73,6 +77,9 @@ class AppServiceProvider extends ServiceProvider
         // Student records (documents)
         $this->app->bind(RecordQueryRepository::class, MySQLRecordQueryRepository::class);
         $this->app->bind(RecordCommandRepository::class, MySQLRecordCommandRepository::class);
+
+        $this->app->bind(StudentNoteQueryRepository::class, MySQLStudentNoteQueryRepository::class);
+        $this->app->bind(StudentNoteCommandRepository::class, MySQLStudentNoteCommandRepository::class);
     }
 
     /**

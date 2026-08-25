@@ -26,8 +26,12 @@
 
         <form method="POST" action="{{ route('students.store') }}" id="form-add-student" class="form-add-student">
             @csrf
-            {{-- السطر الأول: الرقم الامتحاني (مطلوب) --}}
+            {{-- السطر الأول: رقم القيد (اختياري) ثم الرقم الامتحاني (مطلوب) --}}
             <div class="form-row form-row-1">
+                <div class="form-group">
+                    <label for="enrollment_number">رقم القيد</label>
+                    <input type="text" inputmode="numeric" id="enrollment_number" name="enrollment_number" value="{{ old('enrollment_number') }}" maxlength="50" aria-label="رقم القيد (اختياري)" />
+                </div>
                 <div class="form-group">
                     <label for="exam_number">الرقم الامتحاني <span class="required" aria-hidden="true">*</span></label>
                     <input type="text" id="exam_number" name="exam_number" value="{{ old('exam_number') }}" required maxlength="255" aria-label="الرقم الامتحاني (مطلوب)" />

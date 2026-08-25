@@ -48,6 +48,15 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         return Schema::hasTable('students') || ! Schema::hasTable('main_table');
     }
 
+    private function studentNotesCountExpr(string $studentIdColumn): string
+    {
+        if (! Schema::hasTable('student_notes')) {
+            return '0';
+        }
+
+        return "(SELECT COUNT(*) FROM student_notes n WHERE n.student_id = {$studentIdColumn})";
+    }
+
     private function studentGradesUsesMajorSubject(): bool
     {
         return Schema::hasColumn('student_grades', 'major_subject_id');
@@ -120,6 +129,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 $docsExpr = '0';
             }
         }
+        $notesExpr = $this->studentNotesCountExpr('id');
         $enrollmentExpr = Schema::hasColumn('main_table', 'رقم القيد')
             ? "TRIM(COALESCE(`رقم القيد`, ''))"
             : "''";
@@ -137,7 +147,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 {$withoutExpr} AS attest_without_count,
                 {$withExpr} AS attest_with_count,
                 {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count,
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr}) + ({$notesExpr})) AS profile_total_count,
                 {$enrollmentExpr} AS enrollment_number
             ");
 
@@ -182,6 +192,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.`الرقم الامتحاني` = s.exam_number)';
             }
         }
+        $notesExpr = $this->studentNotesCountExpr('s.id');
 
         $query = DB::table('students as s')
             ->join('student_personal as p', 'p.student_id', '=', 's.id')
@@ -202,7 +213,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 {$withoutExpr} AS attest_without_count,
                 {$withExpr} AS attest_with_count,
                 {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr})) AS profile_total_count,
+                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr}) + ({$notesExpr})) AS profile_total_count,
                 TRIM(COALESCE(a.enrollment_number, '')) AS enrollment_number
             ");
 
@@ -481,6 +492,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
         $gradeColumns = Config::get('grades_catalog.grade_columns', []);
         $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'التولد', 'محل الولادة', 'اسم الام الكامل', 'الفرع', 'الاختصاص', 'العام الدراسي', 'اخر مدرسة كان فيها الطالب', 'رقم الوثيقة المتوسطة', 'تاريخها', 'جهة الاصدار', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
+        if (Schema::hasColumn('main_table', 'رقم القيد')) {
+            $select[] = 'رقم القيد';
+        }
         foreach ($gradeColumns as $col) {
             $select[] = $col;
         }
@@ -522,6 +536,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             total: (string) $this->sumGradeScores($grades),
             average: (string) ($row->{'المعدل'} ?? $row->{'معدل'} ?? ''),
             round: (string) ($row->{'الدور'} ?? $row->{'دور'} ?? ''),
+            enrollmentNumber: isset($row->{'رقم القيد'}) ? trim((string) $row->{'رقم القيد'}) : '',
         );
     }
 
@@ -535,7 +550,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
             ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
             ->where('s.id', $id)
-            ->selectRaw('s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority')
+            ->selectRaw('s.id, s.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS major, m.id AS major_id, y.year_label AS academic_year, y.id AS academic_year_id, rt.name_ar AS result, a.total, a.average, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority, a.enrollment_number')
             ->first();
         if (! $row) {
             return null;
@@ -602,6 +617,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             total: (string) $this->sumGradeScores($grades),
             average: (string) ($row->average ?? ''),
             round: (string) ($row->round ?? ''),
+            enrollmentNumber: trim((string) ($row->enrollment_number ?? '')),
         );
     }
 

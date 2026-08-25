@@ -32,5 +32,6 @@ final class StudentGradesView
         public readonly string $total,
         public readonly string $average,
         public readonly string $round,
+        public readonly string $enrollmentNumber = '',
     ) {}
 }

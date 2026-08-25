@@ -130,6 +130,8 @@
             const sid = document.getElementById('grades-student-id');
             if (sid) sid.value = data.id || '';
 
+            setText('grades-enrollment-number', data.enrollment_number != null ? data.enrollment_number : '');
+            setInputValue('grades-enrollment-number-input', data.enrollment_number != null ? data.enrollment_number : '');
             setText('grades-exam-number', data.exam_number);
             setInputValue('grades-exam-number-input', data.exam_number);
             setText('grades-name-student', data.name_student != null ? data.name_student : (data.full_name || ''));
@@ -203,6 +205,7 @@
                     fillForm({
                         id: id,
                         exam_number: btn ? btn.getAttribute('data-exam-number') : '',
+                        enrollment_number: btn ? (btn.getAttribute('data-enrollment-number') || '') : '',
                         name_student: btn ? (btn.getAttribute('data-name') || '') : '',
                         name_father: '',
                         name_grandfather: '',
@@ -257,35 +260,43 @@
             else setEditMode(false);
         });
 
-        /** تحديث صف الجدول بعد الحفظ الناجح (الاسم، الرقم الامتحاني، إلخ) */
+        function toWesternDigits(value) {
+            if (window.ArabicDate && typeof window.ArabicDate.toWesternDigits === 'function') {
+                return window.ArabicDate.toWesternDigits(value);
+            }
+            var s = value == null ? '' : String(value);
+            var arabic = '٠١٢٣٤٥٦٧٨٩';
+            var out = '';
+            for (var i = 0; i < s.length; i++) {
+                var c = s.charAt(i);
+                var idx = arabic.indexOf(c);
+                out += idx >= 0 ? String(idx) : c;
+            }
+            return out;
+        }
+
+        /** تحديث صف الجدول بعد الحفظ الناجح (الاسم، الرقم الامتحاني، رقم القيد) */
         function updateTableRow(studentId, payload) {
             var btn = document.querySelector('.btn-grades-open[data-student-id="' + studentId + '"]');
             if (!btn) return;
             var row = btn.closest('tr');
-            if (!row || !row.cells || row.cells.length < 3) return;
+            if (!row) return;
             var fullName = [payload.name_student, payload.name_father, payload.name_grandfather, payload.name_surname].filter(Boolean).join(' ').trim() || payload.name_student || '';
-            var examWestern = (function (value) {
-                if (window.ArabicDate && typeof window.ArabicDate.toWesternDigits === 'function') {
-                    return window.ArabicDate.toWesternDigits(value);
-                }
-                var s = value == null ? '' : String(value);
-                var arabic = '٠١٢٣٤٥٦٧٨٩';
-                var out = '';
-                for (var i = 0; i < s.length; i++) {
-                    var c = s.charAt(i);
-                    var idx = arabic.indexOf(c);
-                    out += idx >= 0 ? String(idx) : c;
-                }
-                return out;
-            })(payload.exam_number != null ? payload.exam_number : '');
-            row.cells[1].textContent = examWestern;
-            row.cells[2].textContent = fullName;
+            var examWestern = toWesternDigits(payload.exam_number != null ? payload.exam_number : '');
+            var enrollmentWestern = toWesternDigits(payload.enrollment_number != null ? payload.enrollment_number : '');
+            var enrollmentCell = row.querySelector('.students-enrollment-cell');
+            var examCell = row.querySelector('.students-exam-cell');
+            var nameCell = row.querySelector('.students-name-cell');
+            if (enrollmentCell) enrollmentCell.textContent = enrollmentWestern;
+            if (examCell) examCell.textContent = examWestern;
+            if (nameCell) nameCell.textContent = fullName;
             if (row.setAttribute) {
                 row.setAttribute('data-name', fullName);
                 row.setAttribute('data-exam', examWestern);
             }
             btn.setAttribute('data-name', fullName);
             btn.setAttribute('data-exam-number', examWestern);
+            btn.setAttribute('data-enrollment-number', enrollmentWestern);
             btn.setAttribute('data-gender', payload.gender != null ? String(payload.gender) : '');
             btn.setAttribute('data-branch', payload.branch != null ? String(payload.branch) : '');
             btn.setAttribute('data-major', payload.major != null ? String(payload.major) : '');
@@ -306,6 +317,7 @@
                 });
             });
             const payload = {
+                enrollment_number: (document.getElementById('grades-enrollment-number-input') || {}).value || '',
                 exam_number: (document.getElementById('grades-exam-number-input') || {}).value || '',
                 name_student: (document.getElementById('grades-name-student-input') || {}).value || '',
                 name_father: (document.getElementById('grades-name-father-input') || {}).value || '',
@@ -333,6 +345,17 @@
                     setTimeout(function () { examInput.classList.remove('grades-input-error'); }, 2000);
                 }
                 alert('الرقم الامتحاني مطلوب. يرجى إدخاله قبل الحفظ.');
+                return;
+            }
+            payload.enrollment_number = toWesternDigits(String(payload.enrollment_number || '').trim());
+            if (payload.enrollment_number !== '' && !/^\d+$/.test(payload.enrollment_number)) {
+                var enrollmentInput = document.getElementById('grades-enrollment-number-input');
+                if (enrollmentInput) {
+                    enrollmentInput.focus();
+                    enrollmentInput.classList.add('grades-input-error');
+                    setTimeout(function () { enrollmentInput.classList.remove('grades-input-error'); }, 2000);
+                }
+                alert('رقم القيد يجب أن يكون رقماً.');
                 return;
             }
             const updateUrl = (window.STUDENTS_GRADES_UPDATE_URL_TEMPLATE || '/students/__ID__/grades').replace('__ID__', String(currentData.id));

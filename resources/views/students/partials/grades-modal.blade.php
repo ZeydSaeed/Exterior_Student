@@ -12,6 +12,11 @@
         <form id="grades-form" class="grades-form">
             <input type="hidden" name="student_id" id="grades-student-id">
             <div class="grades-form-grid">
+                <div class="grades-field grades-field-enrollment-number">
+                    <label for="grades-enrollment-number-input">رقم القيد</label>
+                    <span class="grades-readonly" id="grades-enrollment-number"></span>
+                    <input type="text" inputmode="numeric" name="enrollment_number" id="grades-enrollment-number-input" class="grades-edit grades-edit-hidden" aria-label="رقم القيد (اختياري)" maxlength="50">
+                </div>
                 <div class="grades-field grades-field-exam-number">
                     <label for="grades-exam-number-input">الرقم الامتحاني <span class="grades-required" aria-hidden="true">*</span></label>
                     <span class="grades-readonly" id="grades-exam-number"></span>

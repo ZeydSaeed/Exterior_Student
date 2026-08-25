@@ -137,6 +137,7 @@ final class GetStudentGradesQueryHandler
             total: $view->total,
             average: $view->average,
             round: $view->round,
+            enrollment_number: $view->enrollmentNumber,
         );
     }
 }

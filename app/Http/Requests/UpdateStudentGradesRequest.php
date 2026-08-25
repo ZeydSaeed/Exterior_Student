@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ArabicDigits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,6 +18,18 @@ class UpdateStudentGradesRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->exists('enrollment_number')) {
+            return;
+        }
+
+        $enrollment = trim(ArabicDigits::toWestern((string) $this->input('enrollment_number', '')));
+        $this->merge([
+            'enrollment_number' => $enrollment !== '' ? $enrollment : null,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -25,6 +38,7 @@ class UpdateStudentGradesRequest extends FormRequest
             'name_grandfather' => ['nullable', 'string', 'max:255'],
             'name_surname' => ['nullable', 'string', 'max:255'],
             'exam_number' => ['required', 'string', 'max:255'],
+            'enrollment_number' => ['nullable', 'regex:/^\d+$/', 'max:50'],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:500'],
             'mother_full_name' => ['nullable', 'string', 'max:255'],
@@ -50,6 +64,8 @@ class UpdateStudentGradesRequest extends FormRequest
     {
         return [
             'exam_number.required' => 'الرقم الامتحاني مطلوب في فورم الدرجات.',
+            'enrollment_number.regex' => 'رقم القيد يجب أن يكون رقماً.',
+            'enrollment_number.max' => 'رقم القيد طويل جداً.',
         ];
     }
 
@@ -62,6 +78,7 @@ class UpdateStudentGradesRequest extends FormRequest
      *   name_grandfather?: string,
      *   name_surname?: string,
      *   exam_number?: string,
+     *   enrollment_number?: string|null,
      *   birth_date?: string,
      *   birth_place?: string,
      *   mother_full_name?: string,
@@ -93,7 +110,7 @@ class UpdateStudentGradesRequest extends FormRequest
 
         $allowedKeys = [
             'name_student', 'name_father', 'name_grandfather', 'name_surname',
-            'exam_number', 'birth_date', 'birth_place', 'mother_full_name',
+            'exam_number', 'enrollment_number', 'birth_date', 'birth_place', 'mother_full_name',
             'gender', 'branch', 'major', 'academic_year',
             'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority',
             'result', 'total', 'average', 'round', 'grades',
@@ -106,6 +123,10 @@ class UpdateStudentGradesRequest extends FormRequest
 
         if (isset($payload['grades']) && ! is_array($payload['grades'])) {
             $payload['grades'] = [];
+        }
+
+        if (array_key_exists('enrollment_number', $payload) && $payload['enrollment_number'] === null) {
+            $payload['enrollment_number'] = '';
         }
 
         return $payload;

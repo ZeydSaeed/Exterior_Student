@@ -38,6 +38,7 @@ class StoreRecordRequest extends FormRequest
             'document_date' => ['nullable', 'date'],
             'addressee' => ['nullable', 'string', 'max:2000'],
             'purpose' => ['nullable', 'string', 'max:500'],
+            'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
@@ -52,6 +53,7 @@ class StoreRecordRequest extends FormRequest
             'document_number.max' => 'رقم الوثيقة طويل جداً.',
             'addressee.max' => 'حقل الجهة المعنونة إليها طويل جداً (الحد الأقصى 2000 حرف).',
             'purpose.max' => 'حقل الغرض من الوثيقة طويل جداً.',
+            'notes.max' => 'حقل الملاحظات طويل جداً.',
         ];
     }
 }

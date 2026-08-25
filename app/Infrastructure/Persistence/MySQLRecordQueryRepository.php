@@ -74,6 +74,7 @@ final class MySQLRecordQueryRepository implements RecordQueryRepository
         $docNumber = $row->document_number ?? $row->{'رقم الوثيقة'} ?? null;
         $addressee = $row->addressee ?? $row->{'الجهه المعنونه اليها'} ?? null;
         $purpose = $row->purpose ?? $row->{'الغرض من الوثيقة'} ?? null;
+        $notes = $row->notes ?? $row->{'الملاحظات'} ?? null;
 
         return (object) [
             'id' => $row->id ?? 0,
@@ -82,6 +83,7 @@ final class MySQLRecordQueryRepository implements RecordQueryRepository
             'document_date' => $date,
             'addressee' => isset($addressee) ? (string) $addressee : null,
             'purpose' => isset($purpose) ? (string) $purpose : null,
+            'notes' => isset($notes) ? (string) $notes : null,
         ];
     }
 }

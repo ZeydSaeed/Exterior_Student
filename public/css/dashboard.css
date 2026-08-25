@@ -1258,7 +1258,12 @@ body.grades-modal-open {
     margin-bottom: 1rem;
 }
 .page-add-student .form-row-1 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+@media (max-width: 500px) {
+    .page-add-student .form-row-1 {
+        grid-template-columns: 1fr;
+    }
 }
 .page-add-student .form-row-2 {
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1490,6 +1495,59 @@ body.grades-modal-open {
     white-space: normal;
 }
 
+.page-student-profile .employees-card-notes {
+    width: 100%;
+    margin-top: 1rem;
+}
+.page-student-profile .student-notes-add-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: start;
+    margin-bottom: 0.75rem;
+}
+.page-student-profile .student-notes-error {
+    color: #8a1f1f;
+    margin: 0 0 0.5rem;
+}
+.page-student-profile .student-notes-add-fields .student-note-field {
+    flex: 1 1 16rem;
+    min-width: 0;
+    min-height: 2.15rem;
+    height: 2.15rem;
+}
+.page-student-profile .student-note-field {
+    width: 100%;
+    min-height: 2rem;
+    height: 2rem;
+    box-sizing: border-box;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--color-dark-accent);
+    border-radius: 0.25rem;
+    font: inherit;
+    line-height: 1.25;
+    resize: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow-y: auto;
+    text-align: start;
+    direction: rtl;
+}
+.page-student-profile .students-table .student-note-field {
+    min-height: 2rem;
+    height: 2rem;
+    overflow-y: auto;
+}
+.page-student-profile .student-notes-table th:nth-child(1),
+.page-student-profile .student-notes-table td:nth-child(1) {
+    width: auto;
+    text-align: start;
+}
+.page-student-profile .student-notes-table th:nth-child(2),
+.page-student-profile .student-notes-table td:nth-child(2) {
+    width: 8rem;
+}
+
 .page-student-documents .employees-page-header { margin-bottom: 0.15rem; }
 .page-student-documents .employees-page-header h1 {
     margin: 0;
@@ -1555,16 +1613,37 @@ body.grades-modal-open {
 .document-add-fields input[name="addressee"],
 .document-add-fields textarea[name="addressee"],
 .document-add-fields textarea.doc-field-addressee {
-    min-width: 10rem;
-    max-width: 14rem;
-    flex: 0 1 10rem;
+    min-width: 28rem;
+    max-width: 42rem;
+    flex: 1 1 28rem;
+}
+.document-add-fields input[name="purpose"],
+.document-add-fields input.doc-field-purpose {
+    min-width: 12rem;
+    max-width: none;
+    flex: 1 1 12rem;
 }
 
+.page-student-documents .students-table th:nth-child(3),
+.page-student-documents .students-table td:nth-child(3) {
+    min-width: 28rem;
+    width: 42%;
+}
+.page-student-documents .students-table th:nth-child(4),
+.page-student-documents .students-table td:nth-child(4) {
+    min-width: 12rem;
+    width: 16%;
+}
+.page-student-documents .students-table th:nth-child(5),
+.page-student-documents .students-table td:nth-child(5) {
+    min-width: 12rem;
+    width: 16%;
+}
 .page-student-documents .students-table input[name="addressee"],
 .page-student-documents .students-table textarea[name="addressee"],
 .page-student-documents .students-table textarea.doc-field-addressee {
     width: 100%;
-    min-width: 10rem;
+    min-width: 28rem;
     min-height: 2rem;
     height: 2rem;
     max-height: 4.5rem;
@@ -1574,6 +1653,75 @@ body.grades-modal-open {
     word-break: break-word;
     resize: vertical;
     overflow-y: auto;
+}
+.page-student-documents .students-table input[name="purpose"],
+.page-student-documents .students-table input.doc-field-purpose {
+    width: 100%;
+    min-width: 12rem;
+    box-sizing: border-box;
+}
+@media (max-width: 700px) {
+    .document-add-fields input[name="addressee"],
+    .document-add-fields textarea[name="addressee"],
+    .document-add-fields textarea.doc-field-addressee,
+    .document-add-fields input[name="purpose"],
+    .document-add-fields input.doc-field-purpose {
+        min-width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+    }
+}
+.page-student-documents .document-add-fields {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) minmax(12rem, max-content) minmax(28rem, 2fr) minmax(12rem, 1fr) auto;
+    align-items: start;
+}
+.page-student-documents .document-add-notes {
+    grid-column: 1 / 4;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+}
+.page-student-documents .doc-field-notes,
+.page-student-profile .doc-field-notes {
+    width: 100%;
+    min-height: 2rem;
+    height: 2rem;
+    box-sizing: border-box;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--color-dark-accent);
+    border-radius: 0.25rem;
+    font: inherit;
+    line-height: 1.25;
+    resize: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow-y: auto;
+    text-align: start;
+    direction: rtl;
+}
+.page-student-documents .document-add-fields .doc-field-notes {
+    min-height: 2.15rem;
+    height: 2.15rem;
+}
+.page-student-documents .document-notes-cell,
+.page-student-profile .document-notes-cell {
+    white-space: normal;
+    text-align: start;
+    vertical-align: middle;
+}
+.page-student-documents .students-table tbody.document-record:hover tr,
+.page-student-profile .students-table tbody.document-record:hover tr {
+    background: #fff;
+}
+@media (max-width: 700px) {
+    .page-student-documents .document-add-fields {
+        grid-template-columns: 1fr;
+    }
+    .page-student-documents .document-add-notes {
+        grid-column: 1 / -1;
+    }
 }
 .documents-back-link { margin-top: 1rem; }
 

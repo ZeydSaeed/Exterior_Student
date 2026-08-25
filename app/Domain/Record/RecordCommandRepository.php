@@ -12,7 +12,8 @@ interface RecordCommandRepository
         ?string $documentNumber,
         ?string $documentDate,
         ?string $addressee,
-        ?string $purpose
+        ?string $purpose,
+        ?string $notes = null
     ): void;
 
     public function update(
@@ -20,7 +21,8 @@ interface RecordCommandRepository
         ?string $documentNumber,
         ?string $documentDate,
         ?string $addressee,
-        ?string $purpose
+        ?string $purpose,
+        ?string $notes = null
     ): void;
 
     public function delete(int $recordId): void;

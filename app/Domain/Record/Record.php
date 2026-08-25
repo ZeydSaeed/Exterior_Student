@@ -14,6 +14,7 @@ final class Record
         public readonly ?string $documentDate,
         public readonly ?string $addressee,
         public readonly ?string $purpose,
+        public readonly ?string $notes = null,
     ) {}
 
     public static function fromRow(object $row): self
@@ -30,6 +31,7 @@ final class Record
             documentDate: $date !== null && $date !== '' ? (string) $date : null,
             addressee: isset($row->addressee) ? (string) $row->addressee : null,
             purpose: isset($row->purpose) ? (string) $row->purpose : null,
+            notes: isset($row->notes) ? (string) $row->notes : null,
         );
     }
 }

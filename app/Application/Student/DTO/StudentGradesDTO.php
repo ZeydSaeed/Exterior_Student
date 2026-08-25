@@ -32,6 +32,7 @@ final class StudentGradesDTO
         public readonly string $total,
         public readonly string $average,
         public readonly string $round,
+        public readonly string $enrollment_number = '',
     ) {}
 
     public function toArray(): array
@@ -44,6 +45,7 @@ final class StudentGradesDTO
             'name_grandfather' => $this->name_grandfather,
             'name_surname' => $this->name_surname,
             'exam_number' => $this->exam_number,
+            'enrollment_number' => $this->enrollment_number,
             'birth_date' => $this->birth_date,
             'birth_place' => $this->birth_place,
             'mother_full_name' => $this->mother_full_name,

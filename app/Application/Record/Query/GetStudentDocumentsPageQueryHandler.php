@@ -32,6 +32,7 @@ final class GetStudentDocumentsPageQueryHandler
                 documentDate: $r->documentDate,
                 addressee: $r->addressee,
                 purpose: $r->purpose,
+                notes: $r->notes,
             ),
             $records
         );

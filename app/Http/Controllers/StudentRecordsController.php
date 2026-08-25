@@ -52,6 +52,7 @@ final class StudentRecordsController
             documentDate: $request->validated('document_date') ? (string) $request->validated('document_date') : null,
             addressee: $request->validated('addressee'),
             purpose: $request->validated('purpose'),
+            notes: $request->validated('notes'),
         );
 
         return redirect()
@@ -70,6 +71,7 @@ final class StudentRecordsController
             documentDate: $request->validated('document_date') ? (string) $request->validated('document_date') : null,
             addressee: $request->validated('addressee'),
             purpose: $request->validated('purpose'),
+            notes: $request->validated('notes'),
         );
 
         return redirect()

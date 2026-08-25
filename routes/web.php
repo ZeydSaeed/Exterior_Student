@@ -101,6 +101,13 @@ Route::put('/students/{id}/profile/attestations/{attestationId}', [StudentProfil
 Route::delete('/students/{id}/profile/attestations/{attestationId}', [StudentProfileController::class, 'destroyAttestation'])
     ->name('students.profile.attestations.destroy');
 
+Route::post('/students/{id}/profile/notes', [StudentProfileController::class, 'storeNote'])
+    ->name('students.profile.notes.store');
+Route::put('/students/{id}/profile/notes/{noteId}', [StudentProfileController::class, 'updateNote'])
+    ->name('students.profile.notes.update');
+Route::delete('/students/{id}/profile/notes/{noteId}', [StudentProfileController::class, 'destroyNote'])
+    ->name('students.profile.notes.destroy');
+
 Route::get('/employees', [EmployeeController::class, 'index'])
     ->name('employees.index');
 

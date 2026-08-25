@@ -248,6 +248,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         'name_grandfather' => 'اسم الجد',
         'name_surname' => 'اللقب',
         'exam_number' => 'الرقم الامتحاني',
+        'enrollment_number' => 'رقم القيد',
         'birth_date' => 'التولد',
         'birth_place' => 'محل الولادة',
         'mother_full_name' => 'اسم الام الكامل',
@@ -266,6 +267,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
     ];
 
     private const CREATE_FIELDS_MAP = [
+        'enrollment_number' => 'رقم القيد',
         'exam_number' => 'الرقم الامتحاني',
         'name_student' => 'اسم الطالب',
         'name_father' => 'اسم الاب',
@@ -293,6 +295,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return DB::transaction(function () use ($data): int {
             $row = [];
             foreach (self::CREATE_FIELDS_MAP as $key => $column) {
+                if ($key === 'enrollment_number' && ! Schema::hasColumn('main_table', $column)) {
+                    continue;
+                }
                 $value = isset($data[$key]) ? trim((string) $data[$key]) : null;
                 // الرقم الامتحاني: إذا تُرك فارغاً نضعه 0
                 if ($key === 'exam_number') {
@@ -401,7 +406,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             // افتراضياً: النتيجة تكون فارغة حتى لا تظهر "ناجح" قبل إدخال درجات حقيقية.
             $resultId = null;
 
-            DB::table('student_academic')->insert([
+            $academicRow = [
                 'student_id' => $studentId,
                 'branch_id' => $branchId,
                 'major_id' => $majorId,
@@ -413,7 +418,11 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'issuing_authority' => $trim('issuing_authority'),
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
+            ];
+            if (Schema::hasColumn('student_academic', 'enrollment_number')) {
+                $academicRow['enrollment_number'] = $trim('enrollment_number');
+            }
+            DB::table('student_academic')->insert($academicRow);
 
             if ($this->studentGradesUsesMajorSubject()) {
                 $majorSubjectIds = DB::table('major_subjects')->where('major_id', $majorId)->orderBy('sort_order')->pluck('id');
@@ -457,6 +466,9 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $allowedResults = Config::get('grades_catalog.result_options', []);
             $allowedRounds = Config::get('grades_catalog.round_options', []);
             foreach (self::BASIC_FIELDS as $key => $column) {
+                if ($key === 'enrollment_number' && ! Schema::hasColumn('main_table', $column)) {
+                    continue;
+                }
                 if (array_key_exists($key, $payload)) {
                     $v = trim((string) $payload[$key]);
                     if ($key === 'total' && $v !== '' && is_numeric($v)) {
@@ -572,7 +584,10 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     $acUp['result_type_id'] = $this->resolveResultTypeId($resultName);
                 }
             }
-            foreach (['total', 'average', 'round', 'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority'] as $k) {
+            foreach (['total', 'average', 'round', 'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority', 'enrollment_number'] as $k) {
+                if ($k === 'enrollment_number' && ! Schema::hasColumn('student_academic', 'enrollment_number')) {
+                    continue;
+                }
                 if (array_key_exists($k, $payload)) {
                     $v = trim((string) $payload[$k]);
                     if ($k === 'total') {

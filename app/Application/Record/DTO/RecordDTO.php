@@ -13,6 +13,7 @@ final class RecordDTO
         public readonly ?string $documentDate,
         public readonly ?string $addressee,
         public readonly ?string $purpose,
+        public readonly ?string $notes = null,
     ) {}
 
     public function toArray(): array
@@ -23,6 +24,7 @@ final class RecordDTO
             'document_date' => $this->documentDate,
             'addressee' => $this->addressee,
             'purpose' => $this->purpose,
+            'notes' => $this->notes,
         ];
     }
 }

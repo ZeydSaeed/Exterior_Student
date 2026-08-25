@@ -5,10 +5,11 @@ namespace App\Application\Profile\DTO;
 use App\Application\Record\DTO\RecordDTO;
 
 /**
- * DTO لصفحة السجل الشخصي = الطالب + التأييدات + الوثائق.
+ * DTO لصفحة السجل الشخصي = الطالب + التأييدات + الوثائق + الملاحظات.
  *
- * @param list<AttestationDTO> $attestations
- * @param list<RecordDTO>     $records
+ * @param  list<AttestationDTO>  $attestations
+ * @param  list<RecordDTO>  $records
+ * @param  list<StudentNoteDTO>  $notes
  */
 final class StudentProfileDTO
 {
@@ -18,5 +19,6 @@ final class StudentProfileDTO
         public readonly ?string $studentName,
         public readonly array $attestations,
         public readonly array $records,
+        public readonly array $notes = [],
     ) {}
 }
