@@ -1,10 +1,14 @@
 '=============================================================================
 ' Silent launcher - Exterior Students System
-' Starts Herd + XAMPP MySQL/Apache, then opens Google Chrome in app mode
+' Starts Herd + XAMPP MySQL (NOT Apache), then opens Google Chrome in app mode
+' Run configure-server-herd-lan.bat once so client laptops can reach the app.
 ' Uses the SAME Chrome profile as the normal browser so print/window
 ' settings match 100% (no separate ExteriorStudent\ChromeApp profile)
 '=============================================================================
 Option Explicit
+
+Const SERVER_IP = "192.168.10.1"
+Const APP_HOST = "exterior_student.test"
 
 Dim sh, fso, xampp, herdBat, appUrl, chromeExe, chromeUserData, profileDir, cmd
 
@@ -13,7 +17,7 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 
 xampp = "C:\xampp"
 herdBat = sh.ExpandEnvironmentStrings("%USERPROFILE%") & "\.config\herd\bin\herd.bat"
-appUrl = "http://exterior_student.test"
+appUrl = "http://" & APP_HOST
 chromeUserData = sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\Google\Chrome\User Data"
 profileDir = "Default"
 chromeExe = ""
@@ -58,10 +62,9 @@ If Not ProcessExists("mysqld.exe") Then
   End If
 End If
 
-If Not ProcessExists("httpd.exe") Then
-  If fso.FileExists(xampp & "\apache\bin\httpd.exe") Then
-    RunHidden "cmd /c cd /d """ & xampp & """ && start """" /b """ & xampp & "\apache\bin\httpd.exe"""
-  End If
+If ProcessExists("httpd.exe") Then
+  RunHidden "cmd /c taskkill /IM httpd.exe /F"
+  WScript.Sleep 1000
 End If
 
 If fso.FileExists(herdBat) Then
