@@ -63,6 +63,9 @@
     }
 
     function setEditMode(edit) {
+        if (edit && !window.STUDENTS_CAN_EDIT_GRADES) {
+            return;
+        }
         document.querySelectorAll('.grades-readonly').forEach(function (el) {
             el.style.display = edit ? 'none' : '';
         });
@@ -201,6 +204,9 @@
 
     function openGradesFor(id, sourceBtn, editImmediately) {
         if (!id) return;
+        if (editImmediately && !window.STUDENTS_CAN_EDIT_GRADES) {
+            editImmediately = false;
+        }
         openModal();
         var url = urlTpl.replace('__ID__', String(id));
         fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
@@ -247,6 +253,9 @@
 
     document.querySelectorAll('.btn-edit-row').forEach(function (editBtn) {
         editBtn.addEventListener('click', function () {
+            if (!window.STUDENTS_CAN_EDIT_GRADES) {
+                return;
+            }
             var row = this.closest('tr');
             if (!row) return;
             var gradesBtn = row.querySelector('.btn-grades-open');
@@ -258,7 +267,12 @@
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-    if (btnEdit) btnEdit.addEventListener('click', function () { setEditMode(true); });
+    if (btnEdit) btnEdit.addEventListener('click', function () {
+        if (!window.STUDENTS_CAN_EDIT_GRADES) {
+            return;
+        }
+        setEditMode(true);
+    });
     if (btnCancel) btnCancel.addEventListener('click', function () {
         if (originalData) fillForm(originalData);
         else setEditMode(false);

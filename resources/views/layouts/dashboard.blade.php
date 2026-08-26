@@ -1,3 +1,7 @@
+@php
+    use App\Domain\Auth\PermissionCatalog;
+    $authUser = auth()->user();
+@endphp
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dashboard-layout">
 <head>
@@ -24,7 +28,7 @@
 <body class="dashboard-layout @yield('body_class')">
     <div class="dashboard-wrap">
         <aside class="dashboard-sidebar" aria-label="القائمة الجانبية">
-            {{-- أيقونة الداشبورد / الصفحة الرئيسية --}}
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_DASHBOARD))
             <a href="{{ route('dashboard') }}" class="dashboard-sidebar-link @if(request()->routeIs('dashboard')) is-active @endif" aria-label="الصفحة الرئيسية" @if(request()->routeIs('dashboard')) aria-current="page" @endif style="margin-top: 0rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M3 11L12 3l9 8" />
@@ -32,7 +36,8 @@
                 </svg>
                 <span>الصفحة الرئيسية</span>
             </a>
-            {{-- بيانات الطلبة --}}
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_STUDENTS))
             <a href="{{ $students_index_url ?? route('students.index') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.index')) is-active @endif" aria-label="بيانات الطلبة" @if(request()->routeIs('students.index')) aria-current="page" @endif style="margin-top: 0.9rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -42,6 +47,8 @@
                 </svg>
                 <span>بيانات الطلبة</span>
             </a>
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_DOCUMENTS_BULK))
             <a href="{{ $students_bulk_print_url ?? route('students.documents.bulk-print') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.documents.bulk-print')) is-active @endif" aria-label="طباعة القيود" id="sidebar-link-bulk-print" @if(request()->routeIs('students.documents.bulk-print')) aria-current="page" @endif>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -51,6 +58,8 @@
                 </svg>
                 <span>القيود</span>
             </a>
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_IMPORT_STUDENTS))
             <a href="{{ route('students.import-excel') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.import-excel') || request()->routeIs('students.import-excel.*')) is-active @endif" aria-label="استيراد بيانات الطلبة من اكسل" @if(request()->routeIs('students.import-excel') || request()->routeIs('students.import-excel.*')) aria-current="page" @endif>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -62,6 +71,8 @@
                 </svg>
                 <span>استيراد بيانات الطلبة من اكسل</span>
             </a>
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_IMPORT_RESULTS))
             <a href="{{ route('students.results-import-excel') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.results-import-excel') || request()->routeIs('students.results-import-excel.*')) is-active @endif" aria-label="ادخال النتائج" @if(request()->routeIs('students.results-import-excel') || request()->routeIs('students.results-import-excel.*')) aria-current="page" @endif>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -72,8 +83,8 @@
                 </svg>
                 <span> استيراد النتائج من اكسل</span>
             </a>
-           
-           
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_FAILURES))
             <a href="#" class="dashboard-sidebar-link" aria-label="الراسبين" id="sidebar-link-failures">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"/>
@@ -82,6 +93,8 @@
                 </svg>
                 <span>الراسبين</span>
             </a>
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_REPEATERS))
             <a href="{{ route('students.repeaters.index') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.repeaters.index')) is-active @endif" aria-label="المعيدين" id="sidebar-link-repeaters" @if(request()->routeIs('students.repeaters.index')) aria-current="page" @endif>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
@@ -90,6 +103,8 @@
                 </svg>
                 <span>المعيدين</span>
             </a>
+            @endif
+            @if($authUser?->hasPermission(PermissionCatalog::NAV_STATISTICS))
             <a href="{{ $students_statistics_url ?? route('students.statistics.index') }}" class="dashboard-sidebar-link @if(request()->routeIs('students.statistics.index') || request()->routeIs('students.statistics.*')) is-active @endif" aria-label="الاحصائيات" id="sidebar-link-statistics" @if(request()->routeIs('students.statistics.index') || request()->routeIs('students.statistics.*')) aria-current="page" @endif>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="18" y1="20" x2="18" y2="10"/>
@@ -98,6 +113,7 @@
                 </svg>
                 <span>الاحصائيات</span>
             </a>
+            @endif
         </aside>
 
         <main class="dashboard-main">
@@ -105,15 +121,27 @@
                 <div class="dashboard-toolbar-row">
                     <div class="dashboard-toolbar-slot dashboard-toolbar-slot-start">
                         <div class="dashboard-toolbar-group">
-                    <!-- <div class="dashboard-toolbar-user">
+                    @if($authUser)
+                    <div class="dashboard-toolbar-user">
                         <div class="dashboard-toolbar-user-avatar" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
                         </div>
-                        <span class="dashboard-toolbar-user-name">اسم المستخدم</span>
-                    </div> -->
+                        <span class="dashboard-toolbar-user-name">{{ $authUser->name }}</span>
+                    </div>
+                    @endif
+                    @if($authUser?->hasPermission(PermissionCatalog::USERS_MANAGE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_ACCOUNTS))
+                    <a href="{{ route('accounts.index') }}" class="dashboard-toolbar-btn @if(request()->routeIs('accounts.*')) is-active @endif" aria-label="الحسابات" title="الحسابات والصلاحيات" @if(request()->routeIs('accounts.*')) aria-current="page" @endif>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span>الحسابات</span>
+                    </a>
+                    @endif
+                    @if($authUser?->hasPermission(PermissionCatalog::EMPLOYEES_MANAGE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_EMPLOYEES))
                     <a href="{{ route('employees.index') }}" class="dashboard-toolbar-employees @if(request()->routeIs('employees.*')) is-active @endif" aria-label="الموظفون" title="الموظفون" @if(request()->routeIs('employees.*')) aria-current="page" @endif>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -123,6 +151,8 @@
                         </svg>
                         <span>الموظفون</span>
                     </a>
+                    @endif
+                    @if($authUser?->hasPermission(PermissionCatalog::STUDENTS_CREATE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_ADD_STUDENT))
                     <a href="{{ route('students.create') }}" class="dashboard-toolbar-btn @if(request()->routeIs('students.create')) is-active @endif" aria-label="إضافة طالب" title="إضافة طالب" @if(request()->routeIs('students.create')) aria-current="page" @endif>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -132,6 +162,8 @@
                         </svg>
                         <span>إضافة طالب</span>
                     </a>
+                    @endif
+                    @if($authUser?->hasPermission(PermissionCatalog::BACKUP_CREATE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_BACKUP))
                     <form method="POST" action="{{ route('database-backup.store') }}" style="display: inline;">
                         @csrf
                         <button type="submit" class="dashboard-toolbar-btn" aria-label="نسخ احتياطي" title="نسخ احتياطي" style="background: transparent; border: none; padding: 0;">
@@ -143,6 +175,20 @@
                             <span>نسخ احتياطي</span>
                         </button>
                     </form>
+                    @endif
+                    @if($authUser)
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="dashboard-toolbar-btn" aria-label="تسجيل الخروج" title="تسجيل الخروج">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>خروج</span>
+                        </button>
+                    </form>
+                    @endif
                         </div>
                     </div>
                     <div class="dashboard-toolbar-slot dashboard-toolbar-slot-center">
@@ -171,4 +217,3 @@
     @yield('scripts')
 </body>
 </html>
-

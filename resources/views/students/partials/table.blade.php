@@ -41,6 +41,8 @@
                     <td class="students-exam-cell">{!! \App\Support\Highlight::render($examNum, $searchPattern ?? null) !!}</td>
                     <td class="students-name-cell">{!! \App\Support\Highlight::render($student->full_name ?? '', $searchPattern ?? null) !!}</td>
                     <td>
+                        @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_GRADES_VIEW)
+                            || auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_GRADES_EDIT))
                         <button type="button" class="btn-primary btn-grades-open btn-grades" title="عرض الدرجات"
                             data-student-id="{{ $student->id }}"
                             data-exam-number="{{ e($examNum) }}"
@@ -53,6 +55,7 @@
                             data-enrollment-number="{{ e($enrollmentNumber) }}">
                             <span class="btn-label">الدرجات</span>
                         </button>
+                        @endif
                     </td>
                     <td>
                         <a href="{{ route('students.certificate', ['id' => $student->id]) }}"
@@ -102,12 +105,15 @@
                     </td>
                     <td class="students-table-actions">
                         <div class="students-table-actions-inner">
+                            @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_GRADES_EDIT))
                             <button type="button" class="btn-primary btn-edit-row" title="تعديل" aria-label="تعديل">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M12 20h9"/>
                                     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                                 </svg>
                             </button>
+                            @endif
+                            @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_DELETE))
                             <form method="POST" action="{{ route('students.destroy', $student->id) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطالب؟');">
                                 @csrf
                                 @method('DELETE')
@@ -121,6 +127,7 @@
                                     </svg>
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

@@ -3,9 +3,11 @@
         <div class="modal-header">
             <h2 id="grades-modal-title">عرض الدرجات</h2>
             <div class="grades-modal-toolbar">
+                @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_GRADES_EDIT))
                 <button type="button" class="btn-primary grades-btn-edit" id="grades-btn-edit">تعديل</button>
                 <button type="button" class="btn-primary grades-btn-save" id="grades-btn-save" style="display: none;">حفظ</button>
                 <button type="button" class="btn-primary grades-btn-cancel" id="grades-btn-cancel" style="display: none;">إلغاء</button>
+                @endif
                 <button type="button" class="modal-close" data-grades-modal-close aria-label="إغلاق">&times;</button>
             </div>
         </div>

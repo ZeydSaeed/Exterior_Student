@@ -35,6 +35,7 @@
         window.STUDENTS_CSRF_TOKEN = "{{ csrf_token() }}";
         window.STUDENTS_BULK_PRINT_URL = "{{ route('students.documents.bulk-print') }}";
         window.STUDENTS_DELETE_FAILED_URL = "{{ route('students.failures.destroy') }}";
+        window.STUDENTS_CAN_EDIT_GRADES = @json(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_GRADES_EDIT) ?? false);
     </script>
 
     @include('students.partials.filters')

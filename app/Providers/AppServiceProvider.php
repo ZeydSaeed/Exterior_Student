@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Domain\Attestation\AttestationCommandRepository;
 use App\Domain\Attestation\AttestationQueryRepository;
+use App\Domain\Auth\AuthAccountCommandRepository;
+use App\Domain\Auth\AuthAccountQueryRepository;
 use App\Domain\Backup\Repositories\DatabaseBackupRepository;
 use App\Domain\Certificate\CertificateSignatureRepository;
 use App\Domain\Employee\EmployeeCommandRepository;
@@ -22,6 +24,8 @@ use App\Domain\StudentNote\StudentNoteQueryRepository;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
 use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
 use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
+use App\Infrastructure\Persistence\MySQLAuthAccountCommandRepository;
+use App\Infrastructure\Persistence\MySQLAuthAccountQueryRepository;
 use App\Infrastructure\Persistence\MySQLBranchMajorCatalog;
 use App\Infrastructure\Persistence\MySQLCertificateSignatureRepository;
 use App\Infrastructure\Persistence\MySQLDatabaseBackupRepository;
@@ -80,6 +84,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(StudentNoteQueryRepository::class, MySQLStudentNoteQueryRepository::class);
         $this->app->bind(StudentNoteCommandRepository::class, MySQLStudentNoteCommandRepository::class);
+
+        // Auth accounts
+        $this->app->bind(AuthAccountQueryRepository::class, MySQLAuthAccountQueryRepository::class);
+        $this->app->bind(AuthAccountCommandRepository::class, MySQLAuthAccountCommandRepository::class);
     }
 
     /**

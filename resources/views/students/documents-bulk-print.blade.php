@@ -13,7 +13,7 @@
     <style>
         .page-documents-bulk .documents-bulk-top-bar {
             position: fixed;
-            top: 4.5rem;
+            top: 6.75rem;
             left: 12rem;
             right: 3rem;
             z-index: 45;
@@ -81,7 +81,7 @@
         }
 
         .page-documents-bulk .employees-page-wrap {
-            padding-top: 2.35rem;
+            padding-top: 3.5rem;
         }
         .page-documents-bulk .students-table-area {
             display: flex;
