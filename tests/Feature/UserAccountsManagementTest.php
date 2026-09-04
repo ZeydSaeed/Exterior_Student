@@ -18,6 +18,7 @@ beforeEach(function () {
         $table->string('email')->nullable();
         $table->timestamp('email_verified_at')->nullable();
         $table->string('password');
+        $table->text('password_display')->nullable();
         $table->boolean('is_admin')->default(false);
         $table->rememberToken();
         $table->timestamps();
@@ -30,6 +31,21 @@ beforeEach(function () {
         $table->timestamps();
         $table->unique(['user_id', 'permission']);
     });
+});
+
+it('shows stored account passwords masked on the accounts page', function () {
+    $admin = User::factory()->admin()->create([
+        'username' => 'admin',
+        'password' => Hash::make('admin123'),
+        'password_display' => \Illuminate\Support\Facades\Crypt::encryptString('admin123'),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('accounts.index'))
+        ->assertSuccessful()
+        ->assertSee('name="password"', false)
+        ->assertSee('value="admin123"', false)
+        ->assertSee('accounts-password-toggle', false);
 });
 
 it('allows an admin to open the accounts page', function () {
@@ -93,6 +109,10 @@ it('creates a staff account with selected permissions', function () {
 
     $hash = (string) DB::table('users')->where('id', $userId)->value('password');
     expect(Hash::check('secret12', $hash))->toBeTrue();
+
+    $encrypted = DB::table('users')->where('id', $userId)->value('password_display');
+    expect($encrypted)->not->toBeNull()
+        ->and(\Illuminate\Support\Facades\Crypt::decryptString((string) $encrypted))->toBe('secret12');
 });
 
 it('updates username password and permissions for a staff account', function () {

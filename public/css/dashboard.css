@@ -1327,34 +1327,173 @@ body.grades-modal-open {
     text-align: center;
 }
 .page-add-student .form-add-student {
-    max-width: 64rem;
-    margin-top: 1rem;
-    padding-top: 0.25rem;
+    max-width: 100%;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.15rem;
+    padding-bottom: 0.75rem;
+    box-sizing: border-box;
+}
+.page-add-student .create-grades-section {
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.75rem 0.75rem;
+    border: 1px solid var(--color-dark-accent);
+    border-radius: 0.3rem;
+    background: #fff;
+    box-sizing: border-box;
+    width: 40%;
+    max-width: 40%;
+}
+.page-add-student .create-grades-title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    color: var(--color-dark-accent);
+    font-weight: 700;
+}
+.page-add-student .create-grades-hint {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: #4a545e;
+}
+.page-add-student .create-grades-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(42vh, 22rem);
+    overflow: auto;
+    border: 1px solid #4a545e;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+.page-add-student .create-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.9rem;
+    background: #fff;
+}
+.page-add-student .create-grades-table th,
+.page-add-student .create-grades-table td {
+    border: 1px solid #4a545e;
+    padding: 0.3rem 0.45rem;
+    text-align: center;
+    color: #0d0d0d;
+    word-break: break-word;
+}
+.page-add-student .create-grades-table th:first-child,
+.page-add-student .create-grades-table td:first-child {
+    width: 70%;
+    text-align: right;
+}
+.page-add-student .create-grades-table th:last-child,
+.page-add-student .create-grades-table td:last-child {
+    width: 30%;
+}
+.page-add-student .create-grades-table thead th {
+    background: #d6d2cd;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.page-add-student .create-grades-score {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #a0b0bf;
+    border-radius: 0.2rem;
+    padding: 0.25rem 0.35rem;
+    text-align: center;
+    font-size: 0.9rem;
+    background: #fff;
+}
+.page-add-student .create-grades-score:focus {
+    outline: none;
+    border-color: #4a545e;
+}
+.page-add-student .create-grades-total {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--color-dark-accent);
+    font-weight: 600;
+}
+.page-add-student .form-fields-align {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    box-sizing: border-box;
 }
 .page-add-student .form-row {
-    display: grid;
-    gap: 0.75rem 1.5rem;
-    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: end;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.55rem;
+    margin-inline: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
-.page-add-student .form-row-1 {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+.page-add-student .form-row-1,
+.page-add-student .form-row-2,
+.page-add-student .form-row-3 {
+    width: 100%;
 }
-@media (max-width: 500px) {
-    .page-add-student .form-row-1 {
-        grid-template-columns: 1fr;
+.page-add-student .form-row-1 .form-group,
+.page-add-student .form-row-2 .form-group,
+.page-add-student .form-row-3 .form-group {
+    flex: 1 1 0;
+    width: auto !important;
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+}
+.page-add-student .form-row .form-group input[type="text"],
+.page-add-student .form-row .form-group input[type="date"],
+.page-add-student .form-row .form-group select {
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 1100px) {
+    .page-add-student .create-grades-section {
+        width: 60%;
+        max-width: 60%;
     }
 }
-.page-add-student .form-row-2 {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+@media (max-width: 700px) {
+    .page-add-student .form-fields-align {
+        display: block;
+        width: 100%;
+    }
+    .page-add-student .form-row {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .page-add-student .form-row-1 .form-group,
+    .page-add-student .form-row-2 .form-group,
+    .page-add-student .form-row-3 .form-group {
+        flex: 1 1 calc(50% - 0.75rem);
+        width: auto !important;
+    }
+    .page-add-student .create-grades-section {
+        width: 100%;
+        max-width: 100%;
+    }
+    .page-add-student .create-grades-table-wrap {
+        max-height: min(38vh, 18rem);
+    }
+    .page-add-student .create-grades-table {
+        font-size: 0.82rem;
+    }
 }
-.page-add-student .form-row-3 {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-}
-.page-add-student .form-row-4 {
-    grid-template-columns: 1fr 1fr 1fr;
-}
-.page-add-student .form-row-5 {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+@media (max-width: 480px) {
+    .page-add-student .form-row-1 .form-group,
+    .page-add-student .form-row-2 .form-group,
+    .page-add-student .form-row-3 .form-group {
+        flex: 1 1 100%;
+    }
 }
 .page-add-student .form-group label,
 .page-add-student .form-group .label {
@@ -1755,18 +1894,11 @@ body.grades-modal-open {
     grid-template-columns: minmax(8rem, max-content) minmax(12rem, max-content) minmax(28rem, 2fr) minmax(12rem, 1fr) auto;
     align-items: start;
 }
-.page-student-documents .document-add-notes {
-    grid-column: 1 / 4;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    width: 100%;
-}
 .page-student-documents .doc-field-notes,
 .page-student-profile .doc-field-notes {
     width: 100%;
     min-height: 2rem;
-    height: 2rem;
+    height: auto;
     box-sizing: border-box;
     padding: 0.2rem 0.4rem;
     border: 1px solid var(--color-dark-accent);
@@ -1776,19 +1908,18 @@ body.grades-modal-open {
     resize: none;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    overflow-y: auto;
+    word-break: break-word;
+    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
     text-align: start;
     direction: rtl;
-}
-.page-student-documents .document-add-fields .doc-field-notes {
-    min-height: 2.15rem;
-    height: 2.15rem;
 }
 .page-student-documents .document-notes-cell,
 .page-student-profile .document-notes-cell {
     white-space: normal;
     text-align: start;
-    vertical-align: middle;
+    vertical-align: top;
 }
 .page-student-documents .students-table tbody.document-record:hover tr,
 .page-student-profile .students-table tbody.document-record:hover tr {
@@ -1797,9 +1928,6 @@ body.grades-modal-open {
 @media (max-width: 700px) {
     .page-student-documents .document-add-fields {
         grid-template-columns: 1fr;
-    }
-    .page-student-documents .document-add-notes {
-        grid-column: 1 / -1;
     }
 }
 .documents-back-link { margin-top: 1rem; }
@@ -2068,10 +2196,55 @@ body.grades-modal-open {
     overflow-x: auto;
 }
 .page-accounts .accounts-table input[type="text"],
-.page-accounts .accounts-table input[type="password"] {
+.page-accounts .accounts-table input[type="password"],
+.page-accounts .accounts-table input.accounts-password-input {
     width: 100%;
     min-width: 7rem;
     box-sizing: border-box;
+}
+.page-accounts .accounts-password-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 8.5rem;
+}
+.page-accounts .accounts-password-field .accounts-password-input {
+    width: 100%;
+    padding-inline-end: 2.1rem;
+    box-sizing: border-box;
+}
+.page-accounts .accounts-password-toggle {
+    position: absolute;
+    inset-inline-end: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 0.2rem;
+    background: transparent;
+    color: #4a545e;
+    cursor: pointer;
+}
+.page-accounts .accounts-password-toggle:hover,
+.page-accounts .accounts-password-toggle:focus,
+.page-accounts .accounts-password-toggle:active {
+    background: transparent;
+    color: #4a545e;
+    outline: none;
+    box-shadow: none;
+}
+.page-accounts .accounts-password-toggle svg {
+    display: none;
+}
+.page-accounts .accounts-password-toggle[aria-pressed="false"] .accounts-password-icon-hidden,
+.page-accounts .accounts-password-toggle[aria-pressed="true"] .accounts-password-icon-visible {
+    display: block;
 }
 .page-accounts .accounts-permissions-cell {
     min-width: 16rem;
@@ -2127,12 +2300,21 @@ body.grades-modal-open {
     margin-bottom: 0.75rem;
 }
 .page-accounts .accounts-create-fields input[type="text"],
-.page-accounts .accounts-create-fields input[type="password"] {
+.page-accounts .accounts-create-fields input[type="password"],
+.page-accounts .accounts-create-fields .accounts-password-input {
     flex: 1 1 10rem;
     min-width: 8rem;
     padding: 0.45rem 0.6rem;
     border: 1px solid #a0b0bf;
     border-radius: 0.25rem;
+}
+.page-accounts .accounts-create-fields .accounts-password-field-create {
+    flex: 1 1 10rem;
+    min-width: 8rem;
+}
+.page-accounts .accounts-create-fields .accounts-password-field-create .accounts-password-input {
+    width: 100%;
+    min-width: 0;
 }
 .page-accounts .accounts-create-form .btn-primary {
     margin-top: 0.85rem;

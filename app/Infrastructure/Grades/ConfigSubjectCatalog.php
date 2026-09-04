@@ -31,6 +31,29 @@ final class ConfigSubjectCatalog implements SubjectCatalogInterface
         }
 
         $subjects = Config::get("grades_catalog.{$subjectsKey}", []);
+
         return is_array($subjects) ? array_values($subjects) : [];
+    }
+
+    public function allByBranchAndMajor(): array
+    {
+        $catalog = Config::get('grades_catalog.catalog', []);
+        if (! is_array($catalog)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($catalog as $branch => $majors) {
+            if (! is_array($majors)) {
+                continue;
+            }
+            $branchKey = (string) $branch;
+            $out[$branchKey] = [];
+            foreach ($majors as $major => $subjectsKey) {
+                $out[$branchKey][(string) $major] = $this->getSubjectsFor($branchKey, (string) $major);
+            }
+        }
+
+        return $out;
     }
 }

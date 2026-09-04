@@ -5,12 +5,12 @@ namespace App\Domain\Auth;
 interface AuthAccountQueryRepository
 {
     /**
-     * @return list<array{id: int, name: string, username: string, is_admin: bool, permissions: list<string>}>
+     * @return list<array{id: int, name: string, username: string, is_admin: bool, password_display: string|null, permissions: list<string>}>
      */
     public function listAccounts(): array;
 
     /**
-     * @return array{id: int, name: string, username: string, is_admin: bool, permissions: list<string>}|null
+     * @return array{id: int, name: string, username: string, is_admin: bool, password_display: string|null, permissions: list<string>}|null
      */
     public function findById(int $id): ?array;
 

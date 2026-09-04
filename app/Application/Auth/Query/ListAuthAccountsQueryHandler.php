@@ -15,7 +15,7 @@ final class ListAuthAccountsQueryHandler
     ) {}
 
     /**
-     * @return array{accounts: list<array{id: int, name: string, username: string, is_admin: bool, permissions: list<string>}>, permission_groups: array<string, array{label: string, permissions: array<string, string>}>}
+     * @return array{accounts: list<array{id: int, name: string, username: string, is_admin: bool, password_display: string|null, permissions: list<string>}>, permission_groups: array<string, array{label: string, permissions: array<string, string>}>}
      */
     public function handle(): array
     {

@@ -17,15 +17,17 @@ final class MySQLAuthAccountCommandRepository implements AuthAccountCommandRepos
         string $name,
         string $username,
         string $passwordHash,
+        ?string $passwordDisplayEncrypted,
         bool $isAdmin,
         array $permissions,
     ): int {
-        return (int) DB::transaction(function () use ($name, $username, $passwordHash, $isAdmin, $permissions): int {
+        return (int) DB::transaction(function () use ($name, $username, $passwordHash, $passwordDisplayEncrypted, $isAdmin, $permissions): int {
             $id = (int) DB::table('users')->insertGetId([
                 'name' => $name,
                 'username' => $username,
                 'email' => null,
                 'password' => $passwordHash,
+                'password_display' => $passwordDisplayEncrypted,
                 'is_admin' => $isAdmin,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -45,10 +47,11 @@ final class MySQLAuthAccountCommandRepository implements AuthAccountCommandRepos
         string $name,
         string $username,
         ?string $passwordHash,
+        ?string $passwordDisplayEncrypted,
         bool $isAdmin,
         array $permissions,
     ): void {
-        DB::transaction(function () use ($id, $name, $username, $passwordHash, $isAdmin, $permissions): void {
+        DB::transaction(function () use ($id, $name, $username, $passwordHash, $passwordDisplayEncrypted, $isAdmin, $permissions): void {
             $payload = [
                 'name' => $name,
                 'username' => $username,
@@ -58,6 +61,7 @@ final class MySQLAuthAccountCommandRepository implements AuthAccountCommandRepos
 
             if ($passwordHash !== null) {
                 $payload['password'] = $passwordHash;
+                $payload['password_display'] = $passwordDisplayEncrypted;
             }
 
             DB::table('users')->where('id', $id)->update($payload);

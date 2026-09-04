@@ -7,6 +7,7 @@ use App\Domain\Auth\AuthAccountCommandRepository;
 use App\Domain\Auth\AuthAccountQueryRepository;
 use App\Domain\Auth\PermissionCatalog;
 use DomainException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -41,6 +42,7 @@ final class CreateAuthAccountCommandHandler
             name: $account->name,
             username: $account->username,
             passwordHash: Hash::make($password),
+            passwordDisplayEncrypted: Crypt::encryptString($password),
             isAdmin: $isAdmin,
             permissions: $permissions,
         );

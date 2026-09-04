@@ -7,6 +7,8 @@ use App\Domain\Student\StudentDocumentInfo;
 use App\Domain\Student\StudentGradesView;
 use App\Domain\Student\StudentListProjection;
 use App\Domain\Student\StudentQueryRepository;
+use App\Support\AcademicYearOptions;
+use App\Support\GenderFilterVariants;
 use App\Support\ResultFilterVariants;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -244,7 +246,12 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             $query->where('m.name_ar', $filters['major']);
         }
         if (! empty($filters['gender'])) {
-            $query->where('p.gender', $filters['gender']);
+            $genderValues = GenderFilterVariants::expand((string) $filters['gender']);
+            if (count($genderValues) === 1) {
+                $query->where('p.gender', $genderValues[0]);
+            } else {
+                $query->whereIn('p.gender', $genderValues);
+            }
         }
         if (! empty($filters['year'])) {
             $query->where('y.year_label', $filters['year']);
@@ -277,7 +284,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
      */
     private function getFilterListsFromCache(): array
     {
-        return Cache::remember(self::CACHE_KEY_FILTER_LISTS, self::CACHE_TTL_SECONDS, function (): array {
+        /** @var array{academicYears: \Illuminate\Support\Collection, branches: \Illuminate\Support\Collection, majors: \Illuminate\Support\Collection, genders: \Illuminate\Support\Collection, resultOptions: \Illuminate\Support\Collection, roundOptions: \Illuminate\Support\Collection} $lists */
+        $lists = Cache::remember(self::CACHE_KEY_FILTER_LISTS, self::CACHE_TTL_SECONDS, function (): array {
             if ($this->useNormalizedSchema()) {
                 $academicYears = DB::table('academic_years')->orderByDesc('year_label')->pluck('year_label');
                 $branches = DB::table('branches')->orderBy('name_ar')->pluck('name_ar');
@@ -287,9 +295,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                     ->distinct()
                     ->whereNotNull('gender')
                     ->where('gender', '!=', '')
-                    ->pluck('gender')
-                    ->sortBy(fn ($g) => ['ذكر' => 0, 'أنثى' => 1][$g] ?? 2)
-                    ->values();
+                    ->pluck('gender');
+                $genders = GenderFilterVariants::normalizeOptions($genders);
             } else {
                 $academicYears = DB::table('main_table')
                     ->select('العام الدراسي')->distinct()->whereNotNull('العام الدراسي')->where('العام الدراسي', '!=', '')
@@ -302,7 +309,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                     ->orderBy('major')->pluck('major');
                 $genders = DB::table('main_table')
                     ->selectRaw('TRIM(`الجنس`) AS gender')->distinct()->whereNotNull('الجنس')->whereRaw('TRIM(`الجنس`) != ""')
-                    ->pluck('gender')->sortBy(fn ($g) => ['ذكر' => 0, 'أنثى' => 1][$g] ?? 2)->values();
+                    ->pluck('gender');
+                $genders = GenderFilterVariants::normalizeOptions($genders);
             }
 
             $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'ناجحه', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة', 'حجب']);
@@ -323,6 +331,10 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 'roundOptions' => $roundOptions,
             ];
         });
+
+        $lists['genders'] = GenderFilterVariants::normalizeOptions($lists['genders'] ?? []);
+
+        return $lists;
     }
 
     public function listIdsWithFilters(array $filters): array
@@ -397,7 +409,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             $total = (int) ($row->total ?? 0);
             if ($label === 'ذكر') {
                 $male += $total;
-            } elseif ($label === 'أنثى' || $label === 'انثى') {
+            } elseif (in_array($label, GenderFilterVariants::FEMALE_VARIANTS, true)) {
                 $female += $total;
             }
         }
@@ -450,7 +462,13 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         }
 
         if (! empty($filters['gender'])) {
-            $query->whereRaw('TRIM(`الجنس`) = ?', [$filters['gender']]);
+            $genderValues = GenderFilterVariants::expand((string) $filters['gender']);
+            if (count($genderValues) === 1) {
+                $query->whereRaw('TRIM(`الجنس`) = ?', [$genderValues[0]]);
+            } else {
+                $placeholders = implode(', ', array_fill(0, count($genderValues), '?'));
+                $query->whereRaw('TRIM(`الجنس`) IN ('.$placeholders.')', $genderValues);
+            }
         }
 
         if (! empty($filters['year'])) {
@@ -1041,16 +1059,6 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
     public function getAcademicYearsForForm(): array
     {
-        $currentYear = (int) date('Y');
-        $currentAcademicYear = ($currentYear - 1).'-'.$currentYear;
-
-        $filterLists = $this->getFilterListsFromCache();
-        $years = $filterLists['academicYears']->map(fn ($y) => (string) $y)->values()->all();
-
-        if (! in_array($currentAcademicYear, $years, true)) {
-            array_unshift($years, $currentAcademicYear);
-        }
-
-        return $years;
+        return AcademicYearOptions::all();
     }
 }

@@ -64,17 +64,24 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
     }
 
     /**
-     * العمود رقم الوثيقة في بعض قواعد البيانات من نوع integer —
-     * نحوّل الأرقام العربية إلى لاتينية ثم نُرجع null أو عدداً صحيحاً.
+     * العمود رقم الوثيقة قد يكون نصاً أو عدداً صحيحاً حسب بنية قاعدة البيانات.
      */
-    private function normalizeDocumentNumber(?string $value): ?int
+    private function normalizeDocumentNumber(?string $value): int|string|null
     {
         if ($value === null || $value === '') {
             return null;
         }
 
         $trimmed = trim(ArabicDigits::toWestern($value));
-        if ($trimmed === '' || ! is_numeric($trimmed)) {
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (Schema::hasColumn('records', 'document_number')) {
+            return $trimmed;
+        }
+
+        if (! is_numeric($trimmed)) {
             return null;
         }
 

@@ -54,7 +54,9 @@ $herdHomeUnix = $herdHome.Replace('\', '/')
 
 $lan = @"
 server {
-    listen ${ServerIp}:80;
+    # Listen on all interfaces so nginx still starts if LAN IP is assigned later.
+    # Clients reach the server via hosts -> 192.168.10.1 after ensure-server-lan-ip.ps1.
+    listen 80;
     server_name ${AppHost};
     root /;
     charset utf-8;
@@ -108,8 +110,24 @@ server {
 }
 "@
 
-[IO.File]::WriteAllText($lanConf, $lan)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[IO.File]::WriteAllText($lanConf, $lan, $utf8NoBom)
+# If a previous local launch disabled LAN config, restore the active filename
+$lanDisabled = "$lanConf.disabled"
+if (Test-Path $lanDisabled) {
+    Remove-Item $lanDisabled -Force -ErrorAction SilentlyContinue
+}
 Write-Host "OK: Created LAN nginx config for $AppHost on $ServerIp."
+
+# Ensure server Ethernet has the LAN static IP (required for client laptops)
+$ensureIp = Join-Path $PSScriptRoot 'ensure-server-lan-ip.ps1'
+if (Test-Path $ensureIp) {
+    Write-Host 'Ensuring server LAN IP...'
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $ensureIp -ServerIp $ServerIp
+    if ($LASTEXITCODE -eq 3) {
+        Write-Host 'WARN: Run this script as Administrator to assign the LAN IP automatically.'
+    }
+}
 
 & $herdBat restart | Out-Host
 Write-Host 'OK: Herd restarted.'

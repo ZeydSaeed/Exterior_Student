@@ -1,13 +1,15 @@
 <?php
 
 use App\Support\ArabicDigits;
+use App\Support\GenderFilterVariants;
 
 $allLabel = 'الكل';
 $selected = $selectedFilters ?? [];
 $branchLabel = trim((string) ($selected['branch'] ?? '')) !== '' ? $selected['branch'] : $allLabel;
 $majorLabel = trim((string) ($selected['major'] ?? '')) !== '' ? $selected['major'] : $allLabel;
 $yearLabel = trim((string) ($selected['year'] ?? '')) !== '' ? $selected['year'] : $allLabel;
-$genderLabel = trim((string) ($selected['gender'] ?? '')) !== '' ? $selected['gender'] : $allLabel;
+$genderRaw = trim((string) ($selected['gender'] ?? ''));
+$genderLabel = $genderRaw !== '' ? GenderFilterVariants::displayLabel($genderRaw) : $allLabel;
 $roundLabel = trim((string) ($selected['round'] ?? '')) !== '' ? $selected['round'] : $allLabel;
 $resultLabel = trim((string) ($selected['result'] ?? '')) !== '' ? $selected['result'] : $allLabel;
 $countDisplay = ArabicDigits::toWestern((string) ($totalStudents ?? 0));

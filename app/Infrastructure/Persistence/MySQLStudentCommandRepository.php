@@ -325,9 +325,16 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             // لأن أعمدة المواد معرّفة كأعمدة عددية في قاعدة البيانات، و MySQL لا يقبل
             // إدخال فراغ '' في أعمدة من نوع INT عند تفعيل STRICT.
             $gradeColumns = Config::get('grades_catalog.grade_columns', []);
+            $scoresBySubject = $this->scoresBySubjectFromPayload($data);
+            $sum = 0;
             foreach ($gradeColumns as $subjectColumn) {
                 if (! array_key_exists($subjectColumn, $row)) {
-                    $row[$subjectColumn] = 0;
+                    $rawScore = $scoresBySubject[$subjectColumn] ?? '';
+                    $stored = $this->normalizeScoreForStorage($rawScore, false);
+                    $row[$subjectColumn] = is_numeric($stored) ? (int) $stored : 0;
+                    if ($rawScore !== '' && is_numeric($rawScore)) {
+                        $sum += (int) round((float) $rawScore);
+                    }
                 }
             }
 
@@ -339,7 +346,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             ];
             foreach ($numericMetaColumns as $metaColumn) {
                 if (! array_key_exists($metaColumn, $row)) {
-                    $row[$metaColumn] = 0;
+                    $row[$metaColumn] = $metaColumn === 'المجموع' ? $sum : 0;
                 }
             }
 
@@ -422,27 +429,45 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             if (Schema::hasColumn('student_academic', 'enrollment_number')) {
                 $academicRow['enrollment_number'] = $trim('enrollment_number');
             }
+
+            $scoresBySubject = $this->scoresBySubjectFromPayload($data);
+            $sum = 0;
+            foreach ($scoresBySubject as $rawScore) {
+                if ($rawScore !== '' && is_numeric($rawScore)) {
+                    $sum += (int) round((float) $rawScore);
+                }
+            }
+            if (Schema::hasColumn('student_academic', 'total')) {
+                $academicRow['total'] = $sum;
+            }
+
             DB::table('student_academic')->insert($academicRow);
 
             if ($this->studentGradesUsesMajorSubject()) {
-                $majorSubjectIds = DB::table('major_subjects')->where('major_id', $majorId)->orderBy('sort_order')->pluck('id');
-                foreach ($majorSubjectIds as $msId) {
+                $majorSubjects = DB::table('major_subjects as ms')
+                    ->join('subjects as sub', 'sub.id', '=', 'ms.subject_id')
+                    ->where('ms.major_id', $majorId)
+                    ->orderBy('ms.sort_order')
+                    ->get(['ms.id', 'sub.name_ar']);
+                foreach ($majorSubjects as $ms) {
+                    $rawScore = $scoresBySubject[(string) $ms->name_ar] ?? '';
                     DB::table('student_grades')->insert([
                         'student_id' => $studentId,
-                        'major_subject_id' => $msId,
+                        'major_subject_id' => $ms->id,
                         'academic_year_id' => $yearId,
-                        'score' => 0,
+                        'score' => $this->normalizeScoreForStorage($rawScore, true),
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);
                 }
             } else {
-                $subjectIds = DB::table('subjects')->pluck('id');
-                foreach ($subjectIds as $subjectId) {
+                $subjects = DB::table('subjects')->get(['id', 'name_ar']);
+                foreach ($subjects as $subject) {
+                    $rawScore = $scoresBySubject[(string) $subject->name_ar] ?? '';
                     DB::table('student_grades')->insert([
                         'student_id' => $studentId,
-                        'subject_id' => $subjectId,
-                        'score' => 0,
+                        'subject_id' => $subject->id,
+                        'score' => $this->normalizeScoreForStorage($rawScore, false),
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);
@@ -782,6 +807,27 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
 
             return $affected;
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, string>
+     */
+    private function scoresBySubjectFromPayload(array $data): array
+    {
+        $scores = [];
+        foreach ($data['grades'] ?? [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $subject = trim((string) ($row['subject'] ?? ''));
+            if ($subject === '') {
+                continue;
+            }
+            $scores[$subject] = trim((string) ($row['score'] ?? ''));
+        }
+
+        return $scores;
     }
 
     /**

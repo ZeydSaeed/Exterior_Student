@@ -104,6 +104,9 @@ final class StudentListFiltersSession
                 if ($key === 'result') {
                     $value = ResultFilterVariants::resolveFilterOption($value);
                 }
+                if ($key === 'gender') {
+                    $value = GenderFilterVariants::displayLabel($value);
+                }
                 $stored[$key] = $value;
             }
         }
@@ -144,6 +147,9 @@ final class StudentListFiltersSession
             $v = $merged[$key];
             if ($key === 'result' && $v !== '' && $v !== null) {
                 $v = ResultFilterVariants::resolveFilterOption((string) $v);
+            }
+            if ($key === 'gender' && $v !== '' && $v !== null) {
+                $v = GenderFilterVariants::displayLabel((string) $v);
             }
             $out[$key] = ($v === '' || $v === null) ? null : (string) $v;
         }

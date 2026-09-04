@@ -6,6 +6,7 @@ use App\Domain\Auth\AuthAccountCommandRepository;
 use App\Domain\Auth\AuthAccountQueryRepository;
 use App\Domain\Auth\PermissionCatalog;
 use DomainException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -54,11 +55,13 @@ final class UpdateAuthAccountCommandHandler
         }
 
         $passwordHash = null;
+        $passwordDisplayEncrypted = null;
         if ($password !== null && trim($password) !== '') {
             if (strlen($password) < 6) {
                 throw new DomainException('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
             }
             $passwordHash = Hash::make($password);
+            $passwordDisplayEncrypted = Crypt::encryptString($password);
         }
 
         $permissions = $isAdmin ? [] : PermissionCatalog::filterValid($permissions);
@@ -68,6 +71,7 @@ final class UpdateAuthAccountCommandHandler
             name: $name,
             username: $username,
             passwordHash: $passwordHash,
+            passwordDisplayEncrypted: $passwordDisplayEncrypted,
             isAdmin: $isAdmin,
             permissions: $permissions,
         );

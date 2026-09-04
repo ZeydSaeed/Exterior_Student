@@ -1,4 +1,5 @@
 @php
+    use App\Support\GenderFilterVariants;
     use App\Support\StudentBranchMajors;
     $filterBranchVal = trim((string) request('branch', ''));
     $filterMajorsForBranch = StudentBranchMajors::majorsForBranch($filterBranchVal !== '' ? $filterBranchVal : null);
@@ -6,6 +7,7 @@
     if ($filterBranchVal !== '' && $reqMajorVal !== '' && ! in_array($reqMajorVal, $filterMajorsForBranch, true)) {
         $reqMajorVal = '';
     }
+    $filterGenderVal = GenderFilterVariants::displayLabel(trim((string) request('gender', '')));
 @endphp
 <aside class="students-filter-sidebar" aria-label="فلاتر المعيدين">
     <script type="application/json" id="repeaters-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
@@ -42,9 +44,9 @@
             <div class="students-filter-card">
                 <h3 class="students-filter-card-title">الجنس</h3>
                 <div class="students-filter-card-options">
-                    <label><input type="radio" name="gender" value="" {{ trim((string) request('gender', '')) === '' ? 'checked' : '' }} class="repeaters-filter-radio"> الكل</label>
+                    <label><input type="radio" name="gender" value="" {{ $filterGenderVal === '' ? 'checked' : '' }} class="repeaters-filter-radio"> الكل</label>
                     @foreach($genders ?? [] as $g)
-                        <label><input type="radio" name="gender" value="{{ $g }}" {{ trim((string) request('gender', '')) !== '' && request('gender') === $g ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $g }}</label>
+                        <label><input type="radio" name="gender" value="{{ $g }}" {{ $filterGenderVal !== '' && $filterGenderVal === $g ? 'checked' : '' }} class="repeaters-filter-radio"> {{ $g }}</label>
                     @endforeach
                 </div>
             </div>

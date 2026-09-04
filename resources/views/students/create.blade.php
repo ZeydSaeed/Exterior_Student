@@ -26,19 +26,28 @@
 
         <form method="POST" action="{{ route('students.store') }}" id="form-add-student" class="form-add-student">
             @csrf
-            {{-- السطر الأول: رقم القيد (اختياري) ثم الرقم الامتحاني (مطلوب) --}}
+            @php
+                $branchMap = \App\Support\StudentBranchMajors::byBranch();
+                $selectedBranch = old('branch', '');
+                $selectedMajor = old('major', '');
+                $majorsForSelected = \App\Support\StudentBranchMajors::majorsForBranch($selectedBranch !== '' ? $selectedBranch : null);
+                if ($selectedBranch === '') {
+                    $majorsForSelected = [];
+                }
+                $selectedAcademicYear = old('academic_year', \App\Support\AcademicYearOptions::current());
+                $selectedGender = old('gender', '');
+            @endphp
+
+            <div class="form-fields-align">
             <div class="form-row form-row-1">
                 <div class="form-group">
                     <label for="enrollment_number">رقم القيد</label>
-                    <input type="text" inputmode="numeric" id="enrollment_number" name="enrollment_number" value="{{ old('enrollment_number') }}" maxlength="50" aria-label="رقم القيد (اختياري)" />
+                    <input type="text" inputmode="numeric" id="enrollment_number" name="enrollment_number" value="{{ old('enrollment_number') }}" maxlength="50" aria-label="رقم القيد (اختياري)" autofocus />
                 </div>
                 <div class="form-group">
                     <label for="exam_number">الرقم الامتحاني <span class="required" aria-hidden="true">*</span></label>
                     <input type="text" id="exam_number" name="exam_number" value="{{ old('exam_number') }}" required maxlength="255" aria-label="الرقم الامتحاني (مطلوب)" />
                 </div>
-            </div>
-            {{-- السطر الثاني: اسم الطالب، اسم الاب، اسم الجد، اللقب --}}
-            <div class="form-row form-row-2">
                 <div class="form-group">
                     <label for="name_student">اسم الطالب <span class="required">*</span></label>
                     <input type="text" id="name_student" name="name_student" value="{{ old('name_student') }}" required maxlength="255" />
@@ -48,16 +57,16 @@
                     <input type="text" id="name_father" name="name_father" value="{{ old('name_father') }}" required maxlength="255" />
                 </div>
                 <div class="form-group">
-                    <label for="name_grandfather">اسم الجد</label>
-                    <input type="text" id="name_grandfather" name="name_grandfather" value="{{ old('name_grandfather') }}" maxlength="255" />
+                    <label for="name_grandfather">اسم الجد <span class="required">*</span></label>
+                    <input type="text" id="name_grandfather" name="name_grandfather" value="{{ old('name_grandfather') }}" required maxlength="255" />
                 </div>
                 <div class="form-group">
-                    <label for="name_surname">اللقب <span class="required">*</span></label>
+                    <label for="name_surname">اسم اب الجد <span class="required">*</span></label>
                     <input type="text" id="name_surname" name="name_surname" value="{{ old('name_surname') }}" required maxlength="255" />
                 </div>
             </div>
-            {{-- السطر الثالث: محل الولادة، التولد، اسم الام الكامل، الجنس --}}
-            <div class="form-row form-row-3">
+
+            <div class="form-row form-row-2">
                 <div class="form-group">
                     <label for="birth_place">محل الولادة <span class="required">*</span></label>
                     <input type="text" id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required maxlength="255" />
@@ -70,44 +79,43 @@
                     <label for="mother_full_name">اسم الام الكامل</label>
                     <input type="text" id="mother_full_name" name="mother_full_name" value="{{ old('mother_full_name') }}" maxlength="255" />
                 </div>
-                <div class="form-group form-group-radio">
-                    <span class="label">الجنس <span class="required">*</span></span>
-                    <div class="radio-group">
-                        <label><input type="radio" name="gender" value="ذكر" {{ old('gender') === 'ذكر' ? 'checked' : '' }} /> ذكر</label>
-                        <label><input type="radio" name="gender" value="أنثى" {{ old('gender', '') === 'أنثى' || old('gender') === 'انثى' ? 'checked' : '' }} /> أنثى</label>
-                    </div>
+                <div class="form-group">
+                    <label for="gender">الجنس <span class="required">*</span></label>
+                    <select id="gender" name="gender" required aria-label="الجنس">
+                        <option value="" @selected($selectedGender === '')>اختر الجنس</option>
+                        <option value="ذكر" @selected($selectedGender === 'ذكر')>ذكر</option>
+                        <option value="انثى" @selected(in_array($selectedGender, ['انثى', 'أنثى'], true))>انثى</option>
+                    </select>
                 </div>
             </div>
-            {{-- السطر الرابع: الفرع، الاختصاص، العام الدراسي --}}
-            <div class="form-row form-row-4">
-                <div class="form-group form-group-radio">
-                    <span class="label">الفرع <span class="required">*</span></span>
-                    <div class="radio-group radio-group-branch" id="branch-radios">
-                        <label><input type="radio" name="branch" value="الصناعي" {{ old('branch') === 'الصناعي' ? 'checked' : '' }} /> الصناعي</label>
-                        <label><input type="radio" name="branch" value="الزراعي" {{ old('branch') === 'الزراعي' ? 'checked' : '' }} /> الزراعي</label>
-                        <label><input type="radio" name="branch" value="الحاسوب وتقنية المعلومات" {{ old('branch') === 'الحاسوب وتقنية المعلومات' ? 'checked' : '' }} /> الحاسوب وتقنية المعلومات</label>
-                        <label><input type="radio" name="branch" value="فنون تطبيقية" {{ old('branch') === 'فنون تطبيقية' ? 'checked' : '' }} /> فنون تطبيقية</label>
-                        <label><input type="radio" name="branch" value="التجاري" {{ old('branch') === 'التجاري' ? 'checked' : '' }} /> التجاري</label>
-                        <label><input type="radio" name="branch" value="السياحة والفندقة" {{ old('branch') === 'السياحة والفندقة' ? 'checked' : '' }} /> السياحة والفندقة</label>
-                    </div>
-                </div>
-                <div class="form-group form-group-radio">
-                    <span class="label">الاختصاص <span class="required">*</span></span>
-                    <div class="radio-group radio-group-major" id="major-radios" data-old="{{ old('major', '') }}">
-                        {{-- يُملأ بالجافاسكربت حسب الفرع --}}
-                    </div>
-                </div>
-                <div class="form-group form-group-radio">
-                    <span class="label">العام الدراسي <span class="required">*</span></span>
-                    <div class="radio-group radio-group-years">
-                        @foreach($academicYears as $index => $year)
-                            <label><input type="radio" name="academic_year" value="{{ $year }}" {{ old('academic_year') === $year ? 'checked' : (!old('academic_year') && $index === 0 ? 'checked' : '') }} /> {{ $year }}</label>
+
+            <div class="form-row form-row-3">
+                <div class="form-group">
+                    <label for="branch">الفرع <span class="required">*</span></label>
+                    <select id="branch" name="branch" required aria-label="الفرع">
+                        <option value="" @selected($selectedBranch === '')>اختر الفرع</option>
+                        @foreach(array_keys($branchMap) as $branch)
+                            <option value="{{ $branch }}" @selected($selectedBranch === $branch)>{{ $branch }}</option>
                         @endforeach
-                    </div>
+                    </select>
                 </div>
-            </div>
-            {{-- السطر الخامس: اخر مدرسة، رقم الوثيقة المتوسطة، تاريخها، جهة الاصدار --}}
-            <div class="form-row form-row-5">
+                <div class="form-group">
+                    <label for="major">الاختصاص <span class="required">*</span></label>
+                    <select id="major" name="major" required aria-label="الاختصاص" data-old="{{ $selectedMajor }}">
+                        <option value="">{{ $selectedBranch === '' ? 'اختر الفرع أولاً' : 'اختر الاختصاص' }}</option>
+                        @foreach($majorsForSelected as $major)
+                            <option value="{{ $major }}" @selected($selectedMajor === $major)>{{ $major }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="academic_year">العام الدراسي <span class="required">*</span></label>
+                    <select id="academic_year" name="academic_year" required aria-label="العام الدراسي">
+                        @foreach($academicYears as $year)
+                            <option value="{{ $year }}" @selected($selectedAcademicYear === $year)>{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="last_school">اخر مدرسة كان فيها الطالب</label>
                     <input type="text" id="last_school" name="last_school" value="{{ old('last_school') }}" maxlength="500" />
@@ -123,6 +131,28 @@
                 <div class="form-group">
                     <label for="issuing_authority">جهة الاصدار</label>
                     <input type="text" id="issuing_authority" name="issuing_authority" value="{{ old('issuing_authority') }}" maxlength="500" />
+                </div>
+            </div>
+            </div>
+
+            <div class="create-grades-section" aria-label="درجات المواد الدراسية">
+                <h2 class="create-grades-title">درجات المواد الدراسية</h2>
+                <p class="create-grades-hint" id="create-grades-hint">اختر الفرع والاختصاص لإظهار المواد.</p>
+                <div class="create-grades-table-wrap">
+                    <table class="create-grades-table" id="create-grades-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">المادة</th>
+                                <th scope="col">الدرجة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="create-grades-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="create-grades-total">
+                    <span>المجموع:</span>
+                    <strong id="create-grades-sum">0</strong>
                 </div>
             </div>
         </form>
@@ -219,42 +249,278 @@
 <script>
 (function () {
     var subjectObject = @json(\App\Support\StudentBranchMajors::subjectObjectForJs());
+    var subjectsByBranchMajor = @json($subjectsByBranchMajor ?? []);
+    var oldGrades = @json(old('grades', []));
+    var branchSelect = document.getElementById('branch');
+    var majorSelect = document.getElementById('major');
+    var gradesTbody = document.getElementById('create-grades-tbody');
+    var gradesHint = document.getElementById('create-grades-hint');
+    var gradesSumEl = document.getElementById('create-grades-sum');
+    var oldMajor = (majorSelect && majorSelect.getAttribute('data-old')) || '';
+    var scoreCache = {};
 
-    var branchRadios = document.querySelectorAll('input[name="branch"]');
-    var majorContainer = document.getElementById('major-radios');
-    var oldMajor = (majorContainer && majorContainer.getAttribute('data-old')) || '';
-
-    function getSelectedBranch() {
-        var i;
-        for (i = 0; i < branchRadios.length; i++) {
-            if (branchRadios[i].checked) return branchRadios[i].value;
-        }
-        return '';
+    if (Array.isArray(oldGrades)) {
+        oldGrades.forEach(function (row) {
+            if (!row || !row.subject) {
+                return;
+            }
+            scoreCache[String(row.subject)] = row.score != null ? String(row.score) : '';
+        });
     }
 
-    function fillMajorRadios() {
-        var branch = getSelectedBranch();
-        if (!majorContainer) return;
-        majorContainer.innerHTML = '';
-        if (!branch || !subjectObject[branch]) return;
-        var majors = subjectObject[branch];
-        for (var key in majors) {
-            if (majors.hasOwnProperty(key)) {
-                var label = document.createElement('label');
-                var radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'major';
-                radio.value = key;
-                if (key === oldMajor) radio.checked = true;
-                label.appendChild(radio);
-                label.appendChild(document.createTextNode(' ' + key));
-                majorContainer.appendChild(label);
+    function rememberScores() {
+        if (!gradesTbody) {
+            return;
+        }
+        gradesTbody.querySelectorAll('tr').forEach(function (tr) {
+            var subjectInput = tr.querySelector('input[name$="[subject]"]');
+            var scoreInput = tr.querySelector('input[name$="[score]"]');
+            if (subjectInput && scoreInput) {
+                scoreCache[subjectInput.value] = scoreInput.value;
+            }
+        });
+    }
+
+    function updateSum() {
+        if (!gradesTbody || !gradesSumEl) {
+            return;
+        }
+        var sum = 0;
+        gradesTbody.querySelectorAll('input[name$="[score]"]').forEach(function (input) {
+            var v = String(input.value || '').trim();
+            if (v !== '' && !isNaN(Number(v))) {
+                sum += Math.round(Number(v));
+            }
+        });
+        gradesSumEl.textContent = String(sum);
+    }
+
+    function fillGradesTable() {
+        if (!gradesTbody) {
+            return;
+        }
+        rememberScores();
+        gradesTbody.innerHTML = '';
+        var branch = branchSelect ? (branchSelect.value || '') : '';
+        var major = majorSelect ? (majorSelect.value || '') : '';
+        var subjects = (branch && major && subjectsByBranchMajor[branch] && subjectsByBranchMajor[branch][major])
+            ? subjectsByBranchMajor[branch][major]
+            : [];
+
+        if (!subjects.length) {
+            if (gradesHint) {
+                gradesHint.textContent = 'اختر الفرع والاختصاص لإظهار المواد.';
+                gradesHint.hidden = false;
+            }
+            updateSum();
+            return;
+        }
+
+        if (gradesHint) {
+            gradesHint.hidden = true;
+        }
+
+        subjects.forEach(function (subject, index) {
+            var tr = document.createElement('tr');
+            var tdSubject = document.createElement('td');
+            var subjectInput = document.createElement('input');
+            subjectInput.type = 'hidden';
+            subjectInput.name = 'grades[' + index + '][subject]';
+            subjectInput.value = subject;
+            tdSubject.appendChild(document.createTextNode(subject));
+            tdSubject.appendChild(subjectInput);
+
+            var tdScore = document.createElement('td');
+            var scoreInput = document.createElement('input');
+            scoreInput.type = 'text';
+            scoreInput.name = 'grades[' + index + '][score]';
+            scoreInput.className = 'create-grades-score';
+            scoreInput.inputMode = 'numeric';
+            scoreInput.maxLength = 10;
+            scoreInput.setAttribute('aria-label', 'درجة ' + subject);
+            scoreInput.value = Object.prototype.hasOwnProperty.call(scoreCache, subject) ? scoreCache[subject] : '';
+            scoreInput.addEventListener('input', updateSum);
+            tdScore.appendChild(scoreInput);
+
+            tr.appendChild(tdSubject);
+            tr.appendChild(tdScore);
+            gradesTbody.appendChild(tr);
+        });
+        updateSum();
+    }
+
+    function fillMajorOptions() {
+        if (!majorSelect || !branchSelect) {
+            return;
+        }
+        var branch = branchSelect.value || '';
+        var previous = majorSelect.value || oldMajor;
+        majorSelect.innerHTML = '';
+
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = branch ? 'اختر الاختصاص' : 'اختر الفرع أولاً';
+        majorSelect.appendChild(placeholder);
+
+        if (branch && subjectObject[branch]) {
+            var majors = subjectObject[branch];
+            for (var key in majors) {
+                if (!Object.prototype.hasOwnProperty.call(majors, key)) {
+                    continue;
+                }
+                var option = document.createElement('option');
+                option.value = key;
+                option.textContent = key;
+                if (key === previous) {
+                    option.selected = true;
+                }
+                majorSelect.appendChild(option);
+            }
+        }
+        oldMajor = '';
+        fillGradesTable();
+    }
+
+    if (branchSelect) {
+        branchSelect.addEventListener('change', function () {
+            oldMajor = '';
+            fillMajorOptions();
+        });
+    }
+    if (majorSelect) {
+        majorSelect.addEventListener('change', fillGradesTable);
+    }
+    fillMajorOptions();
+
+    var formEl = document.getElementById('form-add-student');
+    var saveBtn = document.querySelector('.btn-save-top');
+    var fieldOrder = [
+        'enrollment_number',
+        'exam_number',
+        'name_student',
+        'name_father',
+        'name_grandfather',
+        'name_surname',
+        'birth_place',
+        'birth_date',
+        'mother_full_name',
+        'gender',
+        'branch',
+        'major',
+        'academic_year',
+        'last_school',
+        'middle_doc_number',
+        'middle_doc_date',
+        'issuing_authority'
+    ];
+
+    function resolveFieldId(el) {
+        if (!el) {
+            return '';
+        }
+        if (el.id && fieldOrder.indexOf(el.id) !== -1) {
+            return el.id;
+        }
+        if (el.classList && el.classList.contains('create-grades-score')) {
+            return 'grade-score';
+        }
+        if (el.classList && el.classList.contains('btn-save-top')) {
+            return 'save';
+        }
+        var wrap = el.closest ? el.closest('.form-group, .arabic-date-field-wrap') : null;
+        if (wrap) {
+            var control = wrap.querySelector('input[id], select[id]');
+            if (control && fieldOrder.indexOf(control.id) !== -1) {
+                return control.id;
+            }
+        }
+        return el.id || '';
+    }
+
+    function focusElement(el) {
+        if (!el) {
+            return;
+        }
+        el.focus();
+        if (typeof el.select === 'function' && el.tagName === 'INPUT' && el.type !== 'date') {
+            try {
+                el.select();
+            } catch (e) {
+                // ignore
             }
         }
     }
 
-    branchRadios.forEach(function (r) { r.addEventListener('change', fillMajorRadios); });
-    fillMajorRadios();
+    function gradeScoreInputs() {
+        return Array.prototype.slice.call(document.querySelectorAll('#create-grades-tbody .create-grades-score'));
+    }
+
+    function focusNextFromField(fieldId) {
+        var idx = fieldOrder.indexOf(fieldId);
+        if (idx === -1) {
+            return;
+        }
+        if (idx < fieldOrder.length - 1) {
+            focusElement(document.getElementById(fieldOrder[idx + 1]));
+            return;
+        }
+        var scores = gradeScoreInputs();
+        if (scores.length) {
+            focusElement(scores[0]);
+            return;
+        }
+        focusElement(saveBtn);
+    }
+
+    function focusNextFromGrade(current) {
+        var scores = gradeScoreInputs();
+        var i = scores.indexOf(current);
+        if (i !== -1 && i < scores.length - 1) {
+            focusElement(scores[i + 1]);
+            return;
+        }
+        focusElement(saveBtn);
+    }
+
+    if (formEl) {
+        formEl.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') {
+                return;
+            }
+            var target = e.target;
+            if (!target) {
+                return;
+            }
+            if (target.tagName === 'TEXTAREA') {
+                return;
+            }
+            if (target.classList && target.classList.contains('btn-save-top')) {
+                return;
+            }
+
+            var fieldId = resolveFieldId(target);
+            if (fieldId === 'grade-score') {
+                e.preventDefault();
+                focusNextFromGrade(target);
+                return;
+            }
+            if (fieldOrder.indexOf(fieldId) !== -1) {
+                e.preventDefault();
+                focusNextFromField(fieldId);
+            }
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (formEl) {
+                    formEl.requestSubmit ? formEl.requestSubmit(saveBtn) : formEl.submit();
+                }
+            }
+        });
+    }
 })();
 </script>
 @endsection

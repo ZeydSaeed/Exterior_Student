@@ -72,7 +72,7 @@
                         <div class="photo-frame">@if($isFemale)صورة الطالبة@elseصورة الطالب@endif</div>
 
                         {{-- العدد: حقل نص قابل للتحرير؛ عند الطباعة تُقرأ القيمة وتُحفظ في certificate.number --}}
-                        <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-number" data-cert-db="number" placeholder="" value="{{ $isEdit ? ($attestation->number ?? '') : '' }}" /></div>
+                        <div class="meta-line">العدد: <input type="text" id="cert-field-number" class="cert-field-input arabic-digits-input" data-cert-db="number" dir="rtl" lang="ar" placeholder="" value="{{ $isEdit ? \App\Support\ArabicDigits::toArabic($attestation->number ?? '') : '' }}" /></div>
                         <div class="meta-line">التاريخ: <span id="cert-field-date" class="editable arabic-date" contenteditable="true" data-date="{{ $certDateYmd }}">{{ $certDateDisplay }}</span></div>
                         <div class="meta-line">الرقم الامتحاني: <span class="arabic-number" data-number="{{ $dto->examNumber }}">{{ $dto->examNumber }}</span></div>
 
@@ -116,6 +116,9 @@
                         <div class="footer-note">
                             * التأييد خالٍ من الحك والشطب والتحريف.
                         </div>
+                        @if(auth()->check() && filled(auth()->user()->name))
+                            <div class="certificate-account-name" contenteditable="false">{{ auth()->user()->name }}</div>
+                        @endif
                     </div>
                 </div>
             </div>

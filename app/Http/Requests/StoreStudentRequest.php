@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Support\AcademicYearOptions;
 use App\Support\ArabicDigits;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -15,8 +17,30 @@ class StoreStudentRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $enrollment = trim(ArabicDigits::toWestern((string) $this->input('enrollment_number', '')));
+        $grades = $this->input('grades', []);
+        if (! is_array($grades)) {
+            $grades = [];
+        }
+
+        $normalizedGrades = [];
+        foreach ($grades as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $subject = trim((string) ($row['subject'] ?? ''));
+            $score = trim(ArabicDigits::toWestern((string) ($row['score'] ?? '')));
+            if ($subject === '') {
+                continue;
+            }
+            $normalizedGrades[] = [
+                'subject' => $subject,
+                'score' => $score,
+            ];
+        }
+
         $this->merge([
             'enrollment_number' => $enrollment !== '' ? $enrollment : null,
+            'grades' => $normalizedGrades,
         ]);
     }
 
@@ -27,7 +51,7 @@ class StoreStudentRequest extends FormRequest
             'exam_number' => ['required', 'string', 'max:255'],
             'name_student' => ['required', 'string', 'max:255'],
             'name_father' => ['required', 'string', 'max:255'],
-            'name_grandfather' => ['nullable', 'string', 'max:255'],
+            'name_grandfather' => ['required', 'string', 'max:255'],
             'name_surname' => ['required', 'string', 'max:255'],
             'birth_date' => ['required', 'date'],
             'birth_place' => ['required', 'string', 'max:255'],
@@ -35,11 +59,14 @@ class StoreStudentRequest extends FormRequest
             'gender' => ['required', 'string', 'in:ذكر,أنثى,انثى'],
             'branch' => ['required', 'string', 'max:255'],
             'major' => ['required', 'string', 'max:255'],
-            'academic_year' => ['required', 'string', 'max:255'],
+            'academic_year' => ['required', 'string', Rule::in(AcademicYearOptions::all())],
             'last_school' => ['nullable', 'string', 'max:500'],
             'middle_doc_number' => ['nullable', 'string', 'max:255'],
             'middle_doc_date' => ['nullable', 'date'],
             'issuing_authority' => ['nullable', 'string', 'max:500'],
+            'grades' => ['nullable', 'array'],
+            'grades.*.subject' => ['required', 'string', 'max:255'],
+            'grades.*.score' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -52,13 +79,17 @@ class StoreStudentRequest extends FormRequest
             'exam_number.required' => 'الرقم الامتحاني مطلوب.',
             'enrollment_number.regex' => 'رقم القيد يجب أن يكون رقماً.',
             'enrollment_number.max' => 'رقم القيد طويل جداً.',
+            'academic_year.required' => 'العام الدراسي مطلوب.',
+            'academic_year.in' => 'العام الدراسي غير صالح.',
+            'name_surname.required' => 'اسم اب الجد مطلوب.',
+            'name_grandfather.required' => 'اسم الجد مطلوب.',
         ];
     }
 
     /**
-     * بيانات الطالب الجاهزة لـ CreateStudentCommandHandler (قيم nullable كـ null).
+     * بيانات الطالب الجاهزة لـ CreateStudentCommandHandler.
      *
-     * @return array<string, string|null>
+     * @return array<string, mixed>
      */
     public function dataForCreate(): array
     {
@@ -76,6 +107,22 @@ class StoreStudentRequest extends FormRequest
         if ($out['gender'] === 'انثى') {
             $out['gender'] = 'أنثى';
         }
+
+        $grades = [];
+        foreach ($v['grades'] ?? [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $subject = trim((string) ($row['subject'] ?? ''));
+            if ($subject === '') {
+                continue;
+            }
+            $grades[] = [
+                'subject' => $subject,
+                'score' => trim((string) ($row['score'] ?? '')),
+            ];
+        }
+        $out['grades'] = $grades;
 
         return $out;
     }

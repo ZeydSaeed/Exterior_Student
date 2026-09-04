@@ -60,14 +60,11 @@
                     <form method="POST" action="{{ route('students.documents.store', $dto->studentId) }}" class="students-search-form document-add-form">
                         @csrf
                         <div class="document-add-fields">
-                            <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic(old('document_number')) }}" placeholder="رقم الوثيقة..." />
-                            <input type="date" name="document_date" class="arabic-date-field" lang="ar-IQ" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toYmd(old('document_date')) : '' }}" autocomplete="off" />
-                            <textarea name="addressee" class="doc-field-addressee" rows="1" placeholder="الجهة المعنونة إليها...">{{ old('addressee') }}</textarea>
-                            <input type="text" name="purpose" class="doc-field-purpose" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
-                            <button type="submit" class="btn-primary">إضافة وثيقة</button>
-                            <div class="document-add-notes">
-                                <textarea id="document-notes" name="notes" class="doc-field-notes" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ old('notes') }}</textarea>
-                            </div>
+                            <input type="text" name="document_number" id="document-add-number" class="arabic-digits-input document-add-field" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic(old('document_number')) }}" placeholder="رقم الوثيقة..." autofocus />
+                            <input type="date" name="document_date" id="document-add-date" class="arabic-date-field document-add-field" lang="ar-IQ" value="{{ old('document_date') ? \App\Support\ImportDateNormalizer::toYmd(old('document_date')) : '' }}" autocomplete="off" />
+                            <textarea name="addressee" id="document-add-addressee" class="doc-field-addressee document-add-field" rows="1" placeholder="الجهة المعنونة إليها...">{{ old('addressee') }}</textarea>
+                            <input type="text" name="purpose" id="document-add-purpose" class="doc-field-purpose document-add-field" value="{{ old('purpose') }}" placeholder="الغرض من الوثيقة..." />
+                            <button type="submit" class="btn-primary" id="document-add-submit">إضافة وثيقة</button>
                         </div>
                     </form>
                 </div>
@@ -86,35 +83,60 @@
                             </tr>
                         </thead>
                             @forelse($dto->records as $record)
-                                <tbody class="document-record">
+                                @php $documentFormId = 'document-form-'.$record->id; @endphp
+                                <tbody class="document-record" data-documents-row>
                                 <tr>
                                     <td>
-                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="inline-form" id="document-form-{{ $record->id }}">
+                                        <form method="POST" action="{{ route('students.documents.update', [$dto->studentId, $record->id]) }}" class="documents-row-form" id="{{ $documentFormId }}">
                                             @csrf
                                             @method('PUT')
-                                            <input type="text" name="document_number" class="arabic-digits-input" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic($record->documentNumber ?? '') }}" />
+                                        </form>
+                                        <input type="text" name="document_number" class="arabic-digits-input documents-row-field" dir="rtl" lang="ar" value="{{ \App\Support\ArabicDigits::toArabic($record->documentNumber ?? '') }}" readonly />
                                     </td>
                                     <td>
-                                            <input type="date" name="document_date" class="arabic-date-field" lang="ar-IQ" value="{{ \App\Support\ImportDateNormalizer::toYmd($record->documentDate) ?? '' }}" autocomplete="off" />
+                                        <input type="date" name="document_date" class="arabic-date-field documents-row-field" lang="ar-IQ" value="{{ \App\Support\ImportDateNormalizer::toYmd($record->documentDate) ?? '' }}" autocomplete="off" readonly />
                                     </td>
                                     <td>
-                                            <textarea name="addressee" class="doc-field-addressee" rows="1">{{ $record->addressee ?? '' }}</textarea>
+                                        <textarea name="addressee" class="doc-field-addressee documents-row-field" rows="1" readonly>{{ $record->addressee ?? '' }}</textarea>
                                     </td>
                                     <td>
-                                            <input type="text" name="purpose" class="doc-field-purpose" value="{{ $record->purpose ?? '' }}" />
+                                        <input type="text" name="purpose" class="doc-field-purpose documents-row-field" value="{{ $record->purpose ?? '' }}" readonly />
                                     </td>
                                     <td class="document-notes-cell">
-                                            <textarea id="document-notes-{{ $record->id }}" name="notes" class="doc-field-notes" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات">{{ $record->notes ?? '' }}</textarea>
+                                        <textarea id="document-notes-{{ $record->id }}" name="notes" class="doc-field-notes documents-row-field" rows="1" placeholder="الملاحظات..." aria-label="الملاحظات" readonly>{{ $record->notes ?? '' }}</textarea>
                                     </td>
                                     <td class="students-table-actions">
                                         <div class="students-table-actions-inner">
-                                            <button type="submit" class="btn-primary btn-edit-row">حفظ</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('students.documents.destroy', [$dto->studentId, $record->id]) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-primary btn-delete-row">حذف</button>
-                                        </form>
+                                            @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_DOCUMENTS_EDIT))
+                                                <button type="button" class="btn-primary btn-edit-row documents-btn-edit" data-documents-edit title="تعديل" aria-label="تعديل">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M12 20h9"/>
+                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" class="btn-primary btn-edit-row documents-btn-save" data-documents-save title="حفظ" aria-label="حفظ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                                        <polyline points="17 21 17 13 7 13 7 21"/>
+                                                        <polyline points="7 3 7 8 15 8"/>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                            @if(auth()->user()?->hasPermission(\App\Domain\Auth\PermissionCatalog::STUDENTS_DOCUMENTS_DELETE))
+                                                <form method="POST" action="{{ route('students.documents.destroy', [$dto->studentId, $record->id]) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-primary btn-delete-row" title="حذف" aria-label="حذف">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <polyline points="3 6 5 6 21 6"/>
+                                                            <path d="M10 11v6"/>
+                                                            <path d="M14 11v6"/>
+                                                            <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
+                                                            <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -319,20 +341,20 @@
             grid-template-columns: minmax(8rem, max-content) minmax(12rem, max-content) minmax(28rem, 2fr) minmax(12rem, 1fr) auto;
             align-items: start;
         }
-        .page-student-documents .document-add-notes {
-            grid-column: 1 / 4;
-            width: 100%;
-            min-width: 0;
-        }
         .page-student-documents .doc-field-notes {
             width: 100%;
             min-height: 2rem;
-            height: 2rem;
+            height: auto;
+            resize: none;
+            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
-        .page-student-documents .document-add-fields .doc-field-notes {
-            min-width: 0;
-            min-height: 2.15rem;
-            height: 2.15rem;
+        .page-student-documents .document-notes-cell {
+            vertical-align: top;
         }
         @media (max-width: 700px) {
             .page-student-documents .document-add-fields textarea.doc-field-addressee,
@@ -345,13 +367,22 @@
             .page-student-documents .document-add-fields {
                 grid-template-columns: 1fr;
             }
-            .page-student-documents .document-add-notes {
-                grid-column: 1 / -1;
-            }
+        }
+        .page-student-documents .documents-row-field[readonly],
+        .page-student-documents .document-record:not(.documents-row-editing) .arabic-date-part {
+            background: #f3f4f5;
+            cursor: default;
+        }
+        .page-student-documents .document-record.documents-row-editing .documents-row-field,
+        .page-student-documents .document-record.documents-row-editing .arabic-date-part {
+            background: #fff;
+            cursor: text;
         }
     </style>
 @endsection
 
 @section('scripts')
     <script src="{{ url('js/arabic-date.js') }}?v={{ file_exists(public_path('js/arabic-date.js')) ? filemtime(public_path('js/arabic-date.js')) : time() }}"></script>
+    <script src="{{ url('js/students/documents-row-edit.js') }}?v={{ file_exists(public_path('js/students/documents-row-edit.js')) ? filemtime(public_path('js/students/documents-row-edit.js')) : time() }}"></script>
+    <script src="{{ url('js/students/documents-enter-nav.js') }}?v={{ file_exists(public_path('js/students/documents-enter-nav.js')) ? filemtime(public_path('js/students/documents-enter-nav.js')) : time() }}"></script>
 @endsection

@@ -84,13 +84,186 @@
         document.querySelectorAll('.grades-row-subject').forEach(function (el) {
             el.readOnly = true;
             el.setAttribute('readonly', 'readonly');
+            el.tabIndex = -1;
         });
         if (btnEdit) btnEdit.style.display = edit ? 'none' : '';
         if (btnSave) btnSave.style.display = edit ? '' : 'none';
         if (btnCancel) btnCancel.style.display = edit ? '' : 'none';
         if (edit) {
             recalculateTotal();
+            setTimeout(function () {
+                focusFirstEditableField();
+            }, 0);
         }
+    }
+
+    var gradesFieldOrder = [
+        'grades-enrollment-number-input',
+        'grades-exam-number-input',
+        'grades-name-student-input',
+        'grades-name-father-input',
+        'grades-name-grandfather-input',
+        'grades-name-surname-input',
+        'grades-birth-date-input',
+        'grades-birth-place-input',
+        'grades-mother-full-name-input',
+        'grades-gender-input',
+        'grades-branch-input',
+        'grades-major-input',
+        'grades-year-input',
+        'grades-last-school-input',
+        'grades-middle-doc-number-input',
+        'grades-middle-doc-date-input',
+        'grades-issuing-authority-input'
+    ];
+
+    var gradesSummaryFieldOrder = [
+        'grades-total-input',
+        'grades-average-input',
+        'grades-result-input',
+        'grades-round-input'
+    ];
+
+    function isFocusableControl(el) {
+        if (!el || el.disabled) {
+            return false;
+        }
+        if (el.classList && el.classList.contains('grades-edit-hidden') && el.style.display === 'none') {
+            return false;
+        }
+        if (el.classList && el.classList.contains('grades-edit') && el.style.display === 'none') {
+            return false;
+        }
+        if (el.id === 'grades-total-input' || el.getAttribute('data-auto-sum') === '1') {
+            return true;
+        }
+        if (el.readOnly) {
+            return false;
+        }
+        return true;
+    }
+
+    function focusControl(el) {
+        if (!el || !isFocusableControl(el)) {
+            return false;
+        }
+        el.focus();
+        if (typeof el.select === 'function' && el.tagName === 'INPUT' && el.type !== 'date' && !el.readOnly) {
+            try {
+                el.select();
+            } catch (err) {
+                // ignore
+            }
+        }
+        return true;
+    }
+
+    function gradeScoreInputs() {
+        return Array.prototype.slice.call(document.querySelectorAll('#grades-tbody .grades-row-score'));
+    }
+
+    function focusFirstSummaryOrSave() {
+        for (var i = 0; i < gradesSummaryFieldOrder.length; i++) {
+            var el = document.getElementById(gradesSummaryFieldOrder[i]);
+            if (focusControl(el)) {
+                return;
+            }
+        }
+        if (btnSave && btnSave.style.display !== 'none') {
+            btnSave.focus();
+        }
+    }
+
+    function focusNextSummaryField(fieldId) {
+        var idx = gradesSummaryFieldOrder.indexOf(fieldId);
+        if (idx === -1) {
+            return;
+        }
+        for (var i = idx + 1; i < gradesSummaryFieldOrder.length; i++) {
+            var next = document.getElementById(gradesSummaryFieldOrder[i]);
+            if (focusControl(next)) {
+                return;
+            }
+        }
+        if (btnSave && btnSave.style.display !== 'none') {
+            btnSave.focus();
+        }
+    }
+
+    function focusFirstEditableField() {
+        for (var i = 0; i < gradesFieldOrder.length; i++) {
+            var el = document.getElementById(gradesFieldOrder[i]);
+            if (focusControl(el)) {
+                return;
+            }
+        }
+        var scores = gradeScoreInputs();
+        if (scores.length && focusControl(scores[0])) {
+            return;
+        }
+        focusFirstSummaryOrSave();
+    }
+
+    function resolveGradesFieldId(el) {
+        if (!el) {
+            return '';
+        }
+        if (el.id && gradesFieldOrder.indexOf(el.id) !== -1) {
+            return el.id;
+        }
+        if (el.id && gradesSummaryFieldOrder.indexOf(el.id) !== -1) {
+            return el.id;
+        }
+        if (el.classList && el.classList.contains('grades-row-score')) {
+            return 'grade-score';
+        }
+        if (el.id === 'grades-btn-save' || (el.classList && el.classList.contains('grades-btn-save'))) {
+            return 'save';
+        }
+        var wrap = el.closest ? el.closest('.grades-field, .arabic-date-field-wrap') : null;
+        if (wrap) {
+            var control = wrap.querySelector('input[id], select[id]');
+            if (control && gradesFieldOrder.indexOf(control.id) !== -1) {
+                return control.id;
+            }
+            if (control && gradesSummaryFieldOrder.indexOf(control.id) !== -1) {
+                return control.id;
+            }
+        }
+        return el.id || '';
+    }
+
+    function focusNextGradesField(fieldId) {
+        var idx = gradesFieldOrder.indexOf(fieldId);
+        if (idx === -1) {
+            return;
+        }
+        for (var i = idx + 1; i < gradesFieldOrder.length; i++) {
+            var next = document.getElementById(gradesFieldOrder[i]);
+            if (focusControl(next)) {
+                return;
+            }
+        }
+        var scores = gradeScoreInputs();
+        for (var s = 0; s < scores.length; s++) {
+            if (focusControl(scores[s])) {
+                return;
+            }
+        }
+        focusFirstSummaryOrSave();
+    }
+
+    function focusNextGradeScore(current) {
+        var scores = gradeScoreInputs();
+        var i = scores.indexOf(current);
+        if (i !== -1) {
+            for (var n = i + 1; n < scores.length; n++) {
+                if (focusControl(scores[n])) {
+                    return;
+                }
+            }
+        }
+        focusFirstSummaryOrSave();
     }
 
     /** المجموع بدالة الجمع من درجات المواد */
@@ -126,6 +299,7 @@
         i1.name = 'grades[' + i + '][subject]';
         i1.value = sub != null ? String(sub) : '';
         i1.readOnly = true;
+        i1.tabIndex = -1;
         td1.appendChild(i1);
         tr.appendChild(td1);
         var td2 = document.createElement('td');
@@ -277,6 +451,55 @@
         if (originalData) fillForm(originalData);
         else setEditMode(false);
     });
+
+    form.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') {
+            return;
+        }
+        if (!btnSave || btnSave.style.display === 'none') {
+            return;
+        }
+        var target = e.target;
+        if (!target || target.tagName === 'TEXTAREA') {
+            return;
+        }
+        if (target.classList && target.classList.contains('grades-row-subject')) {
+            e.preventDefault();
+            var row = target.closest('tr');
+            var scoreInRow = row ? row.querySelector('.grades-row-score') : null;
+            if (scoreInRow) {
+                focusControl(scoreInRow);
+            }
+            return;
+        }
+        var fieldId = resolveGradesFieldId(target);
+        if (fieldId === 'save') {
+            return;
+        }
+        if (fieldId === 'grade-score') {
+            e.preventDefault();
+            focusNextGradeScore(target);
+            return;
+        }
+        if (gradesFieldOrder.indexOf(fieldId) !== -1) {
+            e.preventDefault();
+            focusNextGradesField(fieldId);
+            return;
+        }
+        if (gradesSummaryFieldOrder.indexOf(fieldId) !== -1) {
+            e.preventDefault();
+            focusNextSummaryField(fieldId);
+        }
+    });
+
+    if (btnSave) {
+        btnSave.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnSave.click();
+            }
+        });
+    }
 
     function updateTableRow(studentId, payload) {
         var btn = document.querySelector('.btn-grades-open[data-student-id="' + studentId + '"]');

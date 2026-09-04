@@ -1,4 +1,5 @@
 @php
+    use App\Support\GenderFilterVariants;
     use App\Support\ResultFilterVariants;
     use App\Support\StudentListFiltersSession;
 
@@ -7,14 +8,14 @@
         $branch = trim((string) ($merged['branch'] ?? ''));
         $major = trim((string) ($merged['major'] ?? ''));
         $year = trim((string) ($merged['year'] ?? ''));
-        $gender = trim((string) ($merged['gender'] ?? ''));
+        $gender = GenderFilterVariants::displayLabel(trim((string) ($merged['gender'] ?? '')));
         $round = trim((string) ($merged['round'] ?? ''));
         $result = ResultFilterVariants::resolveFilterOption(trim((string) ($merged['result'] ?? '')));
     } else {
         $branch = trim((string) request('branch', ''));
         $major = trim((string) request('major', ''));
         $year = trim((string) request('year', ''));
-        $gender = trim((string) request('gender', ''));
+        $gender = GenderFilterVariants::displayLabel(trim((string) request('gender', '')));
         $round = trim((string) request('round', ''));
         $result = ResultFilterVariants::resolveFilterOption(trim((string) request('result', '')));
     }

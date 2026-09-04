@@ -3,6 +3,7 @@
 namespace App\Application\Student\Query;
 
 use App\Domain\Student\StudentQueryRepository;
+use App\Domain\Student\SubjectCatalogInterface;
 
 /**
  * استعلام بيانات نموذج إضافة طالب (CQRS — Query).
@@ -10,18 +11,18 @@ use App\Domain\Student\StudentQueryRepository;
 final class GetCreateStudentFormQueryHandler
 {
     public function __construct(
-        private StudentQueryRepository $repository
+        private StudentQueryRepository $repository,
+        private SubjectCatalogInterface $subjectCatalog,
     ) {}
 
     /**
-     * @return array{academicYears: list<string>}
+     * @return array{academicYears: list<string>, subjectsByBranchMajor: array<string, array<string, list<string>>>}
      */
     public function handle(): array
     {
-        $academicYears = $this->repository->getAcademicYearsForForm();
-
         return [
-            'academicYears' => $academicYears,
+            'academicYears' => $this->repository->getAcademicYearsForForm(),
+            'subjectsByBranchMajor' => $this->subjectCatalog->allByBranchAndMajor(),
         ];
     }
 }

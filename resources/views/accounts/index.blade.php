@@ -27,7 +27,7 @@
                                     <th>الاسم</th>
                                     <th>اسم الدخول</th>
                                     <th>النوع</th>
-                                    <th>كلمة المرور الجديدة</th>
+                                    <th>كلمة المرور</th>
                                     <th>الصلاحيات</th>
                                     <th>إجراءات</th>
                                 </tr>
@@ -51,7 +51,28 @@
                                                 </label>
                                             </td>
                                             <td>
-                                                <input type="password" name="password" placeholder="اتركه فارغاً للإبقاء" minlength="6" autocomplete="new-password">
+                                                <div class="accounts-password-field">
+                                                    <input
+                                                        type="password"
+                                                        name="password"
+                                                        class="accounts-password-input"
+                                                        value="{{ $account['password_display'] ?? '' }}"
+                                                        placeholder="{{ ($account['password_display'] ?? null) ? '' : 'أدخل كلمة مرور ثم احفظ' }}"
+                                                        minlength="6"
+                                                        autocomplete="new-password"
+                                                    >
+                                                    <button type="button" class="accounts-password-toggle" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور" aria-pressed="false">
+                                                        <svg class="accounts-password-icon-hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                            <circle cx="12" cy="12" r="3"/>
+                                                            <line x1="6" y1="7" x2="18" y2="17"/>
+                                                        </svg>
+                                                        <svg class="accounts-password-icon-visible" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                            <circle cx="12" cy="12" r="3"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </td>
                                             <td class="accounts-permissions-cell">
                                                 <details class="accounts-permissions-details" @if($account['is_admin']) hidden @endif>
@@ -108,7 +129,20 @@
                         <div class="accounts-create-fields">
                             <input type="text" name="name" placeholder="الاسم المعروض..." value="{{ old('name') }}" required>
                             <input type="text" name="username" placeholder="اسم الدخول..." value="{{ old('username') }}" required minlength="3" autocomplete="off">
-                            <input type="password" name="password" placeholder="كلمة المرور..." required minlength="6" autocomplete="new-password">
+                            <div class="accounts-password-field accounts-password-field-create">
+                                <input type="password" name="password" class="accounts-password-input" placeholder="كلمة المرور..." required minlength="6" autocomplete="new-password">
+                                <button type="button" class="accounts-password-toggle" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور" aria-pressed="false">
+                                    <svg class="accounts-password-icon-hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <line x1="6" y1="7" x2="18" y2="17"/>
+                                    </svg>
+                                    <svg class="accounts-password-icon-visible" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            </div>
                             <label class="accounts-admin-check">
                                 <input type="checkbox" name="is_admin" value="1" @checked(old('is_admin')) id="accounts-create-is-admin">
                                 <span>مسؤول (كل الصلاحيات)</span>
@@ -174,6 +208,20 @@
         });
         createPerms.hidden = createToggle.checked;
     }
+
+    document.querySelectorAll('.accounts-password-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var wrap = btn.closest('.accounts-password-field');
+            var input = wrap ? wrap.querySelector('.accounts-password-input') : null;
+            if (!input) return;
+
+            var isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+            btn.setAttribute('aria-label', isHidden ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+            btn.setAttribute('title', isHidden ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+        });
+    });
 })();
 </script>
 @endsection

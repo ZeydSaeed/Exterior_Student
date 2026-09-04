@@ -80,7 +80,7 @@
         var typeInput = form.querySelector('input[name="type"]');
         formData.append('type', typeInput ? typeInput.value : 'without_grades');
         formData.append('date', dateEl ? getDateValue(dateEl) : '');
-        formData.append('number', numEl ? getText(numEl) : '');
+        formData.append('number', numEl ? toWesternDigits(getText(numEl)) : '');
         formData.append('issued_to', issuedEl ? getText(issuedEl) : '');
         formData.append('right_title', rightTitleEl ? getText(rightTitleEl) : '');
         formData.append('right_employee_name', rightNameEl ? getText(rightNameEl) : '');

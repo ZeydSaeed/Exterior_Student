@@ -11,6 +11,7 @@ interface AuthAccountCommandRepository
         string $name,
         string $username,
         string $passwordHash,
+        ?string $passwordDisplayEncrypted,
         bool $isAdmin,
         array $permissions,
     ): int;
@@ -23,6 +24,7 @@ interface AuthAccountCommandRepository
         string $name,
         string $username,
         ?string $passwordHash,
+        ?string $passwordDisplayEncrypted,
         bool $isAdmin,
         array $permissions,
     ): void;

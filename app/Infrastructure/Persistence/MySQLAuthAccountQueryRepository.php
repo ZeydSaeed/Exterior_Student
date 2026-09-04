@@ -3,6 +3,8 @@
 namespace App\Infrastructure\Persistence;
 
 use App\Domain\Auth\AuthAccountQueryRepository;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -13,7 +15,7 @@ final class MySQLAuthAccountQueryRepository implements AuthAccountQueryRepositor
     public function listAccounts(): array
     {
         $users = DB::table('users')
-            ->select(['id', 'name', 'username', 'is_admin'])
+            ->select(['id', 'name', 'username', 'is_admin', 'password_display'])
             ->orderByDesc('is_admin')
             ->orderBy('name')
             ->get();
@@ -36,6 +38,7 @@ final class MySQLAuthAccountQueryRepository implements AuthAccountQueryRepositor
                 'name' => (string) $user->name,
                 'username' => (string) $user->username,
                 'is_admin' => (bool) $user->is_admin,
+                'password_display' => $this->decryptPasswordDisplay($user->password_display ?? null),
                 'permissions' => $perms,
             ];
         }
@@ -46,7 +49,7 @@ final class MySQLAuthAccountQueryRepository implements AuthAccountQueryRepositor
     public function findById(int $id): ?array
     {
         $user = DB::table('users')
-            ->select(['id', 'name', 'username', 'is_admin'])
+            ->select(['id', 'name', 'username', 'is_admin', 'password_display'])
             ->where('id', $id)
             ->first();
 
@@ -66,6 +69,7 @@ final class MySQLAuthAccountQueryRepository implements AuthAccountQueryRepositor
             'name' => (string) $user->name,
             'username' => (string) $user->username,
             'is_admin' => (bool) $user->is_admin,
+            'password_display' => $this->decryptPasswordDisplay($user->password_display ?? null),
             'permissions' => $permissions,
         ];
     }
@@ -106,5 +110,18 @@ final class MySQLAuthAccountQueryRepository implements AuthAccountQueryRepositor
         }
 
         return $query->exists();
+    }
+
+    private function decryptPasswordDisplay(mixed $encrypted): ?string
+    {
+        if (! is_string($encrypted) || trim($encrypted) === '') {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($encrypted);
+        } catch (DecryptException) {
+            return null;
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ArabicDigits;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAttestationRequest extends FormRequest
@@ -26,16 +27,20 @@ class StoreAttestationRequest extends FormRequest
     }
 
     /**
-     * تحويل القيم الفارغة إلى null لتفادي فشل تحقق التاريخ ولضمان وصول number و issued_to.
+     * تحويل الأرقام العربية إلى لاتينية، والقيم الفارغة إلى null.
      */
     protected function prepareForValidation(): void
     {
         $merge = [];
-        foreach (['date', 'number', 'issued_to', 'right_title', 'right_employee_name', 'left_title', 'left_employee_name'] as $key) {
+        foreach (['date', 'issued_to', 'right_title', 'right_employee_name', 'left_title', 'left_employee_name'] as $key) {
             if ($this->has($key) && $this->input($key) === '') {
                 $merge[$key] = null;
             }
         }
+
+        $number = trim(ArabicDigits::toWestern((string) $this->input('number', '')));
+        $merge['number'] = $number !== '' ? $number : null;
+
         if ($merge !== []) {
             $this->merge($merge);
         }
