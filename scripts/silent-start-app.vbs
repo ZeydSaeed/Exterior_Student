@@ -12,7 +12,7 @@ Const APP_HOST = "exterior_student.test"
 
 Dim sh, fso, xampp, herdHome, herdBat, nginxExe, nginxPrefix, nginxConf
 Dim lanConf, lanDisabled, ensureIpPs1, scriptsDir, appUrl, chromeExe
-Dim lanIpPresent, siteOk, i, errMsg, cmd, appProfile
+Dim lanIpPresent, siteOk, i, errMsg, cmd, appProfile, icoPath, lnkPath, lnk
 
 Set sh = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
@@ -128,6 +128,38 @@ Sub StartNginxExplicit()
   WScript.Sleep 1500
 End Sub
 
+Sub CloseChromeAppProfile(profileDir)
+  Dim svc, procs, p, cmdLine
+  On Error Resume Next
+  Set svc = GetObject("winmgmts:\\.\root\cimv2")
+  Set procs = svc.ExecQuery("SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name='chrome.exe'")
+  For Each p In procs
+    cmdLine = LCase(CStr(p.CommandLine))
+    If InStr(cmdLine, LCase(profileDir)) > 0 Then
+      RunHiddenWait "cmd /c taskkill /PID " & CStr(p.ProcessId) & " /F"
+    End If
+  Next
+  On Error GoTo 0
+  WScript.Sleep 600
+End Sub
+
+Sub ClearChromeFaviconCache(profileDir)
+  Dim names, i, target, defaultDir
+  defaultDir = profileDir & "\Default"
+  names = Array("Favicons", "Favicons-journal")
+  On Error Resume Next
+  For i = 0 To UBound(names)
+    target = defaultDir & "\" & names(i)
+    If fso.FileExists(target) Then
+      fso.DeleteFile target, True
+    End If
+  Next
+  If fso.FolderExists(defaultDir & "\Shortcut Icons") Then
+    fso.DeleteFolder defaultDir & "\Shortcut Icons", True
+  End If
+  On Error GoTo 0
+End Sub
+
 Function SiteReachable(url)
   Dim http
   SiteReachable = False
@@ -218,9 +250,29 @@ If Not fso.FolderExists(appProfile) Then
   On Error GoTo 0
 End If
 
-cmd = """" & chromeExe & """ --user-data-dir=""" & appProfile & """ --profile-directory=Default"
-cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
-sh.Run cmd, 1, False
+CloseChromeAppProfile appProfile
+ClearChromeFaviconCache appProfile
+
+icoPath = scriptsDir & "\students-app.ico"
+lnkPath = appProfile & "\ExteriorStudent.lnk"
+On Error Resume Next
+Set lnk = sh.CreateShortcut(lnkPath)
+lnk.TargetPath = chromeExe
+lnk.Arguments = "--user-data-dir=""" & appProfile & """ --profile-directory=Default --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+lnk.WorkingDirectory = scriptsDir
+If fso.FileExists(icoPath) Then
+  lnk.IconLocation = icoPath & ",0"
+End If
+lnk.Save
+On Error GoTo 0
+
+If fso.FileExists(lnkPath) Then
+  sh.Run """" & lnkPath & """", 1, False
+Else
+  cmd = """" & chromeExe & """ --user-data-dir=""" & appProfile & """ --profile-directory=Default"
+  cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+  sh.Run cmd, 1, False
+End If
 
 Set sh = Nothing
 Set fso = Nothing

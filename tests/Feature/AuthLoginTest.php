@@ -38,6 +38,8 @@ it('shows the login page to guests', function () {
         ->assertSee('نظام إدارة الطلبة')
         ->assertSee('اسم الدخول')
         ->assertSee('كلمة المرور')
+        ->assertSee('icon-students-16.png', false)
+        ->assertSee('favicon-mark.svg', false)
         ->assertDontSee('تذكرني');
 });
 

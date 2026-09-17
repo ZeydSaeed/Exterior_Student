@@ -8,12 +8,18 @@
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v={{ file_exists(public_path('css/dashboard.css')) ? filemtime(public_path('css/dashboard.css')) : time() }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon-dashboard.svg') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-students-16.png') }}?v={{ file_exists(public_path('icon-students-16.png')) ? filemtime(public_path('icon-students-16.png')) : time() }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-students-32.png') }}?v={{ file_exists(public_path('icon-students-32.png')) ? filemtime(public_path('icon-students-32.png')) : time() }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon-mark.svg') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v={{ file_exists(public_path('favicon.ico')) ? filemtime(public_path('favicon.ico')) : time() }}">
 </head>
 <body class="login-page">
     <div class="login-shell">
         <div class="login-card">
-            <h1 class="login-brand">نظام إدارة الطلبة</h1>
+            <div class="login-brand-wrap">
+                <img src="{{ asset('images/ems-logo.svg') }}" alt="EMS" class="login-brand-logo" width="88" height="88">
+                <h1 class="login-brand">نظام إدارة الطلبة</h1>
+            </div>
             <p class="login-subtitle">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
 
             @if ($errors->any())

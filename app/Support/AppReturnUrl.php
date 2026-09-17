@@ -69,7 +69,8 @@ final class AppReturnUrl
             'students.results-import-excel.upload' => route('students.results-import-excel'),
             'students.results-import-excel.process' => route('students.results-import-excel.preview'),
 
-            'database-backup.store' => route('dashboard'),
+            'database-backup.store',
+            'database-backup.restore' => route('dashboard'),
 
             default => null,
         };

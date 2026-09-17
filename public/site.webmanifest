@@ -4,8 +4,8 @@
   "description": "نظام إدارة الطلبة الخارجيين للدراسة المهنية",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D47A1",
-  "theme_color": "#1976D2",
+  "background_color": "#ffffff",
+  "theme_color": "#4a545e",
   "lang": "ar",
   "dir": "rtl",
   "icons": [

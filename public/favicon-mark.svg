@@ -1,9 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 447 447" role="img" aria-label="EMS">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="82 29 291 238" role="img" aria-label="EMS">
   <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="42">
     <path stroke="#E41B14" d="M147 50L224 118L301 50"/>
     <path stroke="#00637D" d="M125 108L196 186"/>
     <path stroke="#00637D" d="M103 168L173 246"/>
     <path stroke="#00637D" d="M258 182L318 112L352 168L276 244"/>
   </g>
-  <text x="223.5" y="342" text-anchor="middle" font-family="Arial Black, Arial, Tahoma, sans-serif" font-size="68" font-weight="800" fill="#283339">EMS</text>
 </svg>

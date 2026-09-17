@@ -77,6 +77,95 @@ final class MySQLDatabaseBackupRepository implements DatabaseBackupRepository
         ];
     }
 
+    public function restoreFromSqlFile(string $sqlFilePath): void
+    {
+        if (! is_file($sqlFilePath) || ! is_readable($sqlFilePath)) {
+            throw new RuntimeException('ملف قاعدة البيانات غير موجود أو غير قابل للقراءة.');
+        }
+
+        $extension = strtolower((string) pathinfo($sqlFilePath, PATHINFO_EXTENSION));
+        if ($extension !== 'sql') {
+            throw new RuntimeException('يجب أن يكون الملف بصيغة SQL.');
+        }
+
+        $mysql = $this->mysqlConnectionConfig();
+        if ($mysql === null) {
+            throw new RuntimeException('تعذر تحديد إعدادات MySQL لاستيراد قاعدة البيانات.');
+        }
+
+        $host = (string) ($mysql['host'] ?? '127.0.0.1');
+        $port = (string) ($mysql['port'] ?? '3306');
+        $database = (string) ($mysql['database'] ?? '');
+        $username = (string) ($mysql['username'] ?? 'root');
+        $password = (string) ($mysql['password'] ?? '');
+        $charset = (string) ($mysql['charset'] ?? 'utf8mb4');
+
+        if (trim($database) === '') {
+            throw new RuntimeException('اسم قاعدة البيانات غير محدد في إعدادات الاتصال.');
+        }
+
+        $handle = fopen($sqlFilePath, 'rb');
+        if ($handle === false) {
+            throw new RuntimeException('تعذر قراءة ملف قاعدة البيانات.');
+        }
+
+        try {
+            $head = (string) fread($handle, 8192);
+            if (! $this->looksLikeSqlDump($head)) {
+                throw new RuntimeException('الملف المختار ليس نسخة احتياطية صالحة لقاعدة البيانات.');
+            }
+
+            if (rewind($handle) === false) {
+                throw new RuntimeException('تعذر إعادة قراءة ملف قاعدة البيانات.');
+            }
+
+            $cmd = [
+                'mysql',
+                "--host={$host}",
+                "--port={$port}",
+                "--user={$username}",
+                "--default-character-set={$charset}",
+                '--binary-mode',
+                $database,
+            ];
+
+            if ($password !== '') {
+                $cmd[] = "--password={$password}";
+            }
+
+            $process = new Process($cmd);
+            $process->setTimeout(3600);
+            $process->setInput($handle);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                $error = trim((string) $process->getErrorOutput());
+                $error = $error !== '' ? $error : 'تعذر تنفيذ استيراد قاعدة البيانات.';
+                throw new RuntimeException($error);
+            }
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+        }
+    }
+
+    private function looksLikeSqlDump(string $head): bool
+    {
+        $head = ltrim($head);
+
+        return $head !== ''
+            && (
+                str_contains($head, 'CREATE TABLE')
+                || str_contains($head, 'DROP TABLE')
+                || str_contains($head, 'INSERT INTO')
+                || str_contains($head, 'CREATE DATABASE')
+                || str_contains($head, 'mysqldump')
+                || str_contains($head, 'MariaDB dump')
+                || str_contains($head, 'MySQL dump')
+            );
+    }
+
     private function ensureDirectoryExists(string $destinationDir): void
     {
         $destinationDir = rtrim($destinationDir, '\\/');

@@ -1,12 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#d6d2cd"/>
-      <stop offset="100%" stop-color="#a0b0bf"/>
-    </linearGradient>
-  </defs>
-  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#bg)"/>
-  <path d="M20 38 L32 18 L44 38 Z" fill="#4a545e"/>
-  <rect x="22" y="38" width="20" height="8" rx="2" fill="#717980"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 447 447" role="img" aria-label="EMS">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="42">
+    <path stroke="#E41B14" d="M147 50L224 118L301 50"/>
+    <path stroke="#00637D" d="M125 108L196 186"/>
+    <path stroke="#00637D" d="M103 168L173 246"/>
+    <path stroke="#00637D" d="M258 182L318 112L352 168L276 244"/>
+  </g>
+  <text x="223.5" y="342" text-anchor="middle" font-family="Arial Black, Arial, Tahoma, sans-serif" font-size="68" font-weight="800" fill="#283339">EMS</text>
 </svg>
-

@@ -119,6 +119,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             'subjects_account' => Config::get('grades_catalog.subjects_account', []),
             'subjects_agricultral' => Config::get('grades_catalog.subjects_agricultral', []),
             'subjects_computer' => Config::get('grades_catalog.subjects_computer', []),
+            'subjects_computer_assembly' => Config::get('grades_catalog.subjects_computer_assembly', []),
             'subjects_art' => Config::get('grades_catalog.subjects_art', []),
             'subjects_hotel' => Config::get('grades_catalog.subjects_hotel', []),
             'subjects_decor' => Config::get('grades_catalog.subjects_decor', []),

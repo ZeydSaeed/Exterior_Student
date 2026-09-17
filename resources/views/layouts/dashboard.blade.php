@@ -18,8 +18,10 @@
     @endif
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    <link rel="icon" type="image/svg+xml" href="@yield('icon', asset('favicon-students.svg'))">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-students-16.png') }}?v={{ file_exists(public_path('icon-students-16.png')) ? filemtime(public_path('icon-students-16.png')) : time() }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-students-32.png') }}?v={{ file_exists(public_path('icon-students-32.png')) ? filemtime(public_path('icon-students-32.png')) : time() }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon-mark.svg') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v={{ file_exists(public_path('favicon.ico')) ? filemtime(public_path('favicon.ico')) : time() }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <meta name="application-name" content="نظام الطلبة">
@@ -28,6 +30,9 @@
 <body class="dashboard-layout @yield('body_class')">
     <div class="dashboard-wrap">
         <aside class="dashboard-sidebar" aria-label="القائمة الجانبية">
+            <a href="{{ route('dashboard') }}" class="dashboard-sidebar-brand" aria-label="EMS">
+                <img src="{{ asset('images/ems-logo.svg') }}" alt="EMS" class="dashboard-sidebar-logo" width="28" height="28">
+            </a>
             @if($authUser?->hasPermission(PermissionCatalog::NAV_DASHBOARD))
             <a href="{{ route('dashboard') }}" class="dashboard-sidebar-link @if(request()->routeIs('dashboard')) is-active @endif" aria-label="الصفحة الرئيسية" @if(request()->routeIs('dashboard')) aria-current="page" @endif style="margin-top: 0rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -130,6 +135,17 @@
                             </svg>
                         </div>
                         <span class="dashboard-toolbar-user-name">{{ $authUser->name }}</span>
+                        <form method="POST" action="{{ route('logout') }}" class="dashboard-toolbar-logout">
+                            @csrf
+                            <button type="submit" class="dashboard-toolbar-btn dashboard-toolbar-logout-btn" aria-label="تسجيل الخروج" title="تسجيل الخروج">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>خروج</span>
+                            </button>
+                        </form>
                     </div>
                     @endif
                     @if($authUser?->hasPermission(PermissionCatalog::USERS_MANAGE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_ACCOUNTS))
@@ -175,17 +191,16 @@
                             <span>نسخ احتياطي</span>
                         </button>
                     </form>
-                    @endif
-                    @if($authUser)
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    <form id="database-restore-form" method="POST" action="{{ route('database-backup.restore') }}" enctype="multipart/form-data" style="display: inline;">
                         @csrf
-                        <button type="submit" class="dashboard-toolbar-btn" aria-label="تسجيل الخروج" title="تسجيل الخروج">
+                        <input type="file" name="file" id="database-restore-file" accept=".sql,text/plain,application/sql" hidden>
+                        <button type="button" id="database-restore-trigger" class="dashboard-toolbar-btn" aria-label="استيراد قاعدة بيانات" title="استيراد قاعدة بيانات" style="background: transparent; border: none; padding: 0;">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <polyline points="16 17 21 12 16 7"/>
-                                <line x1="21" y1="12" x2="9" y2="12"/>
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            <span>خروج</span>
+                            <span>استيراد قاعدة بيانات</span>
                         </button>
                     </form>
                     @endif
@@ -213,6 +228,7 @@
         @include('partials.app-error-dialog')
         <script src="{{ url('js/app-error-dialog.js') }}?v={{ file_exists(public_path('js/app-error-dialog.js')) ? filemtime(public_path('js/app-error-dialog.js')) : time() }}"></script>
     @endunless
+    <script src="{{ url('js/database-restore.js') }}?v={{ file_exists(public_path('js/database-restore.js')) ? filemtime(public_path('js/database-restore.js')) : time() }}"></script>
 
     @yield('scripts')
 </body>

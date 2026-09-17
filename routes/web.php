@@ -189,6 +189,8 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('permission:'.PermissionCatalog::BACKUP_CREATE)->group(function (): void {
         Route::post('/database/backup', [DatabaseBackupController::class, 'store'])
             ->name('database-backup.store');
+        Route::post('/database/restore', [DatabaseBackupController::class, 'restore'])
+            ->name('database-backup.restore');
     });
 
     Route::middleware('permission:'.PermissionCatalog::USERS_MANAGE)->group(function (): void {
