@@ -5,7 +5,6 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\Student\StudentCertificate;
 use App\Domain\Student\StudentReadRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ قراءة طالب واحد لصفحة التأييد (CQRS — Read).
@@ -15,7 +14,7 @@ final class MySQLStudentReadRepository implements StudentReadRepository
 {
     public function findById(int $id): ?StudentCertificate
     {
-        if (Schema::hasTable('students')) {
+        if (CachedSchema::hasTable('students')) {
             $row = DB::table('students as s')
                 ->join('student_personal as p', 'p.student_id', '=', 's.id')
                 ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')

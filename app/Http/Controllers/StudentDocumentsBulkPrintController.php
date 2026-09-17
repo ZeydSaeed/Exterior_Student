@@ -42,24 +42,15 @@ final class StudentDocumentsBulkPrintController extends Controller
         ));
 
         if (! $hasActiveFilters) {
-            $filterOnlyQuery = ListStudentsQuery::fromArray([
-                'branch' => null,
-                'major' => null,
-                'gender' => null,
-                'year' => null,
-                'round' => null,
-                'result' => null,
-                'search' => null,
-            ]);
-            $listResponse = $this->listHandler->handle($filterOnlyQuery);
+            $lists = $this->listHandler->filterLists();
 
             return view('students.documents-bulk-print', [
-                'branches' => $listResponse->branches,
-                'majors' => $listResponse->majors,
-                'genders' => $listResponse->genders,
-                'academicYears' => $listResponse->academicYears,
-                'roundOptions' => $listResponse->roundOptions,
-                'resultOptions' => $listResponse->resultOptions,
+                'branches' => $lists['branches'],
+                'majors' => $lists['majors'],
+                'genders' => $lists['genders'],
+                'academicYears' => $lists['academicYears'],
+                'roundOptions' => $lists['roundOptions'],
+                'resultOptions' => $lists['resultOptions'],
                 'useStudentListSessionMerge' => false,
                 'studentIds' => [],
                 'initialDtosById' => [],
@@ -70,7 +61,7 @@ final class StudentDocumentsBulkPrintController extends Controller
             ]);
         }
 
-        $listResponse = $this->listHandler->handle($query);
+        $lists = $this->listHandler->filterLists();
 
         $studentIds = $this->handler->listIds($query);
         $genderCounts = $this->handler->genderCounts($query);
@@ -85,12 +76,12 @@ final class StudentDocumentsBulkPrintController extends Controller
         }
 
         return view('students.documents-bulk-print', [
-            'branches' => $listResponse->branches,
-            'majors' => $listResponse->majors,
-            'genders' => $listResponse->genders,
-            'academicYears' => $listResponse->academicYears,
-            'roundOptions' => $listResponse->roundOptions,
-            'resultOptions' => $listResponse->resultOptions,
+            'branches' => $lists['branches'],
+            'majors' => $lists['majors'],
+            'genders' => $lists['genders'],
+            'academicYears' => $lists['academicYears'],
+            'roundOptions' => $lists['roundOptions'],
+            'resultOptions' => $lists['resultOptions'],
             'useStudentListSessionMerge' => false,
             'studentIds' => $studentIds,
             'initialDtosById' => $initialDtosById,

@@ -5,7 +5,6 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\Record\RecordCommandRepository;
 use App\Support\ArabicDigits;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ كتابة وثائق الطلاب على MySQL (CQRS — Command side).
@@ -21,7 +20,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
         ?string $purpose,
         ?string $notes = null
     ): void {
-        $examNumber = Schema::hasTable('students')
+        $examNumber = CachedSchema::hasTable('students')
             ? DB::table('students')->where('id', $studentId)->value('exam_number')
             : DB::table('main_table')->where('id', $studentId)->value('الرقم الامتحاني');
         if ($examNumber === null) {
@@ -30,7 +29,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
 
         $docNum = $this->normalizeDocumentNumber($documentNumber);
 
-        if (Schema::hasColumn('records', 'student_id')) {
+        if (CachedSchema::hasColumn('records', 'student_id')) {
             DB::transaction(function () use ($studentId, $docNum, $documentDate, $addressee, $purpose, $notes): void {
                 $row = [
                     'student_id' => $studentId,
@@ -39,7 +38,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
                     'addressee' => $addressee ?? '',
                     'purpose' => $purpose ?? '',
                 ];
-                if (Schema::hasColumn('records', 'notes')) {
+                if (CachedSchema::hasColumn('records', 'notes')) {
                     $row['notes'] = $notes ?? '';
                 }
                 DB::table('records')->insert($row);
@@ -55,7 +54,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
                     'الجهه المعنونه اليها' => $addressee ?? '',
                     'الغرض من الوثيقة' => $purpose ?? '',
                 ];
-                if (Schema::hasColumn('records', 'الملاحظات')) {
+                if (CachedSchema::hasColumn('records', 'الملاحظات')) {
                     $row['الملاحظات'] = $notes ?? '';
                 }
                 DB::table('records')->insert($row);
@@ -77,7 +76,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
             return null;
         }
 
-        if (Schema::hasColumn('records', 'document_number')) {
+        if (CachedSchema::hasColumn('records', 'document_number')) {
             return $trimmed;
         }
 
@@ -98,7 +97,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
     ): void {
         $docNum = $this->normalizeDocumentNumber($documentNumber);
 
-        if (Schema::hasColumn('records', 'document_number')) {
+        if (CachedSchema::hasColumn('records', 'document_number')) {
             DB::transaction(function () use ($recordId, $docNum, $documentDate, $addressee, $purpose, $notes): void {
                 $row = [
                     'document_number' => $docNum,
@@ -106,7 +105,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
                     'addressee' => $addressee ?? '',
                     'purpose' => $purpose ?? '',
                 ];
-                if (Schema::hasColumn('records', 'notes')) {
+                if (CachedSchema::hasColumn('records', 'notes')) {
                     $row['notes'] = $notes ?? '';
                 }
                 DB::table('records')
@@ -121,7 +120,7 @@ final class MySQLRecordCommandRepository implements RecordCommandRepository
                     'الجهه المعنونه اليها' => $addressee ?? '',
                     'الغرض من الوثيقة' => $purpose ?? '',
                 ];
-                if (Schema::hasColumn('records', 'الملاحظات')) {
+                if (CachedSchema::hasColumn('records', 'الملاحظات')) {
                     $row['الملاحظات'] = $notes ?? '';
                 }
                 DB::table('records')

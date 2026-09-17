@@ -11,15 +11,23 @@ use Illuminate\Support\Facades\DB;
  */
 final class MySQLEmployeeQueryRepository implements EmployeeQueryRepository
 {
+    public function __construct(
+        private WorkstationEmployeeCatalog $catalog
+    ) {}
+
     public function all(): array
     {
-        $rows = DB::table('employees')
-            ->select('id', 'type', 'name', 'table_group')
-            ->orderBy('id', 'asc')
-            ->get();
+        $this->catalog->ensure();
+
+        $query = DB::table('employees')->select('id', 'type', 'name', 'table_group');
+        if ($this->catalog->isScoped()) {
+            $query->where('workstation_id', $this->catalog->id());
+        }
+
+        $rows = $query->orderBy('id', 'asc')->get();
 
         return $rows->map(
-            static fn($r) => new Employee(
+            static fn ($r) => new Employee(
                 (int) $r->id,
                 (string) $r->type,
                 (string) $r->name,
@@ -28,4 +36,3 @@ final class MySQLEmployeeQueryRepository implements EmployeeQueryRepository
         )->all();
     }
 }
-

@@ -14,7 +14,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ قراءة الطلاب على MySQL (CQRS — Query side).
@@ -47,21 +46,215 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
     private function useNormalizedSchema(): bool
     {
-        return Schema::hasTable('students') || ! Schema::hasTable('main_table');
-    }
-
-    private function studentNotesCountExpr(string $studentIdColumn): string
-    {
-        if (! Schema::hasTable('student_notes')) {
-            return '0';
-        }
-
-        return "(SELECT COUNT(*) FROM student_notes n WHERE n.student_id = {$studentIdColumn})";
+        return CachedSchema::usesNormalizedStudentSchema();
     }
 
     private function studentGradesUsesMajorSubject(): bool
     {
-        return Schema::hasColumn('student_grades', 'major_subject_id');
+        return CachedSchema::hasColumn('student_grades', 'major_subject_id');
+    }
+
+    /**
+     * @param  \Illuminate\Database\Query\Builder  $query
+     */
+    private function applyExamNumberOrder($query, bool $normalized): void
+    {
+        if ($normalized && CachedSchema::hasColumn('students', 'exam_number_sort')) {
+            $query->orderBy('s.exam_number_sort')->orderBy('s.exam_number');
+
+            return;
+        }
+
+        if (! $normalized && CachedSchema::hasColumn('main_table', 'exam_number_sort')) {
+            $query->orderBy('exam_number_sort')->orderBy('الرقم الامتحاني');
+
+            return;
+        }
+
+        if ($normalized) {
+            $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+
+            return;
+        }
+
+        $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+    }
+
+    /**
+     * عدّادات الشارات لصفحة القائمة فقط (20 صفاً) بدل استعلامات مرتبطة على كامل الجدول.
+     *
+     * @param  \Illuminate\Contracts\Pagination\LengthAwarePaginator  $students
+     */
+    private function hydrateListProfileCounts($students): void
+    {
+        $items = $students->items();
+        if ($items === []) {
+            return;
+        }
+
+        $ids = [];
+        $examNumbers = [];
+        foreach ($items as $row) {
+            $id = (int) $row->id;
+            $ids[] = $id;
+            $exam = trim((string) ($row->exam_number ?? ''));
+            if ($exam !== '') {
+                $examNumbers[$id] = $exam;
+            }
+            $row->attest_without_count = 0;
+            $row->attest_with_count = 0;
+            $row->docs_count = 0;
+            $row->profile_total_count = 0;
+        }
+
+        $notes = $this->countsByStudentId('student_notes', 'student_id', $ids);
+        $docs = $this->recordCountsByStudent($ids, $examNumbers);
+        $certs = $this->certificateCountsByStudent($ids, $examNumbers);
+
+        foreach ($items as $row) {
+            $id = (int) $row->id;
+            $without = (int) ($certs[$id]['without_grades'] ?? 0);
+            $with = (int) ($certs[$id]['with_grades'] ?? 0);
+            $docCount = (int) ($docs[$id] ?? 0);
+            $noteCount = (int) ($notes[$id] ?? 0);
+            $row->attest_without_count = $without;
+            $row->attest_with_count = $with;
+            $row->docs_count = $docCount;
+            $row->profile_total_count = $without + $with + $docCount + $noteCount;
+        }
+    }
+
+    /**
+     * @param  list<int>  $ids
+     * @return array<int, int>
+     */
+    private function countsByStudentId(string $table, string $idColumn, array $ids): array
+    {
+        if ($ids === [] || ! CachedSchema::hasTable($table) || ! CachedSchema::hasColumn($table, $idColumn)) {
+            return [];
+        }
+
+        $rows = DB::table($table)
+            ->selectRaw($idColumn.' as sid, COUNT(*) as aggregate')
+            ->whereIn($idColumn, $ids)
+            ->groupBy($idColumn)
+            ->get();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[(int) $row->sid] = (int) $row->aggregate;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  list<int>  $ids
+     * @param  array<int, string>  $examNumbers
+     * @return array<int, int>
+     */
+    private function recordCountsByStudent(array $ids, array $examNumbers): array
+    {
+        if (! CachedSchema::hasTable('records')) {
+            return [];
+        }
+
+        if (CachedSchema::hasColumn('records', 'student_id')) {
+            return $this->countsByStudentId('records', 'student_id', $ids);
+        }
+
+        return $this->countsByExamNumber('records', '`الرقم الامتحاني`', $examNumbers);
+    }
+
+    /**
+     * @param  list<int>  $ids
+     * @param  array<int, string>  $examNumbers
+     * @return array<int, array<string, int>>
+     */
+    private function certificateCountsByStudent(array $ids, array $examNumbers): array
+    {
+        if (! CachedSchema::hasTable('certificate')) {
+            return [];
+        }
+
+        if (CachedSchema::hasColumn('certificate', 'student_id')) {
+            $rows = DB::table('certificate')
+                ->selectRaw('student_id as sid, type, COUNT(*) as aggregate')
+                ->whereIn('student_id', $ids)
+                ->groupBy('student_id', 'type')
+                ->get();
+
+            return $this->mapCertificateCountsById($rows, 'sid');
+        }
+
+        if ($examNumbers === []) {
+            return [];
+        }
+
+        $rows = DB::table('certificate')
+            ->selectRaw('exam_number, type, COUNT(*) as aggregate')
+            ->whereIn('exam_number', array_values($examNumbers))
+            ->groupBy('exam_number', 'type')
+            ->get();
+
+        $idByExam = array_flip($examNumbers);
+        $out = [];
+        foreach ($rows as $row) {
+            $exam = trim((string) ($row->exam_number ?? ''));
+            if (! isset($idByExam[$exam])) {
+                continue;
+            }
+            $id = (int) $idByExam[$exam];
+            $type = (string) ($row->type ?? '');
+            $out[$id][$type] = (int) $row->aggregate;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, object>  $rows
+     * @return array<int, array<string, int>>
+     */
+    private function mapCertificateCountsById($rows, string $idKey): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row->{$idKey} ?? 0);
+            $type = (string) ($row->type ?? '');
+            $out[$id][$type] = (int) $row->aggregate;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<int, string>  $examNumbers
+     * @return array<int, int>
+     */
+    private function countsByExamNumber(string $table, string $examColumnSql, array $examNumbers): array
+    {
+        if ($examNumbers === []) {
+            return [];
+        }
+
+        $rows = DB::table($table)
+            ->selectRaw($examColumnSql.' as exam_number, COUNT(*) as aggregate')
+            ->whereIn(DB::raw($examColumnSql), array_values($examNumbers))
+            ->groupBy(DB::raw($examColumnSql))
+            ->get();
+
+        $idByExam = array_flip($examNumbers);
+        $out = [];
+        foreach ($rows as $row) {
+            $exam = trim((string) ($row->exam_number ?? ''));
+            if (! isset($idByExam[$exam])) {
+                continue;
+            }
+            $out[(int) $idByExam[$exam]] = (int) $row->aggregate;
+        }
+
+        return $out;
     }
 
     /** المجموع يعرض كعدد صحيح فقط (بدون كسور). */
@@ -111,28 +304,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             return $this->listWithFiltersNormalized($filters);
         }
 
-        $withoutExpr = '0';
-        $withExpr = '0';
-        if (Schema::hasTable('certificate')) {
-            if (Schema::hasColumn('certificate', 'student_id')) {
-                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = id AND c.type = 'without_grades')";
-                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = id AND c.type = 'with_grades')";
-            } else {
-                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = `الرقم الامتحاني` AND c.type = 'without_grades')";
-                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = `الرقم الامتحاني` AND c.type = 'with_grades')";
-            }
-        }
-        $docsExpr = '0';
-        if (Schema::hasTable('records')) {
-            if (Schema::hasColumn('records', 'student_id')) {
-                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.student_id = id)';
-            } else {
-                // في البنية القديمة بدون student_id لا نحسب الوثائق بدقة هنا لتفادي التباس الأعمدة.
-                $docsExpr = '0';
-            }
-        }
-        $notesExpr = $this->studentNotesCountExpr('id');
-        $enrollmentExpr = Schema::hasColumn('main_table', 'رقم القيد')
+        $enrollmentExpr = CachedSchema::hasColumn('main_table', 'رقم القيد')
             ? "TRIM(COALESCE(`رقم القيد`, ''))"
             : "''";
 
@@ -146,19 +318,14 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 TRIM(`الفرع`) AS branch,
                 TRIM(`الاختصاص`) AS major,
                 TRIM(`الجنس`) AS gender,
-                {$withoutExpr} AS attest_without_count,
-                {$withExpr} AS attest_with_count,
-                {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr}) + ({$notesExpr})) AS profile_total_count,
                 {$enrollmentExpr} AS enrollment_number
             ");
 
         $this->applyListFilters($query, $filters);
-
-        /* ترتيب تصاعدي حسب الرقم الامتحاني (يدعم الأرقام النصية كأرقام) */
-        $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+        $this->applyExamNumberOrder($query, false);
 
         $students = $query->paginate(self::PER_PAGE)->withQueryString();
+        $this->hydrateListProfileCounts($students);
 
         $filterLists = $this->getFilterListsFromCache();
 
@@ -175,27 +342,6 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
     private function listWithFiltersNormalized(array $filters): StudentListProjection
     {
-        $withoutExpr = '0';
-        $withExpr = '0';
-        if (Schema::hasTable('certificate')) {
-            if (Schema::hasColumn('certificate', 'student_id')) {
-                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = s.id AND c.type = 'without_grades')";
-                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.student_id = s.id AND c.type = 'with_grades')";
-            } else {
-                $withoutExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = s.exam_number AND c.type = 'without_grades')";
-                $withExpr = "(SELECT COUNT(*) FROM certificate c WHERE c.exam_number = s.exam_number AND c.type = 'with_grades')";
-            }
-        }
-        $docsExpr = '0';
-        if (Schema::hasTable('records')) {
-            if (Schema::hasColumn('records', 'student_id')) {
-                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.student_id = s.id)';
-            } else {
-                $docsExpr = '(SELECT COUNT(*) FROM records r WHERE r.`الرقم الامتحاني` = s.exam_number)';
-            }
-        }
-        $notesExpr = $this->studentNotesCountExpr('s.id');
-
         $query = DB::table('students as s')
             ->join('student_personal as p', 'p.student_id', '=', 's.id')
             ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
@@ -212,17 +358,14 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 b.name_ar AS branch,
                 m.name_ar AS major,
                 p.gender,
-                {$withoutExpr} AS attest_without_count,
-                {$withExpr} AS attest_with_count,
-                {$docsExpr} AS docs_count,
-                (({$withoutExpr}) + ({$withExpr}) + ({$docsExpr}) + ({$notesExpr})) AS profile_total_count,
                 TRIM(COALESCE(a.enrollment_number, '')) AS enrollment_number
             ");
 
         $this->applyListFiltersNormalized($query, $filters);
-        $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+        $this->applyExamNumberOrder($query, true);
 
         $students = $query->paginate(self::PER_PAGE)->withQueryString();
+        $this->hydrateListProfileCounts($students);
         $filterLists = $this->getFilterListsFromCache();
 
         return new StudentListProjection(
@@ -314,11 +457,11 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             }
 
             $allowedResults = Config::get('grades_catalog.result_options', ['ناجح', 'ناجحة', 'ناجحه', 'راسب', 'راسبة', 'معيد', 'معيده', 'معيدة', 'حجب']);
-            $resultOptions = Schema::hasTable('result_types')
+            $resultOptions = CachedSchema::hasTable('result_types')
                 ? DB::table('result_types')->whereIn('name_ar', $allowedResults)->orderBy('sort_order')->pluck('name_ar')
                 : collect($allowedResults);
             $allowedRounds = Config::get('grades_catalog.round_options', ['الاول', 'الثاني', 'الثالث', 'الاول تكميلي', 'الثاني تكميلي', 'الثالث تكميلي']);
-            $roundOptions = Schema::hasTable('round_options')
+            $roundOptions = CachedSchema::hasTable('round_options')
                 ? DB::table('round_options')->whereIn('name_ar', $allowedRounds)->orderBy('sort_order')->pluck('name_ar')
                 : collect($allowedRounds);
 
@@ -349,13 +492,13 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
                 ->select('s.id');
             $this->applyListFiltersNormalized($query, $filters);
-            $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+            $this->applyExamNumberOrder($query, true);
 
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
         }
         $query = DB::table('main_table')->select('id');
         $this->applyListFilters($query, $filters);
-        $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+        $this->applyExamNumberOrder($query, false);
 
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
     }
@@ -435,14 +578,14 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 ->select('s.id')
                 ->whereIn('rt.name_ar', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
             $this->applyListFiltersNormalized($query, $filters);
-            $query->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')->orderBy('s.exam_number', 'asc');
+            $this->applyExamNumberOrder($query, true);
 
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
         }
         $query = DB::table('main_table')->select('id');
         $this->applyListFilters($query, $filters);
         $query->whereIn('النتيجة', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
-        $query->orderByRaw('CAST(`الرقم الامتحاني` AS UNSIGNED) ASC')->orderBy('الرقم الامتحاني', 'asc');
+        $this->applyExamNumberOrder($query, false);
 
         return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
     }
@@ -510,7 +653,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
 
         $gradeColumns = Config::get('grades_catalog.grade_columns', []);
         $select = ['id', 'الرقم الامتحاني', 'اسم الطالب', 'اسم الاب', 'اسم الجد', 'اللقب', 'الجنس', 'التولد', 'محل الولادة', 'اسم الام الكامل', 'الفرع', 'الاختصاص', 'العام الدراسي', 'اخر مدرسة كان فيها الطالب', 'رقم الوثيقة المتوسطة', 'تاريخها', 'جهة الاصدار', 'النتيجة', 'المجموع', 'المعدل', 'الدور'];
-        if (Schema::hasColumn('main_table', 'رقم القيد')) {
+        if (CachedSchema::hasColumn('main_table', 'رقم القيد')) {
             $select[] = 'رقم القيد';
         }
         foreach ($gradeColumns as $col) {
@@ -830,7 +973,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             ->whereIn('rt.name_ar', ['معيد', 'معيده', 'معيدة']);
         $this->applyListFiltersNormalized($base, $filters);
 
-        $rows = $base
+        $base
             ->selectRaw("
                 s.id,
                 s.exam_number,
@@ -842,10 +985,9 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 a.average
             ")
             ->orderBy('b.name_ar')
-            ->orderBy('m.name_ar')
-            ->orderByRaw('CAST(s.exam_number AS UNSIGNED) ASC')
-            ->orderBy('s.exam_number', 'asc')
-            ->get();
+            ->orderBy('m.name_ar');
+        $this->applyExamNumberOrder($base, true);
+        $rows = $base->get();
 
         if ($rows->isEmpty()) {
             return [];
@@ -965,7 +1107,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function getStudentDocumentInfo(int $id): ?StudentDocumentInfo
     {
         if ($this->useNormalizedSchema()) {
-            $hasLockedColumn = Schema::hasColumn('student_academic', 'subjects_completed');
+            $hasLockedColumn = CachedSchema::hasColumn('student_academic', 'subjects_completed');
             $select = 's.exam_number, p.first_name, p.father_name, p.grandfather_name, p.surname, p.gender, p.birth_date, p.birth_place, p.mother_full_name, b.name_ar AS branch, m.name_ar AS specialization, y.year_label AS academic_year, rt.name_ar AS result, a.round, a.last_school, a.middle_doc_number, a.middle_doc_date, a.issuing_authority, a.page_number, a.enrollment_number';
             if ($hasLockedColumn) {
                 $select .= ', a.subjects_completed';

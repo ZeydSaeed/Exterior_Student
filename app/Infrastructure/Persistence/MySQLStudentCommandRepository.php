@@ -6,7 +6,6 @@ use App\Domain\Student\StudentCommandRepository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ كتابة الطلاب على MySQL (CQRS — Command side).
@@ -17,12 +16,12 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
 {
     private function useNormalizedSchema(): bool
     {
-        return Schema::hasTable('students') || ! Schema::hasTable('main_table');
+        return CachedSchema::usesNormalizedStudentSchema();
     }
 
     private function studentGradesUsesMajorSubject(): bool
     {
-        return Schema::hasColumn('student_grades', 'major_subject_id');
+        return CachedSchema::hasColumn('student_grades', 'major_subject_id');
     }
 
     /**
@@ -84,7 +83,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $q->whereNull('branch_id');
         }
         $newMajorId = (int) $q->value('id');
-        if (Schema::hasTable('major_subjects') && Schema::hasTable('subjects')) {
+        if (CachedSchema::hasTable('major_subjects') && CachedSchema::hasTable('subjects')) {
             $this->seedMajorSubjectsForNewMajor($newMajorId, $nameAr, $branchId);
         }
 
@@ -193,7 +192,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
      */
     private function resolveGenderId(string $nameAr): ?int
     {
-        if (! Schema::hasTable('genders')) {
+        if (! CachedSchema::hasTable('genders')) {
             return null;
         }
         $nameAr = trim($nameAr);
@@ -218,7 +217,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
      */
     private function resolveResultTypeId(string $nameAr): ?int
     {
-        if (! Schema::hasTable('result_types')) {
+        if (! CachedSchema::hasTable('result_types')) {
             return null;
         }
         $nameAr = trim($nameAr);
@@ -296,7 +295,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return DB::transaction(function () use ($data): int {
             $row = [];
             foreach (self::CREATE_FIELDS_MAP as $key => $column) {
-                if ($key === 'enrollment_number' && ! Schema::hasColumn('main_table', $column)) {
+                if ($key === 'enrollment_number' && ! CachedSchema::hasColumn('main_table', $column)) {
                     continue;
                 }
                 $value = isset($data[$key]) ? trim((string) $data[$key]) : null;
@@ -403,7 +402,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
-            if (Schema::hasColumn('student_personal', 'gender_id')) {
+            if (CachedSchema::hasColumn('student_personal', 'gender_id')) {
                 $personalRow['gender_id'] = $genderId;
             }
             DB::table('student_personal')->insert($personalRow);
@@ -427,7 +426,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
-            if (Schema::hasColumn('student_academic', 'enrollment_number')) {
+            if (CachedSchema::hasColumn('student_academic', 'enrollment_number')) {
                 $academicRow['enrollment_number'] = $trim('enrollment_number');
             }
 
@@ -438,7 +437,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                     $sum += (int) round((float) $rawScore);
                 }
             }
-            if (Schema::hasColumn('student_academic', 'total')) {
+            if (CachedSchema::hasColumn('student_academic', 'total')) {
                 $academicRow['total'] = $sum;
             }
 
@@ -492,7 +491,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $allowedResults = Config::get('grades_catalog.result_options', []);
             $allowedRounds = Config::get('grades_catalog.round_options', []);
             foreach (self::BASIC_FIELDS as $key => $column) {
-                if ($key === 'enrollment_number' && ! Schema::hasColumn('main_table', $column)) {
+                if ($key === 'enrollment_number' && ! CachedSchema::hasColumn('main_table', $column)) {
                     continue;
                 }
                 if (array_key_exists($key, $payload)) {
@@ -611,7 +610,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 }
             }
             foreach (['total', 'average', 'round', 'last_school', 'middle_doc_number', 'middle_doc_date', 'issuing_authority', 'enrollment_number'] as $k) {
-                if ($k === 'enrollment_number' && ! Schema::hasColumn('student_academic', 'enrollment_number')) {
+                if ($k === 'enrollment_number' && ! CachedSchema::hasColumn('student_academic', 'enrollment_number')) {
                     continue;
                 }
                 if (array_key_exists($k, $payload)) {
@@ -734,10 +733,10 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         }
 
         $update = [];
-        if (Schema::hasColumn('main_table', 'رقم الصفحة')) {
+        if (CachedSchema::hasColumn('main_table', 'رقم الصفحة')) {
             $update['رقم الصفحة'] = $page;
         }
-        if (Schema::hasColumn('main_table', 'رقم القيد')) {
+        if (CachedSchema::hasColumn('main_table', 'رقم القيد')) {
             $update['رقم القيد'] = $enrollment;
         }
         if ($update !== []) {
@@ -750,7 +749,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         $json = json_encode(array_values($subjects), JSON_UNESCAPED_UNICODE);
 
         if ($this->useNormalizedSchema()) {
-            if (! Schema::hasColumn('student_academic', 'subjects_completed')) {
+            if (! CachedSchema::hasColumn('student_academic', 'subjects_completed')) {
                 return;
             }
             DB::transaction(function () use ($studentId, $json): void {
@@ -774,7 +773,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             return;
         }
 
-        if (Schema::hasColumn('main_table', 'الدروس التي أكمل بها')) {
+        if (CachedSchema::hasColumn('main_table', 'الدروس التي أكمل بها')) {
             DB::table('main_table')->where('id', $studentId)->update(['الدروس التي أكمل بها' => $json]);
         }
     }

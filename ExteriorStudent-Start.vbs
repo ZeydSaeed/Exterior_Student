@@ -52,6 +52,51 @@ Function ProcessExists(processName)
   On Error GoTo 0
 End Function
 
+Function SiteReachable(url)
+  Dim http
+  SiteReachable = False
+  On Error Resume Next
+  Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+  If http Is Nothing Then Set http = CreateObject("MSXML2.ServerXMLHTTP")
+  If http Is Nothing Then
+    On Error GoTo 0
+    Exit Function
+  End If
+  http.open "GET", url, False
+  http.setTimeouts 800, 800, 1200, 2000
+  http.send
+  If Err.Number = 0 Then
+    If http.Status >= 200 And http.Status < 500 Then
+      SiteReachable = True
+    End If
+  End If
+  Err.Clear
+  On Error GoTo 0
+End Function
+
+Sub OpenChrome()
+  chromeExe = ResolveChromeExe()
+  If chromeExe <> "" Then
+    cmd = """" & chromeExe & """"
+    If fso.FolderExists(chromeUserData) Then
+      cmd = cmd & " --user-data-dir=""" & chromeUserData & """ --profile-directory=" & profileDir
+    End If
+    cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+    sh.Run cmd, 1, False
+  Else
+    sh.Popup "لم يتم العثور على Google Chrome. ثبّت Chrome ثم أعد المحاولة.", 8, "نظام الطلبة", 48
+  End If
+End Sub
+
+If ProcessExists("mysqld.exe") Then
+  If SiteReachable(appUrl) Then
+    OpenChrome
+    Set sh = Nothing
+    Set fso = Nothing
+    WScript.Quit 0
+  End If
+End If
+
 If Not ProcessExists("mysqld.exe") Then
   If fso.FileExists(xampp & "\mysql\bin\mysqld.exe") Then
     RunHidden "cmd /c cd /d """ & xampp & """ && start """" /b """ & xampp & "\mysql\bin\mysqld.exe"" --defaults-file=""" & xampp & "\mysql\bin\my.ini"" --standalone"
@@ -63,25 +108,26 @@ If ProcessExists("httpd.exe") Then
   WScript.Sleep 1000
 End If
 
+If SiteReachable(appUrl) Then
+  OpenChrome
+  Set sh = Nothing
+  Set fso = Nothing
+  WScript.Quit 0
+End If
+
 If fso.FileExists(herdBat) Then
   RunHidden "cmd /c call """ & herdBat & """ start -q -n"
 End If
 
-WScript.Sleep 5000
-
-chromeExe = ResolveChromeExe()
-
-If chromeExe <> "" Then
-  ' Same User Data + Default profile as normal Chrome => identical print settings/UI direction
-  cmd = """" & chromeExe & """"
-  If fso.FolderExists(chromeUserData) Then
-    cmd = cmd & " --user-data-dir=""" & chromeUserData & """ --profile-directory=" & profileDir
+Dim waitRound
+For waitRound = 1 To 10
+  If SiteReachable(appUrl) Then
+    Exit For
   End If
-  cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
-  sh.Run cmd, 1, False
-Else
-  sh.Popup "لم يتم العثور على Google Chrome. ثبّت Chrome ثم أعد المحاولة.", 8, "نظام الطلبة", 48
-End If
+  WScript.Sleep 500
+Next
+
+OpenChrome
 
 Set sh = Nothing
 Set fso = Nothing

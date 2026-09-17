@@ -230,6 +230,7 @@
     @endunless
     <script src="{{ url('js/database-backup.js') }}?v={{ file_exists(public_path('js/database-backup.js')) ? filemtime(public_path('js/database-backup.js')) : time() }}"></script>
     <script src="{{ url('js/database-restore.js') }}?v={{ file_exists(public_path('js/database-restore.js')) ? filemtime(public_path('js/database-restore.js')) : time() }}"></script>
+    <script src="{{ url('js/nav-prefetch.js') }}?v={{ file_exists(public_path('js/nav-prefetch.js')) ? filemtime(public_path('js/nav-prefetch.js')) : time() }}"></script>
 
     @yield('scripts')
 </body>

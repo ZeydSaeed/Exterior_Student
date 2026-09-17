@@ -4,7 +4,6 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Student\BranchMajorCatalogInterface;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 final class MySQLBranchMajorCatalog implements BranchMajorCatalogInterface
 {
@@ -15,7 +14,7 @@ final class MySQLBranchMajorCatalog implements BranchMajorCatalogInterface
         if ($majorNameAr === '' || $branchNameAr === '') {
             return false;
         }
-        if (! Schema::hasTable('branches') || ! Schema::hasTable('majors')) {
+        if (! CachedSchema::hasTable('branches') || ! CachedSchema::hasTable('majors')) {
             return false;
         }
         $branchId = DB::table('branches')->where('name_ar', $branchNameAr)->value('id');

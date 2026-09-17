@@ -5,7 +5,6 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\StudentNote\StudentNote;
 use App\Domain\StudentNote\StudentNoteQueryRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * قراءة ملاحظات الطالب من جدول student_notes.
@@ -19,7 +18,7 @@ final class MySQLStudentNoteQueryRepository implements StudentNoteQueryRepositor
      */
     public function listByStudentId(int $studentId): array
     {
-        if (! Schema::hasTable('student_notes')) {
+        if (! CachedSchema::hasTable('student_notes')) {
             return [];
         }
 

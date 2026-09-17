@@ -4,7 +4,6 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\StudentNote\StudentNoteCommandRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
 /**
@@ -64,7 +63,7 @@ final class MySQLStudentNoteCommandRepository implements StudentNoteCommandRepos
 
     private function assertTableExists(): void
     {
-        if (! Schema::hasTable('student_notes')) {
+        if (! CachedSchema::hasTable('student_notes')) {
             throw new RuntimeException('Student notes table is missing.');
         }
     }

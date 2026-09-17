@@ -23,6 +23,7 @@ use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Domain\StudentNote\StudentNoteCommandRepository;
 use App\Domain\StudentNote\StudentNoteQueryRepository;
+use App\Domain\Workstation\WorkstationContext;
 use App\Infrastructure\Backup\AesGcmBackupFileCipher;
 use App\Infrastructure\Backup\WindowsBackupSavePathPicker;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
@@ -44,6 +45,7 @@ use App\Infrastructure\Persistence\MySQLStudentNoteQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentQueryRepository;
 use App\Infrastructure\Persistence\MySQLStudentReadRepository;
 use App\Infrastructure\Persistence\MySQLStudentResultsImportTempRepository;
+use App\Infrastructure\Workstation\CookieWorkstationContext;
 use App\Support\StudentListFiltersSession;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
@@ -59,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(WorkstationContext::class, CookieWorkstationContext::class);
+
         // Students
         $this->app->bind(StudentQueryRepository::class, MySQLStudentQueryRepository::class);
         $this->app->bind(StudentReadRepository::class, MySQLStudentReadRepository::class);

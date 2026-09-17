@@ -5,7 +5,6 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\Record\Record;
 use App\Domain\Record\RecordQueryRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * تنفيذ قراءة وثائق الطلاب على MySQL (CQRS — Query side).
@@ -26,7 +25,7 @@ final class MySQLRecordQueryRepository implements RecordQueryRepository
                 ->limit(self::MAX_RECORDS_PER_STUDENT)
                 ->get();
         } else {
-            $examNumber = Schema::hasTable('students')
+            $examNumber = CachedSchema::hasTable('students')
                 ? DB::table('students')->where('id', $studentId)->value('exam_number')
                 : DB::table('main_table')->where('id', $studentId)->value('الرقم الامتحاني');
 
@@ -52,12 +51,12 @@ final class MySQLRecordQueryRepository implements RecordQueryRepository
 
     private function recordsHasStudentId(): bool
     {
-        return Schema::hasColumn('records', 'student_id');
+        return CachedSchema::hasColumn('records', 'student_id');
     }
 
     private function documentDateOrderColumn(): string
     {
-        return Schema::hasColumn('records', 'document_date') ? 'document_date' : '`تاريخها`';
+        return CachedSchema::hasColumn('records', 'document_date') ? 'document_date' : '`تاريخها`';
     }
 
     private function mapRowToStdClass(object $row, int $studentId): object

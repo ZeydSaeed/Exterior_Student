@@ -12,11 +12,23 @@ final class MySQLCertificateSignatureRepository implements CertificateSignatureR
 {
     private const TABLE = 'certificate_signatures';
 
+    public function __construct(
+        private WorkstationEmployeeCatalog $catalog
+    ) {}
+
     public function getEmployeeIdByPosition(string $position): ?int
     {
-        $row = DB::table(self::TABLE)
-            ->where('position', $position)
-            ->first();
+        $this->catalog->ensure();
+
+        $query = DB::table(self::TABLE)->where('position', $position);
+        if ($this->catalog->isScoped() && CachedSchema::hasColumn(self::TABLE, 'workstation_id')) {
+            $row = (clone $query)->where('workstation_id', $this->catalog->id())->first();
+            if ($row === null) {
+                $row = (clone $query)->whereNull('workstation_id')->first();
+            }
+        } else {
+            $row = $query->first();
+        }
 
         if ($row === null || $row->employee_id === null) {
             return null;
@@ -27,24 +39,33 @@ final class MySQLCertificateSignatureRepository implements CertificateSignatureR
 
     public function setSignature(string $position, ?int $employeeId): void
     {
-        DB::transaction(function () use ($position, $employeeId): void {
-            $exists = DB::table(self::TABLE)->where('position', $position)->exists();
+        $this->catalog->ensure();
 
-            if ($exists) {
-                DB::table(self::TABLE)
-                    ->where('position', $position)
-                    ->update([
-                        'employee_id' => $employeeId,
-                        'updated_at' => now(),
-                    ]);
-            } else {
-                DB::table(self::TABLE)->insert([
+        DB::transaction(function () use ($position, $employeeId): void {
+            $query = DB::table(self::TABLE)->where('position', $position);
+            if ($this->catalog->isScoped() && CachedSchema::hasColumn(self::TABLE, 'workstation_id')) {
+                $query->where('workstation_id', $this->catalog->id());
+            }
+
+            if ((clone $query)->exists()) {
+                $query->update([
                     'employee_id' => $employeeId,
-                    'position' => $position,
-                    'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                return;
             }
+
+            $row = [
+                'employee_id' => $employeeId,
+                'position' => $position,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            if ($this->catalog->isScoped() && CachedSchema::hasColumn(self::TABLE, 'workstation_id')) {
+                $row['workstation_id'] = $this->catalog->id();
+            }
+            DB::table(self::TABLE)->insert($row);
         });
     }
 }

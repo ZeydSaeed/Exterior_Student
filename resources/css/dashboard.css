@@ -298,6 +298,10 @@ body.page-students .dashboard-main {
 }
 .dashboard-home {
     position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
 }
 .dashboard-moe-badge {
     position: absolute;
@@ -327,7 +331,7 @@ body.page-students .dashboard-main {
     max-width: min(520px, 90vw);
     width: 100%;
     height: auto;
-    margin: 5.5rem auto 2rem;
+    margin: 5.5rem auto 2.75rem;
     border-radius: 0.5rem;
     background: transparent;
     /* تنزيل بسيط لجعل الأشخاص أقرب لمنتصف مساحة العرض */
@@ -381,6 +385,127 @@ body.page-students .dashboard-main {
     width: 4.5rem;
     height: auto;
     display: block;
+}
+.dashboard-content:has(.dashboard-home) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0 0;
+}
+.dashboard-home-footer {
+    margin-top: auto;
+    margin-bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    background: var(--color-dark-accent);
+    color: var(--color-light-accent);
+    border-top: 1px solid rgba(214, 210, 205, 0.28);
+    padding: 0.45rem 0.9rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    direction: ltr;
+    gap: 3.75rem;
+    text-align: center;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+.dashboard-main .dashboard-home-footer-credit {
+    margin: 0;
+    color: #fff;
+    font-family: var(--dashboard-ui-font);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+}
+.dashboard-home-footer-contacts {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+}
+.dashboard-home-footer-icon {
+    width: 1.45rem;
+    height: 1.45rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: none;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+.dashboard-home-footer-icon svg {
+    width: 0.82rem;
+    height: 0.82rem;
+    display: block;
+}
+.dashboard-home-footer-icon:hover,
+.dashboard-home-footer-icon:focus-visible {
+    transform: translateY(-0.08rem) scale(1.08);
+    box-shadow: none;
+    outline: none;
+}
+.dashboard-home-footer-icon-whatsapp {
+    background: #25D366;
+}
+.dashboard-home-footer-icon-telegram {
+    background: #229ED9;
+}
+.dashboard-home-footer-icon-viber {
+    background: #7360F2;
+}
+.dashboard-home-footer-icon-email {
+    width: 1.3rem;
+    height: 1.3rem;
+    background: var(--color-light-accent);
+    color: var(--color-dark-accent);
+    box-shadow: none;
+    flex-shrink: 0;
+}
+.dashboard-home-footer-icon-email svg {
+    width: 0.72rem;
+    height: 0.72rem;
+}
+.dashboard-home-footer-phone,
+.dashboard-home-footer-email {
+    color: #fff;
+    text-decoration: none;
+    font-family: var(--dashboard-ui-font);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.dashboard-home-footer-phone:hover,
+.dashboard-home-footer-email:hover,
+.dashboard-home-footer-phone:focus-visible,
+.dashboard-home-footer-email:focus-visible {
+    color: var(--color-secondary);
+    outline: none;
+}
+.dashboard-home-footer-email {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+@media (max-width: 768px) {
+    .dashboard-home-footer {
+        padding: 0.5rem 0.7rem;
+        gap: 1.75rem;
+    }
+    .dashboard-main .dashboard-home-footer-credit,
+    .dashboard-home-footer-phone,
+    .dashboard-home-footer-email {
+        font-size: 0.82rem;
+    }
 }
 
 /* ========== صفحة الطلاب ========== */

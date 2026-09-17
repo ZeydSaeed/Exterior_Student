@@ -30,6 +30,23 @@ final class ListStudentsQueryHandler
         );
     }
 
+    /**
+     * قوائم الفلترة فقط، بدون جلب صفحة الطلاب.
+     *
+     * @return array{
+     *   academicYears:\Illuminate\Support\Collection,
+     *   branches:\Illuminate\Support\Collection,
+     *   majors:\Illuminate\Support\Collection,
+     *   genders:\Illuminate\Support\Collection,
+     *   resultOptions:\Illuminate\Support\Collection,
+     *   roundOptions:\Illuminate\Support\Collection
+     * }
+     */
+    public function filterLists(): array
+    {
+        return $this->repository->getFilterLists();
+    }
+
     private function buildHighlightPattern(string $searchTerm): ?string
     {
         $searchTerm = trim($searchTerm);
@@ -53,6 +70,7 @@ final class ListStudentsQueryHandler
                 $pat .= preg_quote($c, '/');
             }
         }
-        return $pat !== '' ? '/' . $pat . '/u' : null;
+
+        return $pat !== '' ? '/'.$pat.'/u' : null;
     }
 }

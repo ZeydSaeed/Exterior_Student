@@ -4,7 +4,6 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Attestation\AttestationCommandRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * كتابة التأييدات في جدول certificate (CQRS — Command).
@@ -82,7 +81,7 @@ final class MySQLAttestationCommandRepository implements AttestationCommandRepos
         ?string $rightTitle = null,
         ?string $leftTitle = null,
     ): void {
-        if (! Schema::hasTable('certificate_signers')) {
+        if (! CachedSchema::hasTable('certificate_signers')) {
             return;
         }
 

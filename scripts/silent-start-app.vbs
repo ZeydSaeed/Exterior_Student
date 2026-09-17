@@ -190,10 +190,73 @@ Function SiteReachable(url)
   On Error GoTo 0
 End Function
 
+Sub OpenChromeApp()
+  Dim createdProfile
+  chromeExe = ResolveChromeExe()
+  If chromeExe = "" Then
+    sh.Popup "لم يتم العثور على Google Chrome. ثبّت Chrome ثم أعد المحاولة.", 8, "نظام إدارة الطلبة", 48
+    WScript.Quit 1
+  End If
+
+  appProfile = sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\ExteriorStudent\ChromeApp"
+  createdProfile = False
+  If Not fso.FolderExists(appProfile) Then
+    On Error Resume Next
+    fso.CreateFolder sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\ExteriorStudent"
+    fso.CreateFolder appProfile
+    On Error GoTo 0
+    createdProfile = True
+  End If
+
+  If createdProfile Then
+    EnsureChromeAskWhereToSave appProfile
+  End If
+
+  icoPath = scriptsDir & "\students-app.ico"
+  lnkPath = appProfile & "\ExteriorStudent.lnk"
+  On Error Resume Next
+  Set lnk = sh.CreateShortcut(lnkPath)
+  lnk.TargetPath = chromeExe
+  lnk.Arguments = "--user-data-dir=""" & appProfile & """ --profile-directory=Default --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+  lnk.WorkingDirectory = scriptsDir
+  If fso.FileExists(icoPath) Then
+    lnk.IconLocation = icoPath & ",0"
+  End If
+  lnk.Save
+  On Error GoTo 0
+
+  If fso.FileExists(lnkPath) Then
+    sh.Run """" & lnkPath & """", 1, False
+  Else
+    cmd = """" & chromeExe & """ --user-data-dir=""" & appProfile & """ --profile-directory=Default"
+    cmd = cmd & " --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+    sh.Run cmd, 1, False
+  End If
+End Sub
+
+Sub WarnIfLanIpMissing(wasPresent)
+  If wasPresent Then Exit Sub
+  If IpAddressExists(SERVER_IP) Then Exit Sub
+  sh.Popup "الموقع يعمل محلياً، لكن عنوان السيرفر " & SERVER_IP & " غير مفعّل." & vbCrLf & vbCrLf & _
+    "لابتوبات العملاء لن تتصل حتى:" & vbCrLf & _
+    "1) تشغّل silent-start-app.vbs أو configure-server-herd-lan.bat كمسؤول" & vbCrLf & _
+    "2) يكون كابل السويج موصولاً بـ Ethernet على السيرفر", 12, "نظام إدارة الطلبة", 64
+End Sub
+
 '---------------- main ----------------
+' Keep LAN nginx config and server IP intact. Never restart nginx while the site is already serving clients.
+EnsureLanConfigEnabled
 EnsureServerLanIp
 lanIpPresent = IpAddressExists(SERVER_IP)
-EnsureLanConfigEnabled
+
+If ProcessExists("mysqld.exe") Then
+  If SiteReachable(appUrl) Then
+    OpenChromeApp
+    Set sh = Nothing
+    Set fso = Nothing
+    WScript.Quit 0
+  End If
+End If
 
 ' MySQL (XAMPP) — do not start Apache
 If Not ProcessExists("mysqld.exe") Then
@@ -208,9 +271,25 @@ If ProcessExists("httpd.exe") Then
   WScript.Sleep 1000
 End If
 
+If SiteReachable(appUrl) Then
+  WarnIfLanIpMissing lanIpPresent
+  OpenChromeApp
+  Set sh = Nothing
+  Set fso = Nothing
+  WScript.Quit 0
+End If
+
 If fso.FileExists(herdBat) Then
   RunHidden "cmd /c call """ & herdBat & """ start -q -n"
   WScript.Sleep 2500
+End If
+
+If SiteReachable(appUrl) Then
+  WarnIfLanIpMissing lanIpPresent
+  OpenChromeApp
+  Set sh = Nothing
+  Set fso = Nothing
+  WScript.Quit 0
 End If
 
 EnsureFirewallHttp
@@ -237,51 +316,8 @@ If Not siteOk Then
   WScript.Quit 1
 End If
 
-If Not lanIpPresent And Not IpAddressExists(SERVER_IP) Then
-  sh.Popup "الموقع يعمل محلياً، لكن عنوان السيرفر " & SERVER_IP & " غير مفعّل." & vbCrLf & vbCrLf & _
-    "لابتوبات العملاء لن تتصل حتى:" & vbCrLf & _
-    "1) تشغّل silent-start-app.vbs أو configure-server-herd-lan.bat كمسؤول" & vbCrLf & _
-    "2) يكون كابل السويج موصولاً بـ Ethernet على السيرفر", 12, "نظام إدارة الطلبة", 64
-End If
-
-chromeExe = ResolveChromeExe()
-If chromeExe = "" Then
-  sh.Popup "لم يتم العثور على Google Chrome. ثبّت Chrome ثم أعد المحاولة.", 8, "نظام إدارة الطلبة", 48
-  WScript.Quit 1
-End If
-
-appProfile = sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\ExteriorStudent\ChromeApp"
-If Not fso.FolderExists(appProfile) Then
-  On Error Resume Next
-  fso.CreateFolder sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\ExteriorStudent"
-  fso.CreateFolder appProfile
-  On Error GoTo 0
-End If
-
-CloseChromeAppProfile appProfile
-ClearChromeFaviconCache appProfile
-EnsureChromeAskWhereToSave appProfile
-
-icoPath = scriptsDir & "\students-app.ico"
-lnkPath = appProfile & "\ExteriorStudent.lnk"
-On Error Resume Next
-Set lnk = sh.CreateShortcut(lnkPath)
-lnk.TargetPath = chromeExe
-lnk.Arguments = "--user-data-dir=""" & appProfile & """ --profile-directory=Default --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
-lnk.WorkingDirectory = scriptsDir
-If fso.FileExists(icoPath) Then
-  lnk.IconLocation = icoPath & ",0"
-End If
-lnk.Save
-On Error GoTo 0
-
-If fso.FileExists(lnkPath) Then
-  sh.Run """" & lnkPath & """", 1, False
-Else
-  cmd = """" & chromeExe & """ --user-data-dir=""" & appProfile & """ --profile-directory=Default"
-  cmd = cmd & " --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
-  sh.Run cmd, 1, False
-End If
+WarnIfLanIpMissing lanIpPresent
+OpenChromeApp
 
 Set sh = Nothing
 Set fso = Nothing
