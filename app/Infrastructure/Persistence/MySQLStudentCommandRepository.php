@@ -367,7 +367,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             $nextId = (int) DB::table('main_table')->max('id') + 1;
             $row['id'] = $nextId;
             DB::table('main_table')->insert($row);
-            Cache::forget('student_filters.lists');
+            $this->forgetStudentListCaches();
 
             return $nextId;
         });
@@ -474,7 +474,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 }
             }
 
-            Cache::forget('student_filters.lists');
+            $this->forgetStudentListCaches();
 
             return $studentId;
         });
@@ -539,7 +539,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
             }
             $affected = DB::table('main_table')->where('id', $id)->update($data);
             if ($affected > 0) {
-                Cache::forget('student_filters.lists');
+                $this->forgetStudentListCaches();
             }
 
             return $affected > 0;
@@ -696,7 +696,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
                 $any = true;
             }
             if ($any) {
-                Cache::forget('student_filters.lists');
+                $this->forgetStudentListCaches();
             }
 
             return $any;
@@ -785,7 +785,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return DB::transaction(function () use ($id, $table): bool {
             $affected = DB::table($table)->where('id', $id)->delete();
             if ($affected > 0) {
-                Cache::forget('student_filters.lists');
+                $this->forgetStudentListCaches();
             }
 
             return $affected > 0;
@@ -802,7 +802,7 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         return (int) DB::transaction(function () use ($ids, $table): int {
             $affected = DB::table($table)->whereIn('id', $ids)->delete();
             if ($affected > 0) {
-                Cache::forget('student_filters.lists');
+                $this->forgetStudentListCaches();
             }
 
             return $affected;
@@ -848,5 +848,11 @@ final class MySQLStudentCommandRepository implements StudentCommandRepository
         }
 
         return (string) $value;
+    }
+
+    private function forgetStudentListCaches(): void
+    {
+        Cache::forget('student_filters.lists');
+        StudentListQueryCache::bump();
     }
 }

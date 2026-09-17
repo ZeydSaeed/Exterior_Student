@@ -27,12 +27,26 @@ it('places the database import toolbar control next to backup', function () {
         ->and($script)->toContain('database-backup-trigger')
         ->and($restoreScript)->toContain('pick_path')
         ->and($restoreScript)->toContain('database-restore-trigger')
+        ->and((string) file_get_contents(public_path('js/app-error-dialog.js')))
+        ->toContain(', function () {')
+        ->and((string) file_get_contents(app_path('Infrastructure/Persistence/MySQLDatabaseBackupRepository.php')))
+        ->toContain('mysqlBinary')
+        ->and((string) file_get_contents(app_path('Infrastructure/Backup/WindowsBackupSavePathPicker.php')))
+        ->toContain('webview')
         ->and((string) file_get_contents(base_path('scripts/webview-host/BackupPathPicker.cs')))->toContain('"open"')
         ->and(file_exists(base_path('scripts/app-host/BackupPathPicker.exe')))->toBeTrue()
         ->and((string) file_get_contents(base_path('scripts/webview-host/BackupPathPicker.cs')))->toContain('OpenFileDialog')
         ->and($backupPos)->not->toBeFalse()
         ->and($restorePos)->not->toBeFalse()
         ->and($restorePos)->toBeGreaterThan($backupPos);
+
+    $backupBlock = substr($html, (int) strpos($html, 'id="database-backup-trigger"'), 700);
+    $restoreBlock = substr($html, (int) strpos($html, 'id="database-restore-trigger"'), 700);
+
+    expect($backupBlock)->toContain('polyline points="17 8 12 3 7 8"')
+        ->and($backupBlock)->toContain('<line x1="12" y1="3" x2="12" y2="15"/>')
+        ->and($restoreBlock)->toContain('polyline points="7 10 12 15 17 10"')
+        ->and($restoreBlock)->toContain('<path d="M12 15V3"/>');
 });
 
 it('restores an encrypted backup from a windows-chosen path without uploading', function () {

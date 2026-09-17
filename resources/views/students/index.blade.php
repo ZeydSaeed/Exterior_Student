@@ -54,4 +54,5 @@
 
 @section('scripts')
     <script src="{{ url('js/students/index.js') }}?v={{ file_exists(public_path('js/students/index.js')) ? filemtime(public_path('js/students/index.js')) : time() }}"></script>
+    <script src="{{ url('js/students/list-fast-filter.js') }}?v={{ file_exists(public_path('js/students/list-fast-filter.js')) ? filemtime(public_path('js/students/list-fast-filter.js')) : time() }}"></script>
 @endsection

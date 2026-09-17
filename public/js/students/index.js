@@ -30,7 +30,6 @@
     var btnEdit = document.getElementById('grades-btn-edit');
     var btnSave = document.getElementById('grades-btn-save');
     var btnCancel = document.getElementById('grades-btn-cancel');
-    var openBtns = document.querySelectorAll('.btn-grades-open');
     var closeBtn = document.querySelector('[data-grades-modal-close]');
     var currentData = null;
     var originalData = null;
@@ -418,25 +417,30 @@
             });
     }
 
-    openBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-student-id');
-            openGradesFor(id, this, false);
-        });
-    });
+    document.addEventListener('click', function (e) {
+        var gradesBtn = e.target && e.target.closest ? e.target.closest('.btn-grades-open') : null;
+        if (gradesBtn) {
+            var gradesId = gradesBtn.getAttribute('data-student-id');
+            openGradesFor(gradesId, gradesBtn, false);
+            return;
+        }
 
-    document.querySelectorAll('.btn-edit-row').forEach(function (editBtn) {
-        editBtn.addEventListener('click', function () {
-            if (!window.STUDENTS_CAN_EDIT_GRADES) {
-                return;
-            }
-            var row = this.closest('tr');
-            if (!row) return;
-            var gradesBtn = row.querySelector('.btn-grades-open');
-            if (!gradesBtn) return;
-            var id = gradesBtn.getAttribute('data-student-id');
-            openGradesFor(id, gradesBtn, true);
-        });
+        var editBtn = e.target && e.target.closest ? e.target.closest('.btn-edit-row') : null;
+        if (!editBtn) {
+            return;
+        }
+        if (!window.STUDENTS_CAN_EDIT_GRADES) {
+            return;
+        }
+        var row = editBtn.closest('tr');
+        if (!row) {
+            return;
+        }
+        var rowGradesBtn = row.querySelector('.btn-grades-open');
+        if (!rowGradesBtn) {
+            return;
+        }
+        openGradesFor(rowGradesBtn.getAttribute('data-student-id'), rowGradesBtn, true);
     });
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);

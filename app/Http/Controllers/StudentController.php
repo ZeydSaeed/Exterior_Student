@@ -13,20 +13,17 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentGradesRequest;
 use App\Support\StudentListFiltersSession;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Pagination\Paginator;
 use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(ListStudentsQueryHandler $handler): View|RedirectResponse
+    public function index(ListStudentsQueryHandler $handler): View
     {
         $request = request();
         $merged = StudentListFiltersSession::mergeRequestWithSession($request);
-
-        if (StudentListFiltersSession::shouldRedirectToNormalize($request, $merged)) {
-            StudentListFiltersSession::persist($request, $merged);
-
-            return redirect()->to(StudentListFiltersSession::indexUrl($request, $merged));
-        }
+        $page = max(1, (int) ($merged['page'] ?? 1));
+        Paginator::currentPageResolver(static fn (): int => $page);
 
         $normalized = StudentListFiltersSession::normalizeForQuery($merged);
         $query = ListStudentsQuery::fromArray(array_merge(
@@ -38,10 +35,16 @@ class StudentController extends Controller
 
         StudentListFiltersSession::persist($request, $merged);
 
-        return view('students.index', array_merge($response->toArray(), [
+        $viewData = array_merge($response->toArray(), [
             'flash_error' => session('error'),
             'flash_status' => session('status'),
-        ]));
+        ]);
+
+        if ($request->headers->get('X-Students-List-Fragment') === '1') {
+            return view('students.partials.list-fragment', $viewData);
+        }
+
+        return view('students.index', $viewData);
     }
 
     public function create(GetCreateStudentFormQueryHandler $formHandler): View

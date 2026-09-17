@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
@@ -81,8 +82,10 @@ final class DatabaseBackupController extends Controller
         $deleteAfter = false;
 
         try {
+            ignore_user_abort(true);
+            set_time_limit(0);
+
             if ($request->boolean('pick_path')) {
-                set_time_limit(300);
                 $chosenPath = $pathPicker->pick('backup.esbak', true);
                 if ($chosenPath === null) {
                     return response()->json([
@@ -115,6 +118,9 @@ final class DatabaseBackupController extends Controller
                 ->with('status', 'تم استيراد قاعدة البيانات بنجاح.');
         } catch (Throwable $e) {
             $msg = 'تعذر استيراد قاعدة البيانات: '.$e->getMessage();
+            Log::error($msg, [
+                'exception' => $e::class,
+            ]);
 
             if ($request->expectsJson() || $request->ajax() || $request->boolean('pick_path')) {
                 return response()->json([

@@ -10,8 +10,20 @@ final class WindowsBackupSavePathPicker implements BackupSavePathPicker
 {
     public function pick(string $suggestedFileName, bool $existingFile = false): ?string
     {
-        $exe = base_path('scripts/app-host/BackupPathPicker.exe');
-        if (! is_file($exe)) {
+        $candidates = [
+            base_path('scripts/app-host/BackupPathPicker.exe'),
+            dirname(base_path()).DIRECTORY_SEPARATOR.'webview'.DIRECTORY_SEPARATOR.'BackupPathPicker.exe',
+        ];
+
+        $exe = null;
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                $exe = $candidate;
+                break;
+            }
+        }
+
+        if ($exe === null) {
             throw new RuntimeException('تعذر فتح نافذة اختيار الملف.');
         }
 

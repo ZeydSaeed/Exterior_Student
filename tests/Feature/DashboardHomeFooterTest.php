@@ -5,12 +5,14 @@ it('shows the designer footer on the dashboard home page', function () {
     $css = (string) file_get_contents(public_path('css/dashboard.css'));
 
     $creditPos = strpos($home, 'dashboard-home-footer-credit');
-    $phonePos = strpos($home, 'dashboard-home-footer-phone');
     $whatsappPos = strpos($home, 'dashboard-home-footer-icon-whatsapp');
+    $telegramPos = strpos($home, 'dashboard-home-footer-icon-telegram');
+    $viberPos = strpos($home, 'dashboard-home-footer-icon-viber');
+    $phonePos = strpos($home, 'dashboard-home-footer-phone');
     $emailPos = strpos($home, 'dashboard-home-footer-email');
 
     expect($home)->toContain('dashboard-home-footer')
-        ->and($home)->toContain('Design By Dr.Zeyd Saeed')
+        ->and($home)->toContain('Designed &amp; Developed by Dr. Zeyd Saeed')
         ->and($home)->toContain('07805047871')
         ->and($home)->toContain('zeydsaeed@gmail.com')
         ->and($home)->toContain('https://wa.me/9647805047871')
@@ -22,9 +24,11 @@ it('shows the designer footer on the dashboard home page', function () {
         ->and($home)->toContain('dashboard-home-footer-icon-viber')
         ->and($home)->toContain('dashboard-home-footer-icon-email')
         ->and($creditPos)->not->toBeFalse()
-        ->and($phonePos)->toBeGreaterThan($creditPos)
-        ->and($whatsappPos)->toBeGreaterThan($phonePos)
-        ->and($emailPos)->toBeGreaterThan($whatsappPos)
+        ->and($whatsappPos)->toBeGreaterThan($creditPos)
+        ->and($telegramPos)->toBeGreaterThan($whatsappPos)
+        ->and($viberPos)->toBeGreaterThan($telegramPos)
+        ->and($phonePos)->toBeGreaterThan($viberPos)
+        ->and($emailPos)->toBeGreaterThan($phonePos)
         ->and($css)->toContain('.dashboard-home-footer')
         ->and($css)->toContain('background: var(--color-dark-accent)')
         ->and($css)->toContain('flex-direction: row')
@@ -43,7 +47,7 @@ it('shows the designer footer on the dashboard home page', function () {
 
     $this->get(route('dashboard'))
         ->assertSuccessful()
-        ->assertSee('Design By Dr.Zeyd Saeed')
+        ->assertSee('Designed & Developed by Dr. Zeyd Saeed')
         ->assertSee('07805047871')
         ->assertSee('zeydsaeed@gmail.com')
         ->assertSee('wa.me/9647805047871', false)

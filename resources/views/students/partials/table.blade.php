@@ -7,7 +7,7 @@
     <input type="hidden" name="round" value="">
     <div class="students-search students-search-full">
         <input type="text" name="search" id="students-search-input" value="{{ request('search') }}" placeholder="البحث في جميع الطلبة (الاسم أو الرقم الامتحاني) ثم اضغط Enter ..." autocomplete="off" />
-        <button type="button" class="btn-primary btn-secondary students-search-clear-btn" aria-label="إلغاء البحث" title="إلغاء البحث" onclick="var i=document.getElementById('students-search-input'); if(i){i.value='';} var f=document.getElementById('students-search-form'); if(f){f.submit();}">إلغاء البحث</button>
+        <button type="button" class="btn-primary btn-secondary students-search-clear-btn" aria-label="إلغاء البحث" title="إلغاء البحث" onclick="var i=document.getElementById('students-search-input'); if(i){i.value='';} var f=document.getElementById('students-search-form'); if(f){ if (typeof f.requestSubmit === 'function') { f.requestSubmit(); } else { f.submit(); } }">إلغاء البحث</button>
     </div>
 </form>
 <div class="students-table-wrapper">

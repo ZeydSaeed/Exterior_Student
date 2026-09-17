@@ -57,15 +57,23 @@ final class AesGcmBackupFileCipher implements BackupFileCipher
         $iv = substr($payload, 5, self::IV_LENGTH);
         $tag = substr($payload, 5 + self::IV_LENGTH, self::TAG_LENGTH);
         $ciphertext = substr($payload, self::HEADER_LENGTH);
-        $plaintext = openssl_decrypt(
-            $ciphertext,
-            'aes-256-gcm',
-            $this->rawKey(),
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag,
-            self::AAD
-        );
+        $plaintext = false;
+
+        foreach ($this->candidateRawKeys() as $rawKey) {
+            $plaintext = openssl_decrypt(
+                $ciphertext,
+                'aes-256-gcm',
+                $rawKey,
+                OPENSSL_RAW_DATA,
+                $iv,
+                $tag,
+                self::AAD
+            );
+
+            if ($plaintext !== false) {
+                break;
+            }
+        }
 
         if ($plaintext === false) {
             throw new RuntimeException('تعذر فك تشفير الملف. قد يكون معدّلاً أو لا ينتمي لهذا النظام.');
@@ -120,7 +128,38 @@ final class AesGcmBackupFileCipher implements BackupFileCipher
 
     private function rawKey(): string
     {
-        $key = (string) config('backup.encryption_key');
+        $keys = $this->candidateRawKeys();
+
+        return $keys[0];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function candidateRawKeys(): array
+    {
+        $rawKeys = [];
+        foreach ([
+            (string) config('backup.encryption_key'),
+            (string) config('app.key'),
+        ] as $key) {
+            $normalized = $this->normalizeKeyMaterial($key);
+            if ($normalized === null) {
+                continue;
+            }
+
+            $rawKeys[$normalized] = $normalized;
+        }
+
+        if ($rawKeys === []) {
+            throw new RuntimeException('مفتاح تشفير النسخ الاحتياطي غير مهيأ.');
+        }
+
+        return array_values($rawKeys);
+    }
+
+    private function normalizeKeyMaterial(string $key): ?string
+    {
         if (str_starts_with($key, 'base64:')) {
             $decoded = base64_decode(substr($key, 7), true);
             if (is_string($decoded) && $decoded !== '') {
@@ -129,7 +168,7 @@ final class AesGcmBackupFileCipher implements BackupFileCipher
         }
 
         if (trim($key) === '') {
-            throw new RuntimeException('مفتاح تشفير النسخ الاحتياطي غير مهيأ.');
+            return null;
         }
 
         return hash('sha256', $key, true);

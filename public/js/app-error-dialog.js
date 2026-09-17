@@ -157,8 +157,7 @@
                             message: (payload && payload.message) || GENERIC.fetch,
                         });
                         return Promise.reject(response);
-                    })
-                    .catch(function () {
+                    }, function () {
                         show({ type: 'error', message: GENERIC.fetch });
                         return Promise.reject(response);
                     });

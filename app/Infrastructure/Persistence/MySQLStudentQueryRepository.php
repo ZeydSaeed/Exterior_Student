@@ -10,6 +10,8 @@ use App\Domain\Student\StudentQueryRepository;
 use App\Support\AcademicYearOptions;
 use App\Support\GenderFilterVariants;
 use App\Support\ResultFilterVariants;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -83,11 +85,17 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     /**
      * عدّادات الشارات لصفحة القائمة فقط (20 صفاً) بدل استعلامات مرتبطة على كامل الجدول.
      *
-     * @param  \Illuminate\Contracts\Pagination\LengthAwarePaginator  $students
+     * @param  \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection|list<object>  $students
      */
     private function hydrateListProfileCounts($students): void
     {
-        $items = $students->items();
+        if (is_array($students)) {
+            $items = $students;
+        } elseif ($students instanceof LengthAwarePaginator) {
+            $items = $students->items();
+        } else {
+            $items = $students->all();
+        }
         if ($items === []) {
             return;
         }
@@ -324,8 +332,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         $this->applyListFilters($query, $filters);
         $this->applyExamNumberOrder($query, false);
 
-        $students = $query->paginate(self::PER_PAGE)->withQueryString();
-        $this->hydrateListProfileCounts($students);
+        $students = $this->paginateFilteredList($query, $filters);
 
         $filterLists = $this->getFilterListsFromCache();
 
@@ -364,8 +371,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         $this->applyListFiltersNormalized($query, $filters);
         $this->applyExamNumberOrder($query, true);
 
-        $students = $query->paginate(self::PER_PAGE)->withQueryString();
-        $this->hydrateListProfileCounts($students);
+        $students = $this->paginateFilteredList($query, $filters);
         $filterLists = $this->getFilterListsFromCache();
 
         return new StudentListProjection(
@@ -379,14 +385,71 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         );
     }
 
+    /**
+     * ترقيم الصفحات بدون COUNT(*) مكرر: العدد يُخزَّن حسب الفلاتر، ثم تُجلب 20 صفاً فقط.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array<string, mixed>  $filters
+     */
+    private function paginateFilteredList($query, array $filters): LengthAwarePaginator
+    {
+        $page = max(1, (int) Paginator::resolveCurrentPage());
+        $total = StudentListQueryCache::rememberCount(
+            $filters,
+            fn (): int => $this->countWithFilters($filters)
+        );
+        $rows = StudentListQueryCache::rememberPage(
+            $filters,
+            $page,
+            function () use ($query, $page): array {
+                $items = (clone $query)->forPage($page, self::PER_PAGE)->get();
+                $this->hydrateListProfileCounts($items);
+                $out = [];
+                foreach ($items as $row) {
+                    $out[] = (array) $row;
+                }
+
+                return $out;
+            }
+        );
+        $items = [];
+        foreach ($rows as $row) {
+            $items[] = (object) $row;
+        }
+
+        return (new LengthAwarePaginator(
+            $items,
+            $total,
+            self::PER_PAGE,
+            $page,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        ))->withQueryString();
+    }
+
     /** @param \Illuminate\Database\Query\Builder $query */
     private function applyListFiltersNormalized($query, array $filters): void
     {
+        $branchId = null;
         if (! empty($filters['branch'])) {
-            $query->where('b.name_ar', $filters['branch']);
+            $branchId = $this->catalogId('branches', 'name_ar', (string) $filters['branch']);
+            if ($branchId === null) {
+                $query->whereRaw('0 = 1');
+
+                return;
+            }
+            $query->where('a.branch_id', $branchId);
         }
         if (! empty($filters['major'])) {
-            $query->where('m.name_ar', $filters['major']);
+            $majorId = $this->lookupMajorId((string) $filters['major'], $branchId);
+            if ($majorId === null) {
+                $query->whereRaw('0 = 1');
+
+                return;
+            }
+            $query->where('a.major_id', $majorId);
         }
         if (! empty($filters['gender'])) {
             $genderValues = GenderFilterVariants::expand((string) $filters['gender']);
@@ -397,26 +460,156 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
             }
         }
         if (! empty($filters['year'])) {
-            $query->where('y.year_label', $filters['year']);
+            $yearId = $this->catalogId('academic_years', 'year_label', (string) $filters['year']);
+            if ($yearId === null) {
+                $query->whereRaw('0 = 1');
+
+                return;
+            }
+            $query->where('a.academic_year_id', $yearId);
         }
         if (! empty($filters['round'])) {
-            $query->where('a.round', $filters['round']);
+            $roundId = CachedSchema::hasTable('round_options') && CachedSchema::hasColumn('student_academic', 'round_id')
+                ? $this->catalogId('round_options', 'name_ar', (string) $filters['round'])
+                : null;
+            if ($roundId !== null) {
+                $query->where('a.round_id', $roundId);
+            } else {
+                $query->where('a.round', $filters['round']);
+            }
         }
         if (! empty($filters['result'])) {
             $resultValues = ResultFilterVariants::expand((string) $filters['result']);
-            if (count($resultValues) === 1) {
-                $query->where('rt.name_ar', $resultValues[0]);
-            } else {
-                $query->whereIn('rt.name_ar', $resultValues);
+            $resultIds = $this->catalogIds('result_types', 'name_ar', $resultValues);
+            if ($resultIds === []) {
+                $query->whereRaw('0 = 1');
+
+                return;
             }
+            $query->whereIn('a.result_type_id', $resultIds);
         }
         if (! empty($filters['search'])) {
-            $pattern = '%'.$filters['search'].'%';
-            $query->where(function ($q) use ($pattern): void {
-                $q->where('s.exam_number', 'like', $pattern)
-                    ->orWhereRaw("CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) LIKE ?", [$pattern]);
-            });
+            $term = trim((string) $filters['search']);
+            if ($term !== '' && preg_match('/^\d+$/', $term) === 1) {
+                $query->where('s.exam_number', 'like', $term.'%');
+            } else {
+                $pattern = '%'.$term.'%';
+                $query->where(function ($q) use ($pattern): void {
+                    $q->where('s.exam_number', 'like', $pattern)
+                        ->orWhereRaw("CONCAT_WS(' ', p.first_name, p.father_name, p.grandfather_name, p.surname) LIKE ?", [$pattern]);
+                });
+            }
         }
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function catalogMap(string $table, string $nameColumn): array
+    {
+        if (! CachedSchema::hasTable($table) || ! CachedSchema::hasColumn($table, $nameColumn) || ! CachedSchema::hasColumn($table, 'id')) {
+            return [];
+        }
+
+        /** @var array<string, int> $map */
+        $map = Cache::remember(
+            'student_list.catalog.'.$table.'.'.$nameColumn,
+            self::CACHE_TTL_SECONDS,
+            function () use ($table, $nameColumn): array {
+                $out = [];
+                foreach (DB::table($table)->select('id', $nameColumn)->get() as $row) {
+                    $label = trim((string) ($row->{$nameColumn} ?? ''));
+                    if ($label !== '') {
+                        $out[$label] = (int) $row->id;
+                    }
+                }
+
+                return $out;
+            }
+        );
+
+        return $map;
+    }
+
+    private function catalogId(string $table, string $nameColumn, string $name): ?int
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+        $map = $this->catalogMap($table, $nameColumn);
+
+        return isset($map[$name]) ? (int) $map[$name] : null;
+    }
+
+    /**
+     * @param  list<string>  $names
+     * @return list<int>
+     */
+    private function catalogIds(string $table, string $nameColumn, array $names): array
+    {
+        $ids = [];
+        foreach ($names as $name) {
+            $id = $this->catalogId($table, $nameColumn, (string) $name);
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function lookupMajorId(string $nameAr, ?int $branchId): ?int
+    {
+        $nameAr = trim($nameAr);
+        if ($nameAr === '' || ! CachedSchema::hasTable('majors')) {
+            return null;
+        }
+
+        $maps = Cache::remember('student_list.catalog.majors.map', self::CACHE_TTL_SECONDS, function (): array {
+            $byName = [];
+            $byBranch = [];
+            foreach (DB::table('majors')->select('id', 'name_ar', 'branch_id')->get() as $row) {
+                $label = trim((string) ($row->name_ar ?? ''));
+                if ($label === '') {
+                    continue;
+                }
+                $id = (int) $row->id;
+                $byName[$label] = $id;
+                $bid = $row->branch_id !== null ? (int) $row->branch_id : 0;
+                $byBranch[$bid][$label] = $id;
+            }
+
+            return ['byName' => $byName, 'byBranch' => $byBranch];
+        });
+
+        if ($branchId !== null && isset($maps['byBranch'][$branchId][$nameAr])) {
+            return (int) $maps['byBranch'][$branchId][$nameAr];
+        }
+
+        return isset($maps['byName'][$nameAr]) ? (int) $maps['byName'][$nameAr] : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return \Illuminate\Database\Query\Builder
+     */
+    private function newNormalizedFilterQuery(array $filters, bool $withDisplayJoins): mixed
+    {
+        $query = DB::table('students as s')
+            ->join('student_personal as p', 'p.student_id', '=', 's.id')
+            ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id');
+
+        if ($withDisplayJoins) {
+            $query->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
+                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
+                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
+                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id');
+        }
+
+        $this->applyListFiltersNormalized($query, $filters);
+
+        return $query;
     }
 
     /**
@@ -483,15 +676,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function listIdsWithFilters(array $filters): array
     {
         if ($this->useNormalizedSchema()) {
-            $query = DB::table('students as s')
-                ->join('student_personal as p', 'p.student_id', '=', 's.id')
-                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
-                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
-                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
-                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
-                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
-                ->select('s.id');
-            $this->applyListFiltersNormalized($query, $filters);
+            $query = $this->newNormalizedFilterQuery($filters, false)->select('s.id');
             $this->applyExamNumberOrder($query, true);
 
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();
@@ -506,16 +691,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function countWithFilters(array $filters): int
     {
         if ($this->useNormalizedSchema()) {
-            $query = DB::table('students as s')
-                ->join('student_personal as p', 'p.student_id', '=', 's.id')
-                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
-                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
-                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
-                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
-                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id');
-            $this->applyListFiltersNormalized($query, $filters);
-
-            return (int) $query->count('s.id');
+            return (int) $this->newNormalizedFilterQuery($filters, false)->count('s.id');
         }
 
         $query = DB::table('main_table');
@@ -530,15 +706,8 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
         $female = 0;
 
         if ($this->useNormalizedSchema()) {
-            $query = DB::table('students as s')
-                ->join('student_personal as p', 'p.student_id', '=', 's.id')
-                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
-                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
-                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
-                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
-                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
-                ->selectRaw('TRIM(p.gender) AS gender_label, COUNT(*) AS total');
-            $this->applyListFiltersNormalized($query, $filters);
+            $query = $this->newNormalizedFilterQuery($filters, false);
+            $query->select(DB::raw('TRIM(p.gender) AS gender_label'), DB::raw('COUNT(*) AS total'));
             $rows = $query->groupByRaw('TRIM(p.gender)')->get();
         } else {
             $query = DB::table('main_table')
@@ -568,16 +737,12 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
     public function listFailedIdsWithFilters(array $filters): array
     {
         if ($this->useNormalizedSchema()) {
-            $query = DB::table('students as s')
-                ->join('student_personal as p', 'p.student_id', '=', 's.id')
-                ->leftJoin('student_academic as a', 'a.student_id', '=', 's.id')
-                ->leftJoin('branches as b', 'b.id', '=', 'a.branch_id')
-                ->leftJoin('majors as m', 'm.id', '=', 'a.major_id')
-                ->leftJoin('academic_years as y', 'y.id', '=', 'a.academic_year_id')
-                ->leftJoin('result_types as rt', 'rt.id', '=', 'a.result_type_id')
-                ->select('s.id')
-                ->whereIn('rt.name_ar', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
-            $this->applyListFiltersNormalized($query, $filters);
+            $failIds = $this->catalogIds('result_types', 'name_ar', ['راسب', 'راسبة', 'معيد', 'معيده', 'معيدة']);
+            if ($failIds === []) {
+                return [];
+            }
+            $query = $this->newNormalizedFilterQuery($filters, false)->select('s.id');
+            $query->whereIn('a.result_type_id', $failIds);
             $this->applyExamNumberOrder($query, true);
 
             return $query->pluck('id')->map(static fn ($id) => (int) $id)->values()->all();

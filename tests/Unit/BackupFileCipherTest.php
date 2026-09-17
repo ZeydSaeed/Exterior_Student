@@ -30,6 +30,56 @@ it('encrypts a sql dump so student data is not readable as text', function () {
     @unlink($restored);
 });
 
+it('decrypts a backup when the installed app key differs from the original encryption key', function () {
+    $plain = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_plain_', true).'.sql';
+    $encrypted = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_enc_', true).'.esbak';
+    $restored = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_restored_', true).'.sql';
+    $sql = "-- MariaDB dump\nCREATE TABLE `students` (`id` int);\nINSERT INTO `students` VALUES (1);\n";
+    file_put_contents($plain, $sql);
+
+    config(['backup.encryption_key' => 'original-backup-secret']);
+    config(['app.key' => 'original-backup-secret']);
+
+    $cipher = new AesGcmBackupFileCipher;
+    $cipher->encryptFile($plain, $encrypted);
+
+    config(['backup.encryption_key' => 'original-backup-secret']);
+    config(['app.key' => 'installed-machine-app-key']);
+
+    $cipher->decryptFile($encrypted, $restored);
+
+    expect((string) file_get_contents($restored))->toBe($sql);
+
+    @unlink($plain);
+    @unlink($encrypted);
+    @unlink($restored);
+});
+
+it('decrypts a legacy backup that was encrypted with the application key', function () {
+    $plain = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_plain_', true).'.sql';
+    $encrypted = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_enc_', true).'.esbak';
+    $restored = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_restored_', true).'.sql';
+    $sql = "-- MariaDB dump\nCREATE TABLE `students` (`id` int);\n";
+    file_put_contents($plain, $sql);
+
+    config(['backup.encryption_key' => 'legacy-app-key']);
+    config(['app.key' => 'legacy-app-key']);
+
+    $cipher = new AesGcmBackupFileCipher;
+    $cipher->encryptFile($plain, $encrypted);
+
+    config(['backup.encryption_key' => 'new-shared-backup-key']);
+    config(['app.key' => 'legacy-app-key']);
+
+    $cipher->decryptFile($encrypted, $restored);
+
+    expect((string) file_get_contents($restored))->toBe($sql);
+
+    @unlink($plain);
+    @unlink($encrypted);
+    @unlink($restored);
+});
+
 it('rejects a tampered encrypted backup file', function () {
     $plain = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_plain_', true).'.sql';
     $encrypted = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('backup_enc_', true).'.esbak';

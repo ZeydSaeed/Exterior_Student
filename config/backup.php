@@ -8,6 +8,7 @@ return [
 
     /**
      * مفتاح تشفير النسخ الاحتياطي. إن تُرك فارغاً يُشتق من APP_KEY.
+     * يُفضّل تثبيته حتى تعمل ملفات .esbak على أي نسخة منصّبة من البرنامج.
      */
     'encryption_key' => env('BACKUP_ENCRYPTION_KEY', env('APP_KEY')),
 ];

@@ -39,7 +39,7 @@ final class MySQLDatabaseBackupRepository implements DatabaseBackupRepository
         $filePath = rtrim($destinationDir, '\\/').DIRECTORY_SEPARATOR.$fileName;
 
         $cmd = [
-            'mysqldump',
+            $this->mysqlBinary('mysqldump'),
             "--host={$host}",
             "--port={$port}",
             "--user={$username}",
@@ -120,12 +120,13 @@ final class MySQLDatabaseBackupRepository implements DatabaseBackupRepository
             }
 
             $cmd = [
-                'mysql',
+                $this->mysqlBinary('mysql'),
                 "--host={$host}",
                 "--port={$port}",
                 "--user={$username}",
                 "--default-character-set={$charset}",
                 '--binary-mode',
+                '--max_allowed_packet=256M',
                 $database,
             ];
 
@@ -178,6 +179,27 @@ final class MySQLDatabaseBackupRepository implements DatabaseBackupRepository
                 throw new RuntimeException('تعذر إنشاء مجلد النسخ الاحتياطي: '.$destinationDir);
             }
         }
+    }
+
+    private function mysqlBinary(string $name): string
+    {
+        $fileName = $name;
+        if (PHP_OS_FAMILY === 'Windows' && ! str_ends_with(strtolower($name), '.exe')) {
+            $fileName .= '.exe';
+        }
+
+        $candidates = [
+            dirname(base_path()).DIRECTORY_SEPARATOR.'mariadb'.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.$fileName,
+            base_path('mariadb'.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.$fileName),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return $name;
     }
 
     /**

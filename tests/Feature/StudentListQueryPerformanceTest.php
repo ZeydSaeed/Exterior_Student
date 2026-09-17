@@ -48,8 +48,10 @@ it('keeps dashboard fonts sizes and styles unchanged while prefetching navigatio
         ->and($layout)->toContain('fonts.bunny.net')
         ->and($layout)->toContain('css/dashboard.css')
         ->and($layout)->toContain('js/nav-prefetch.js')
+        ->and($layout)->toContain('type="speculationrules"')
         ->and($css)->toContain("--dashboard-filter-font: 'Cairo', Tahoma, sans-serif")
         ->and($css)->toContain('width: 1.75cm')
         ->and($prefetch)->toContain("link.rel = 'prefetch'")
+        ->and($prefetch)->toContain('warmupStudentsLink')
         ->and($prefetch)->not->toContain('style.');
 });

@@ -169,7 +169,12 @@
 
             function applyFilters() {
                 var q = currentParams().toString();
-                window.location = action + (q ? '?' + q : '');
+                var url = action + (q ? '?' + q : '');
+                if (window.StudentsListFastFilter && typeof window.StudentsListFastFilter.load === 'function') {
+                    window.StudentsListFastFilter.load(url);
+                    return;
+                }
+                window.location = url;
             }
 
             form.addEventListener('change', function (e) {
