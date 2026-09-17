@@ -60,7 +60,7 @@ interface StudentQueryRepository
     /**
      * تقرير الطلبة المعيدين حسب الفلاتر.
      *
-     * @param  array{branch?: string, major?: string, gender?: string, year?: string, search?: string}  $filters
+     * @param  array{branch?: string, major?: string, gender?: string, year?: string, round?: string, result?: string, search?: string}  $filters
      * @return array{
      *   groups:list<array{
      *     branch:string,
@@ -77,7 +77,7 @@ interface StudentQueryRepository
      *     count:int
      *   }>,
      *   stats:array{total_repeaters:int},
-     *   filters:array{academicYears:\Illuminate\Support\Collection, branches:\Illuminate\Support\Collection, majors:\Illuminate\Support\Collection, genders:\Illuminate\Support\Collection}
+     *   filters:array{academicYears:\Illuminate\Support\Collection, branches:\Illuminate\Support\Collection, majors:\Illuminate\Support\Collection, genders:\Illuminate\Support\Collection, roundOptions:\Illuminate\Support\Collection}
      * }
      */
     public function listRepeatersReport(array $filters): array;

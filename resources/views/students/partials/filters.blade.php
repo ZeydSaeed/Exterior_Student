@@ -33,6 +33,9 @@
 <aside class="students-filter-sidebar" aria-label="فلاتر البحث">
     <script type="application/json" id="student-branch-majors-json">@json(StudentBranchMajors::byBranch())</script>
     <form method="GET" action="{{ $students_filter_form_action ?? route('students.index') }}" id="students-filter-form" class="students-filter-form">
+        @if(request()->filled('search'))
+            <input type="hidden" name="search" value="{{ request('search') }}" id="students-filter-search-hidden">
+        @endif
         <div class="students-filter-cards">
             <div class="students-filter">
                 <div class="students-filter-card-options students-filter-clear-row">
@@ -159,6 +162,8 @@
                     var el = form.querySelector('select[name="' + name + '"]');
                     if (el) params.set(name, el.value);
                 });
+                var searchHidden = document.getElementById('students-filter-search-hidden');
+                if (searchHidden && searchHidden.value) params.set('search', searchHidden.value);
                 return params;
             }
 

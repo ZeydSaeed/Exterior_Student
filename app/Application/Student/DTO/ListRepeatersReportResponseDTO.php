@@ -16,6 +16,7 @@ final class ListRepeatersReportResponseDTO
         public readonly Collection $branches,
         public readonly Collection $majors,
         public readonly Collection $genders,
+        public readonly Collection $roundOptions,
         public readonly ?string $selectedYear,
     ) {}
 
@@ -28,6 +29,7 @@ final class ListRepeatersReportResponseDTO
             'branches' => $this->branches,
             'majors' => $this->majors,
             'genders' => $this->genders,
+            'roundOptions' => $this->roundOptions,
             'selectedYear' => $this->selectedYear,
         ];
     }

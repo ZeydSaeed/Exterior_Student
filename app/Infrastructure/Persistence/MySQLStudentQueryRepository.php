@@ -790,6 +790,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                     'branches' => $filterLists['branches'],
                     'majors' => $filterLists['majors'],
                     'genders' => $filterLists['genders'],
+                    'roundOptions' => $filterLists['roundOptions'],
                 ],
             ];
         }
@@ -811,6 +812,7 @@ final class MySQLStudentQueryRepository implements StudentQueryRepository
                 'branches' => $filterLists['branches'],
                 'majors' => $filterLists['majors'],
                 'genders' => $filterLists['genders'],
+                'roundOptions' => $filterLists['roundOptions'],
             ],
         ];
     }

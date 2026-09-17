@@ -27,6 +27,7 @@ final class ListRepeatersReportQueryHandler
             branches: $data['filters']['branches'],
             majors: $data['filters']['majors'],
             genders: $data['filters']['genders'],
+            roundOptions: $data['filters']['roundOptions'] ?? collect(),
             selectedYear: $query->year !== null && trim($query->year) !== '' ? trim($query->year) : null,
         );
     }

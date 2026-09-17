@@ -35,7 +35,7 @@ beforeEach(function () {
 it('shows the login page to guests', function () {
     $this->get(route('login'))
         ->assertSuccessful()
-        ->assertSee('نظام إدارة الطلبة')
+        ->assertSee('نظام إدارة الطلبة الخريجون')
         ->assertSee('اسم الدخول')
         ->assertSee('كلمة المرور')
         ->assertSee('icon-students-16.png', false)

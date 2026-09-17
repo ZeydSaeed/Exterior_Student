@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>تسجيل الدخول — نظام إدارة الطلبة</title>
+    <title>تسجيل الدخول — نظام إدارة الطلبة الخريجون</title>
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v={{ file_exists(public_path('css/dashboard.css')) ? filemtime(public_path('css/dashboard.css')) : time() }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
@@ -18,7 +18,7 @@
         <div class="login-card">
             <div class="login-brand-wrap">
                 <img src="{{ asset('images/ems-logo.svg') }}" alt="EMS" class="login-brand-logo" width="88" height="88">
-                <h1 class="login-brand">نظام إدارة الطلبة</h1>
+                <h1 class="login-brand">نظام إدارة الطلبة الخريجون</h1>
             </div>
             <p class="login-subtitle">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
 

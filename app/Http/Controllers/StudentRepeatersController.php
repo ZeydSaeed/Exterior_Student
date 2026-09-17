@@ -18,6 +18,8 @@ final class StudentRepeatersController extends Controller
             'major' => $request->query('major'),
             'gender' => $request->query('gender'),
             'year' => $year !== '' ? $year : null,
+            'round' => $request->query('round'),
+            'result' => $request->query('result'),
             'search' => $request->query('search'),
         ]);
 

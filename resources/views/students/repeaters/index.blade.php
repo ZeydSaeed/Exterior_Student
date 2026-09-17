@@ -13,7 +13,10 @@
 @endsection
 
 @section('content')
-    @include('students.partials.repeaters-filters')
+    @include('students.partials.filters', [
+        'students_filter_form_action' => route('students.repeaters.index'),
+        'useStudentListSessionMerge' => false,
+    ])
 
     <div class="students-layout">
         <section class="students-table-area repeaters-report-print repeaters-print-area" aria-label="جدول الطلبة المعيدين">

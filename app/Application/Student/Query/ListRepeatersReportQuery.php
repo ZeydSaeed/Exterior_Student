@@ -9,6 +9,8 @@ final class ListRepeatersReportQuery
         public readonly ?string $major = null,
         public readonly ?string $gender = null,
         public readonly ?string $year = null,
+        public readonly ?string $round = null,
+        public readonly ?string $result = null,
         public readonly ?string $search = null,
     ) {}
 
@@ -19,11 +21,13 @@ final class ListRepeatersReportQuery
             major: $input['major'] ?? null,
             gender: $input['gender'] ?? null,
             year: $input['year'] ?? null,
+            round: $input['round'] ?? null,
+            result: $input['result'] ?? null,
             search: $input['search'] ?? null,
         );
     }
 
-    /** @return array{branch?: string, major?: string, gender?: string, year?: string, search?: string} */
+    /** @return array{branch?: string, major?: string, gender?: string, year?: string, round?: string, result?: string, search?: string} */
     public function filtersForRepository(): array
     {
         $normalize = static function (?string $v): ?string {
@@ -40,6 +44,8 @@ final class ListRepeatersReportQuery
             'major' => $normalize($this->major),
             'gender' => $normalize($this->gender),
             'year' => $normalize($this->year),
+            'round' => $normalize($this->round),
+            'result' => $normalize($this->result),
             'search' => $normalize($this->search),
         ];
     }

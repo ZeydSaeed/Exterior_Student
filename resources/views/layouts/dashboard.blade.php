@@ -17,7 +17,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=cairo:400,600,700,800|instrument-sans:400,500,600" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-students-16.png') }}?v={{ file_exists(public_path('icon-students-16.png')) ? filemtime(public_path('icon-students-16.png')) : time() }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-students-32.png') }}?v={{ file_exists(public_path('icon-students-32.png')) ? filemtime(public_path('icon-students-32.png')) : time() }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon-mark.svg') }}">
@@ -182,7 +182,7 @@
                     @if($authUser?->hasPermission(PermissionCatalog::BACKUP_CREATE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_BACKUP))
                     <form method="POST" action="{{ route('database-backup.store') }}" style="display: inline;">
                         @csrf
-                        <button type="submit" class="dashboard-toolbar-btn" aria-label="نسخ احتياطي" title="نسخ احتياطي" style="background: transparent; border: none; padding: 0;">
+                        <button type="submit" class="dashboard-toolbar-btn" aria-label="نسخ احتياطي" title="نسخ احتياطي">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
@@ -194,7 +194,7 @@
                     <form id="database-restore-form" method="POST" action="{{ route('database-backup.restore') }}" enctype="multipart/form-data" style="display: inline;">
                         @csrf
                         <input type="file" name="file" id="database-restore-file" accept=".sql,text/plain,application/sql" hidden>
-                        <button type="button" id="database-restore-trigger" class="dashboard-toolbar-btn" aria-label="استيراد قاعدة بيانات" title="استيراد قاعدة بيانات" style="background: transparent; border: none; padding: 0;">
+                        <button type="button" id="database-restore-trigger" class="dashboard-toolbar-btn" aria-label="استيراد قاعدة بيانات" title="استيراد قاعدة بيانات">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="17 8 12 3 7 8"/>
