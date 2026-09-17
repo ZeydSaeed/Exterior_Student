@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'طباعة القيود')</title>
+    <title>{{ config('app.window_title') }}</title>
     <link rel="stylesheet" href="{{ url('css/student-document.css') }}?v={{ file_exists(public_path('css/student-document.css')) ? filemtime(public_path('css/student-document.css')) : time() }}">
     <style>
         .doc-bulk-print-actions { padding: 0.5rem; text-align: center; }

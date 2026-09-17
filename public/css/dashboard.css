@@ -764,8 +764,8 @@ body.page-students .dashboard-main {
     border: 0.25px solid #f1a257;
 }
 .students-filter-card-title {
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: #fff;
     font-family: var(--dashboard-filter-font);
     margin: 0 0 0.25rem 0;
@@ -782,8 +782,8 @@ body.page-students .dashboard-main {
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: 0.65rem;
+    font-weight: 400;
     color: #000;
     font-family: var(--dashboard-filter-font);
     cursor: pointer;
@@ -820,8 +820,8 @@ body.page-students .dashboard-main {
     min-width: 0;
     box-sizing: border-box;
     padding: 0.25rem 0.25rem;
-    font-size: 0.6rem;
-    font-weight: 800;
+    font-size: 0.7rem;
+    font-weight: 400;
     line-height: 1.25;
     color: #000;
     font-family: var(--dashboard-filter-font);
@@ -843,9 +843,13 @@ body.page-students .dashboard-main {
 }
 .students-filter-select option {
     font-family: var(--dashboard-filter-font);
-    font-size: 0.6rem;
-    font-weight: 800;
+    font-size: 0.7rem;
+    font-weight: 400;
     color: #000;
+}
+#students-filter-year,
+#students-filter-year option {
+    font-size: 0.85rem;
 }
 label.students-filter-card-title {
     display: block;
@@ -2109,13 +2113,17 @@ body.grades-modal-open {
         padding-right: 0.3rem;
     }
     .students-filter-card-title {
-        font-size: 0.6rem;
+        font-size: 0.68rem;
     }
     .students-filter-card-options label {
-        font-size: 0.52rem;
+        font-size: 0.6rem;
     }
     .students-filter-select {
-        font-size: 0.55rem;
+        font-size: 0.63rem;
+    }
+    #students-filter-year,
+    #students-filter-year option {
+        font-size: 0.78rem;
     }
     .pagination {
         gap: 0.5rem;

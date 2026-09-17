@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('meta')
-    <title>@yield('title', config('app.name'))</title>
+    <title>{{ config('app.window_title') }}</title>
     {{-- تحميل تنسيقات الداشبورد دائماً من public لضمان ظهورها --}}
     <link rel="stylesheet" href="{{ url('css/dashboard.css') }}?v={{ file_exists(public_path('css/dashboard.css')) ? filemtime(public_path('css/dashboard.css')) : time() }}">
     @yield('styles')
@@ -24,7 +24,7 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v={{ file_exists(public_path('favicon.ico')) ? filemtime(public_path('favicon.ico')) : time() }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    <meta name="application-name" content="نظام الطلبة">
+    <meta name="application-name" content="{{ config('app.window_title') }}">
     <meta name="theme-color" content="#4a545e">
 </head>
 <body class="dashboard-layout @yield('body_class')">

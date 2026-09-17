@@ -43,7 +43,7 @@ it('uses the same highlight colors for hover and selection on sidebar, toolbar, 
         ->and($css)->toContain('color: var(--dashboard-sidebar-hover-text)');
 });
 
-it('renders filter labels in black extra-bold type one step larger', function () {
+it('renders filter labels in black regular type one step larger', function () {
     $css = (string) file_get_contents(public_path('css/dashboard.css'));
     $layout = (string) file_get_contents(resource_path('views/layouts/dashboard.blade.php'));
     $titleBlock = preg_match('/\.students-filter-card-title \{[^}]+\}/s', $css, $titleMatch)
@@ -60,20 +60,28 @@ it('renders filter labels in black extra-bold type one step larger', function ()
         ? ($cardMatch[0] ?? '')
         : '';
 
-    expect($titleBlock)->toContain('font-size: 0.65rem')
-        ->and($titleBlock)->toContain('font-weight: 800')
+    expect($titleBlock)->toContain('font-size: 0.75rem')
+        ->and($titleBlock)->toContain('font-weight: 400')
+        ->and($labelBlock)->toContain('font-weight: 400')
+        ->and($selectBlock)->toContain('font-weight: 400')
         ->and($titleBlock)->toContain('color: #fff')
         ->and($titleBlock)->toContain('font-family: var(--dashboard-filter-font)')
         ->and($css)->toContain("--dashboard-filter-font: 'Cairo', Tahoma, sans-serif")
         ->and($layout)->toContain('cairo:400,600,700,800')
-        ->and($labelBlock)->toContain('font-size: 0.55rem')
-        ->and($selectBlock)->toContain('font-size: 0.6rem')
+        ->and($labelBlock)->toContain('font-size: 0.65rem')
+        ->and($selectBlock)->toContain('font-size: 0.7rem')
         ->and($selectBlock)->toContain('color: #000')
         ->and($cardBlock)->toContain('background: rgba(255,255,255,0.08)')
         ->and($cardBlock)->toContain('border: 0.25px solid #f1a257')
         ->and($css)->toContain('width: 4.5cm')
         ->and($css)->toContain('margin-left: 4.5cm')
         ->and($css)->toContain('max-width: calc(100vw - 1.75cm - 4.5cm)');
+
+    $yearSelectBlock = preg_match('/#students-filter-year,\s*#students-filter-year option \{[^}]+\}/s', $css, $yearSelectMatch)
+        ? ($yearSelectMatch[0] ?? '')
+        : '';
+
+    expect($yearSelectBlock)->toContain('font-size: 0.85rem');
 });
 
 it('shows the user name and logout control on the dashboard toolbar', function () {

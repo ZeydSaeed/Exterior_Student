@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Exterior Student'),
 
+    'window_title' => 'نظام إدارة الطلبة الخريجون - الإصدار 1',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
