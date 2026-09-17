@@ -17,7 +17,9 @@ final class StudentExcelImportController extends Controller
 
     public function show(): View
     {
-        return view('students.import-excel');
+        return view('students.import-excel', [
+            'excelColumns' => $this->importUseCase->excelColumnOrder(),
+        ]);
     }
 
     public function upload(ImportStudentsExcelRequest $request): RedirectResponse
@@ -29,6 +31,7 @@ final class StudentExcelImportController extends Controller
                 ->route('students.import-excel')
                 ->with('error', 'الملف فارغ أو لا يحتوي على صفوف بيانات.');
         }
+
         return redirect()
             ->route('students.import-excel.preview', ['batch_id' => $result['batch_id']])
             ->with('import_result', $result);
@@ -45,9 +48,11 @@ final class StudentExcelImportController extends Controller
             return redirect()->route('students.import-excel')->with('error', 'لم يتم العثور على دفعة الاستيراد.');
         }
         $result = session('import_result', ['total' => count($rows), 'valid' => 0, 'failed' => 0]);
+
         return view('students.import-excel-preview', [
             'batchId' => $batchId,
             'rows' => $rows,
+            'excelColumns' => $this->importUseCase->excelColumnOrder(),
             'total' => $result['total'],
             'validCount' => $result['valid'],
             'failedCount' => $result['failed'],
@@ -63,12 +68,13 @@ final class StudentExcelImportController extends Controller
         $result = $this->importUseCase->processValidRows($batchId);
         $msg = "تم إدراج {$result['success']} طالب بنجاح.";
         if ($result['failed'] > 0) {
-            $msg .= ' فشل ' . $result['failed'] . ' صف.';
+            $msg .= ' فشل '.$result['failed'].' صف.';
         }
         if (! empty($result['errors'])) {
-            $msg .= ' تفاصيل: ' . implode('؛ ', array_slice($result['errors'], 0, 3));
+            $msg .= ' تفاصيل: '.implode('؛ ', array_slice($result['errors'], 0, 3));
         }
         $request->session()->forget(StudentListFiltersSession::SESSION_KEY);
+
         return redirect()
             ->route('students.index')
             ->with('status', $msg);

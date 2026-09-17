@@ -19,11 +19,28 @@
             </div>
         @endif
 
-        <p class="import-excel-desc">
-            اختر الدور ثم ملف Excel (xlsx أو xls) يحتوي على أعمدة:<br>
-            الرقم الامتحاني، اسم الطالب (اختياري للعرض فقط)، الفرع، الاختصاص، العام الدراسي، ثم أعمدة المواد الدراسية الخاصة بالاختصاص (من العمود 6 إلى 13)، ثم المجموع، المعدل، النتيجة.
-            المطابقة تتم بالرقم الامتحاني مع الفرع والاختصاص والعام الدراسي (دون الاعتماد على الاسم). درجات المواد تقبل الأرقام أو النصوص (مثل غ أو حجب). الدور المختار يُحفظ مع النتائج المستوردة.
-        </p>
+        <p class="import-excel-desc">اختر الدور ثم ملف Excel (xlsx أو xls) يحتوي على الأعمدة التالية بالترتيب:</p>
+
+        <div class="import-excel-table-wrap" role="region" aria-label="ترتيب أعمدة ملف Excel للنتائج">
+            <table class="import-excel-table import-excel-columns-table" data-fit-table="true">
+                <thead>
+                    <tr>
+                        @foreach($excelColumns as $column)
+                            <th scope="col">{{ $column['label'] }}</th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @foreach($excelColumns as $column)
+                            <td>&nbsp;</td>
+                        @endforeach
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="import-excel-desc">أعمدة المواد من المادة 1 إلى المادة 8 حسب ترتيب مواد الاختصاص في الملف. المطابقة تتم بالرقم الامتحاني مع الفرع والاختصاص ( يجب ان تكون المطابقة دقيقة وبدون اي اختلاف) والعام الدراسي (دون الاعتماد على الاسم). درجات المواد تقبل الأرقام أو النصوص (مثل غ أو حجب). الدور المختار يُحفظ مع النتائج المستوردة.</p>
 
         <form action="{{ route('students.results-import-excel.upload') }}" method="POST" enctype="multipart/form-data" class="import-excel-form">
             @csrf
@@ -50,18 +67,5 @@
 @endsection
 
 @section('scripts')
-    <script>
-        (function () {
-            var input = document.getElementById('results-import-file');
-            var nameEl = document.getElementById('results-import-file-name');
-            if (!input || !nameEl) return;
-            input.addEventListener('change', function () {
-                if (input.files && input.files.length > 0) {
-                    nameEl.textContent = input.files[0].name || 'تم اختيار ملف';
-                } else {
-                    nameEl.textContent = 'لم يتم اختيار ملف';
-                }
-            });
-        })();
-    </script>
+    <script src="{{ url('js/import-excel-fit.js') }}?v={{ file_exists(public_path('js/import-excel-fit.js')) ? filemtime(public_path('js/import-excel-fit.js')) : time() }}"></script>
 @endsection

@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Application\Backup\BackupSavePathPicker;
 use App\Domain\Attestation\AttestationCommandRepository;
 use App\Domain\Attestation\AttestationQueryRepository;
 use App\Domain\Auth\AuthAccountCommandRepository;
 use App\Domain\Auth\AuthAccountQueryRepository;
+use App\Domain\Backup\BackupFileCipher;
 use App\Domain\Backup\Repositories\DatabaseBackupRepository;
 use App\Domain\Certificate\CertificateSignatureRepository;
 use App\Domain\Employee\EmployeeCommandRepository;
@@ -21,6 +23,8 @@ use App\Domain\Student\StudentResultsImportTempRepository;
 use App\Domain\Student\SubjectCatalogInterface;
 use App\Domain\StudentNote\StudentNoteCommandRepository;
 use App\Domain\StudentNote\StudentNoteQueryRepository;
+use App\Infrastructure\Backup\AesGcmBackupFileCipher;
+use App\Infrastructure\Backup\WindowsBackupSavePathPicker;
 use App\Infrastructure\Grades\ConfigSubjectCatalog;
 use App\Infrastructure\Persistence\MySQLAttestationCommandRepository;
 use App\Infrastructure\Persistence\MySQLAttestationQueryRepository;
@@ -77,6 +81,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Database backup
         $this->app->bind(DatabaseBackupRepository::class, MySQLDatabaseBackupRepository::class);
+        $this->app->bind(BackupFileCipher::class, AesGcmBackupFileCipher::class);
+        $this->app->bind(BackupSavePathPicker::class, WindowsBackupSavePathPicker::class);
 
         // Student records (documents)
         $this->app->bind(RecordQueryRepository::class, MySQLRecordQueryRepository::class);

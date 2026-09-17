@@ -2459,6 +2459,155 @@ body.grades-modal-open {
     margin-top: 0.85rem;
 }
 
+/* ========== استيراد Excel ========== */
+body.page-import-excel .dashboard-content,
+body.page-import-excel-preview .dashboard-content {
+    min-width: 0;
+    overflow-x: hidden;
+    padding-inline: 0.6rem;
+}
+.import-excel-wrap {
+    padding: 0;
+    max-width: 100%;
+    min-width: 0;
+}
+.import-excel-header h1 {
+    font-size: 1.25rem;
+    margin: 0 0 1rem 0;
+    color: var(--color-primary);
+}
+.import-excel-error {
+    background: #fee;
+    border: 1px solid #c00;
+    color: #c00;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+.import-excel-desc {
+    margin-bottom: 1.25rem;
+    color: var(--color-dark-accent);
+    font-size: 0.9rem;
+}
+.import-excel-form .form-group {
+    margin-bottom: 1rem;
+}
+.import-excel-form .form-group.import-excel-file-group {
+    margin-bottom: 2.5rem;
+}
+.import-excel-form .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: #4a545e;
+}
+.import-excel-select {
+    display: block;
+    width: 100%;
+    max-width: 20rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(74, 84, 94, 0.35);
+    border-radius: 0.25rem;
+    background: #fff;
+    color: #4a545e;
+    font-size: 0.95rem;
+}
+.import-excel-file-wrap {
+    position: relative;
+    display: inline-block;
+    min-height: 2.5rem;
+}
+.import-excel-form input[type="file"] {
+    font-size: 1rem;
+}
+.import-excel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.import-excel-stats {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+.import-excel-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.import-excel-preview-actions a,
+.import-excel-preview-actions a:hover,
+.import-excel-preview-actions a:focus,
+.import-excel-preview-actions a:active {
+    text-decoration: none !important;
+}
+.import-excel-preview-actions .btn-primary[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.import-excel-table-wrap {
+    overflow-x: hidden;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid #200f1b;
+    background: var(--color-light-accent);
+    box-sizing: border-box;
+}
+.import-excel-table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: clamp(0.58rem, 0.72vw, 0.78rem);
+}
+.import-excel-table th,
+.import-excel-table td {
+    padding: 0.28rem 0.18rem;
+    border: 1px solid #200f1b;
+    text-align: center;
+    vertical-align: middle;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.25;
+}
+.import-excel-table th {
+    background: var(--color-dark-accent);
+    color: #fff;
+    font-weight: 600;
+}
+.import-excel-columns-table td {
+    height: 2rem;
+    background: #fff;
+}
+.import-excel-row.status-failed td {
+    background: #fff5f5;
+}
+.import-excel-row.status-valid td {
+    background: #f5fff5;
+}
+.error-cell {
+    color: #c00;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 0.75rem;
+    max-width: 100%;
+    white-space: normal;
+}
+.status-badge.status-valid { background: #2e7d32; color: #fff; }
+.status-badge.status-failed { background: #c62828; color: #fff; }
+.btn-secondary { background: var(--color-secondary); color: #1a1a1a; }
+.btn-secondary:hover { background: #8a9baa; }
+
 @media (max-width: 768px) {
     .login-card {
         padding: 1.25rem 1rem;

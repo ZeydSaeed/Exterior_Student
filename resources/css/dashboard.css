@@ -1260,9 +1260,16 @@ body.grades-modal-open {
 }
 
 /* ========== استيراد Excel ========== */
+body.page-import-excel .dashboard-content,
+body.page-import-excel-preview .dashboard-content {
+    min-width: 0;
+    overflow-x: hidden;
+    padding-inline: 0.6rem;
+}
 .import-excel-wrap {
-    padding: 1rem 1.5rem;
-    max-width: 56rem;
+    padding: 0;
+    max-width: 100%;
+    min-width: 0;
 }
 .import-excel-header h1 {
     font-size: 1.25rem;
@@ -1395,38 +1402,61 @@ body.grades-modal-open {
     cursor: not-allowed;
 }
 .import-excel-table-wrap {
-    overflow-x: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid #200f1b;
+    background: var(--color-light-accent);
+    box-sizing: border-box;
 }
 .import-excel-table {
     width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    table-layout: fixed;
+    font-size: clamp(0.58rem, 0.72vw, 0.78rem);
 }
 .import-excel-table th,
 .import-excel-table td {
-    padding: 0.5rem 0.6rem;
-    border: 1px solid rgba(0,0,0,0.1);
-    text-align: right;
+    padding: 0.28rem 0.18rem;
+    border: 1px solid #200f1b;
+    text-align: center;
+    vertical-align: middle;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.25;
 }
 .import-excel-table th {
     background: var(--color-dark-accent);
     color: #fff;
+    font-weight: 600;
 }
-.import-excel-row.status-failed {
+.import-excel-columns-table td {
+    height: 2rem;
+    background: #fff;
+}
+.import-excel-row.status-failed td {
     background: #fff5f5;
 }
-.import-excel-row.status-valid {
+.import-excel-row.status-valid td {
     background: #f5fff5;
 }
 .error-cell {
     color: #c00;
-    max-width: 18rem;
 }
 .status-badge {
     display: inline-block;
     padding: 0.2rem 0.5rem;
     border-radius: 0.2rem;
     font-size: 0.75rem;
+    max-width: 100%;
+    white-space: normal;
 }
 .status-badge.status-valid { background: #2e7d32; color: #fff; }
 .status-badge.status-failed { background: #c62828; color: #fff; }

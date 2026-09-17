@@ -17,7 +17,9 @@ final class StudentResultsExcelImportController extends Controller
 
     public function show(): View
     {
-        return view('students.import-results-excel');
+        return view('students.import-results-excel', [
+            'excelColumns' => $this->useCase->excelColumnOrder(),
+        ]);
     }
 
     public function upload(ImportStudentResultsExcelRequest $request): RedirectResponse
@@ -56,6 +58,7 @@ final class StudentResultsExcelImportController extends Controller
         return view('students.import-results-excel-preview', [
             'batchId' => $batchId,
             'rows' => $rows,
+            'excelColumns' => $this->useCase->excelColumnOrder(),
             'total' => $result['total'],
             'validCount' => $result['valid'],
             'failedCount' => $result['failed'],

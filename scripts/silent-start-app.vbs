@@ -143,6 +143,14 @@ Sub CloseChromeAppProfile(profileDir)
   WScript.Sleep 600
 End Sub
 
+Sub EnsureChromeAskWhereToSave(profileRoot)
+  Dim ps1, cmd
+  ps1 = scriptsDir & "\ensure-chrome-save-dialog.ps1"
+  If Not fso.FileExists(ps1) Then Exit Sub
+  cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File """ & ps1 & """ -ProfileRoot """ & profileRoot & """"
+  RunHiddenWait cmd
+End Sub
+
 Sub ClearChromeFaviconCache(profileDir)
   Dim names, i, target, defaultDir
   defaultDir = profileDir & "\Default"
@@ -252,13 +260,14 @@ End If
 
 CloseChromeAppProfile appProfile
 ClearChromeFaviconCache appProfile
+EnsureChromeAskWhereToSave appProfile
 
 icoPath = scriptsDir & "\students-app.ico"
 lnkPath = appProfile & "\ExteriorStudent.lnk"
 On Error Resume Next
 Set lnk = sh.CreateShortcut(lnkPath)
 lnk.TargetPath = chromeExe
-lnk.Arguments = "--user-data-dir=""" & appProfile & """ --profile-directory=Default --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+lnk.Arguments = "--user-data-dir=""" & appProfile & """ --profile-directory=Default --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
 lnk.WorkingDirectory = scriptsDir
 If fso.FileExists(icoPath) Then
   lnk.IconLocation = icoPath & ",0"
@@ -270,7 +279,7 @@ If fso.FileExists(lnkPath) Then
   sh.Run """" & lnkPath & """", 1, False
 Else
   cmd = """" & chromeExe & """ --user-data-dir=""" & appProfile & """ --profile-directory=Default"
-  cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+  cmd = cmd & " --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
   sh.Run cmd, 1, False
 End If
 

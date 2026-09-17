@@ -72,12 +72,64 @@ namespace ExteriorStudentHost
                         "WebView2");
                     Directory.CreateDirectory(userData);
 
+                    string origin = url;
+                    try
+                    {
+                        origin = new Uri(url).GetLeftPart(UriPartial.Authority);
+                    }
+                    catch
+                    {
+                        // keep the launch url if it is not a full URI
+                    }
+
+                    var options = new Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions(
+                        additionalBrowserArguments: "--unsafely-treat-insecure-origin-as-secure=" + origin);
                     var env = await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(
-                        userDataFolder: userData);
+                        browserExecutableFolder: null,
+                        userDataFolder: userData,
+                        options: options);
                     await web.EnsureCoreWebView2Async(env);
                     web.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                     web.CoreWebView2.Settings.AreDevToolsEnabled = false;
                     web.CoreWebView2.Settings.IsZoomControlEnabled = true;
+                    web.CoreWebView2.DownloadStarting += (downloadSender, downloadArgs) =>
+                    {
+                        using (SaveFileDialog dialog = new SaveFileDialog())
+                        {
+                            string suggested = downloadArgs.ResultFilePath;
+                            bool isBackup = string.Equals(
+                                Path.GetExtension(suggested),
+                                ".esbak",
+                                StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(
+                                Path.GetExtension(suggested),
+                                ".sql",
+                                StringComparison.OrdinalIgnoreCase);
+
+                            dialog.Title = isBackup ? "حفظ النسخة الاحتياطية" : "حفظ الملف";
+                            dialog.Filter = isBackup
+                                ? "نسخة مشفّرة (*.esbak)|*.esbak|SQL (*.sql)|*.sql|كل الملفات (*.*)|*.*"
+                                : "كل الملفات (*.*)|*.*";
+                            dialog.DefaultExt = isBackup ? "esbak" : "";
+                            dialog.AddExtension = isBackup;
+                            dialog.OverwritePrompt = true;
+                            dialog.RestoreDirectory = true;
+                            dialog.InitialDirectory = Environment.GetFolderPath(
+                                Environment.SpecialFolder.DesktopDirectory);
+                            dialog.FileName = string.IsNullOrWhiteSpace(suggested)
+                                ? (isBackup ? "backup.esbak" : "download")
+                                : Path.GetFileName(suggested);
+
+                            if (dialog.ShowDialog(form) == DialogResult.OK)
+                            {
+                                downloadArgs.ResultFilePath = dialog.FileName;
+                            }
+                            else
+                            {
+                                downloadArgs.Cancel = true;
+                            }
+                        }
+                    };
                     web.CoreWebView2.Navigate(url);
                 }
                 catch (Exception ex)

@@ -45,6 +45,24 @@ final class ImportStudentsFromExcelUseCase
     ) {}
 
     /**
+     * ترتيب أعمدة ملف Excel كما يظهر في صفحة الاستيراد والمعاينة.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    public function excelColumnOrder(): array
+    {
+        $columns = [];
+        foreach (self::HEADERS as $key => $aliases) {
+            $columns[] = [
+                'key' => $key,
+                'label' => $aliases[0],
+            ];
+        }
+
+        return $columns;
+    }
+
+    /**
      * رفع الملف وقراءته وإدراجه في الجدول المؤقت ثم التحقق من كل صف.
      *
      * @return array{batch_id: string, total: int, valid: int, failed: int}

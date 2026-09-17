@@ -18,18 +18,19 @@ class ImportDatabaseBackupRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'pick_path' => ['sometimes', 'boolean'],
             'file' => [
-                'required',
+                'required_without:pick_path',
                 'file',
-                'max:51200',
+                'max:131072',
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     if (! $value instanceof UploadedFile) {
                         return;
                     }
 
                     $extension = strtolower((string) $value->getClientOriginalExtension());
-                    if ($extension !== 'sql') {
-                        $fail('يجب أن يكون الملف بصيغة SQL.');
+                    if ($extension !== 'esbak') {
+                        $fail('يجب أن يكون الملف نسخة احتياطية مشفّرة بصيغة .esbak.');
                     }
                 },
             ],
@@ -43,8 +44,10 @@ class ImportDatabaseBackupRequest extends FormRequest
     {
         return [
             'file.required' => 'يرجى اختيار ملف قاعدة البيانات.',
+            'file.required_without' => 'يرجى اختيار ملف قاعدة البيانات.',
             'file.file' => 'يرجى اختيار ملف صالح.',
-            'file.max' => 'حجم الملف يجب ألا يتجاوز 50 ميجابايت.',
+            'file.uploaded' => 'تعذر رفع الملف. استخدم نافذة اختيار الملف أو تأكد أن حجمه لا يتجاوز حد الرفع.',
+            'file.max' => 'حجم الملف يجب ألا يتجاوز 128 ميجابايت.',
         ];
     }
 }

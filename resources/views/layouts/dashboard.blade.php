@@ -180,9 +180,9 @@
                     </a>
                     @endif
                     @if($authUser?->hasPermission(PermissionCatalog::BACKUP_CREATE) || $authUser?->hasPermission(PermissionCatalog::TOOLBAR_BACKUP))
-                    <form method="POST" action="{{ route('database-backup.store') }}" style="display: inline;">
+                    <form id="database-backup-form" method="POST" action="{{ route('database-backup.store') }}" style="display: inline;">
                         @csrf
-                        <button type="submit" class="dashboard-toolbar-btn" aria-label="نسخ احتياطي" title="نسخ احتياطي">
+                        <button type="button" id="database-backup-trigger" class="dashboard-toolbar-btn" aria-label="نسخ احتياطي" title="نسخ احتياطي">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
@@ -193,7 +193,7 @@
                     </form>
                     <form id="database-restore-form" method="POST" action="{{ route('database-backup.restore') }}" enctype="multipart/form-data" style="display: inline;">
                         @csrf
-                        <input type="file" name="file" id="database-restore-file" accept=".sql,text/plain,application/sql" hidden>
+                        <input type="file" name="file" id="database-restore-file" accept=".esbak,application/octet-stream" hidden>
                         <button type="button" id="database-restore-trigger" class="dashboard-toolbar-btn" aria-label="استيراد قاعدة بيانات" title="استيراد قاعدة بيانات">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -228,6 +228,7 @@
         @include('partials.app-error-dialog')
         <script src="{{ url('js/app-error-dialog.js') }}?v={{ file_exists(public_path('js/app-error-dialog.js')) ? filemtime(public_path('js/app-error-dialog.js')) : time() }}"></script>
     @endunless
+    <script src="{{ url('js/database-backup.js') }}?v={{ file_exists(public_path('js/database-backup.js')) ? filemtime(public_path('js/database-backup.js')) : time() }}"></script>
     <script src="{{ url('js/database-restore.js') }}?v={{ file_exists(public_path('js/database-restore.js')) ? filemtime(public_path('js/database-restore.js')) : time() }}"></script>
 
     @yield('scripts')

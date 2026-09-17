@@ -1,6 +1,6 @@
 (function () {
-    var form = document.getElementById('database-restore-form');
-    var trigger = document.getElementById('database-restore-trigger');
+    var form = document.getElementById('database-backup-form');
+    var trigger = document.getElementById('database-backup-trigger');
 
     if (!form || !trigger) {
         return;
@@ -22,13 +22,6 @@
     }
 
     trigger.addEventListener('click', function () {
-        var confirmed = window.confirm(
-            'سيتم استبدال بيانات قاعدة البيانات الحالية بمحتوى الملف المختار. هل تريد المتابعة؟'
-        );
-        if (!confirmed) {
-            return;
-        }
-
         trigger.disabled = true;
 
         var headers = {
@@ -50,24 +43,24 @@
             credentials: 'same-origin',
         }).then(function (response) {
             return response.json().catch(function () {
-                return { message: 'تعذر استيراد قاعدة البيانات.' };
+                return { message: 'تعذر إنشاء النسخ الاحتياطي.' };
             }).then(function (payload) {
                 if (payload && payload.cancelled) {
                     return;
                 }
 
                 if (!response.ok) {
-                    throw new Error((payload && payload.message) || 'تعذر استيراد قاعدة البيانات.');
+                    throw new Error((payload && payload.message) || 'تعذر إنشاء النسخ الاحتياطي.');
                 }
 
-                notifySuccess((payload && payload.message) || 'تم استيراد قاعدة البيانات بنجاح.');
+                notifySuccess((payload && payload.message) || 'تم حفظ النسخ الاحتياطي في الموقع الذي اخترته.');
             });
         }).catch(function (error) {
             if (error instanceof Response) {
                 return;
             }
 
-            notifyError((error && error.message) || 'تعذر استيراد قاعدة البيانات.');
+            notifyError((error && error.message) || 'تعذر إنشاء النسخ الاحتياطي.');
         }).finally(function () {
             trigger.disabled = false;
         });

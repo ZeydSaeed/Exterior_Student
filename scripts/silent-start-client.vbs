@@ -70,7 +70,7 @@ cmd = """" & chromeExe & """"
 If fso.FolderExists(chromeUserData) Then
   cmd = cmd & " --user-data-dir=""" & chromeUserData & """ --profile-directory=" & profileDir
 End If
-cmd = cmd & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
+cmd = cmd & " --unsafely-treat-insecure-origin-as-secure=" & appUrl & " --app=" & appUrl & " --start-maximized --no-first-run --disable-session-crashed-bubble --disable-features=TranslateUI"
 sh.Run cmd, 1, False
 
 Set sh = Nothing

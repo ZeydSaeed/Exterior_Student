@@ -28,30 +28,26 @@
             <a href="{{ route('students.index') }}" class="btn-primary btn-secondary" style="text-decoration: none; font-weight: bold;">العودة للقائمة</a>
         </div>
 
-        <div class="students-table-wrapper">
-            <table class="students-table">
+        <div class="import-excel-table-wrap" role="region" aria-label="معاينة صفوف استيراد النتائج">
+            <table class="import-excel-table import-excel-columns-table" data-fit-table="true">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>الرقم الامتحاني</th>
-                        <th>اسم الطالب</th>
-                        <th>الفرع</th>
-                        <th>الاختصاص</th>
-                        <th>العام الدراسي</th>
-                        <th>الدور</th>
-                        <th>الحالة</th>
-                        <th>الخطأ</th>
+                        <th scope="col">#</th>
+                        @foreach($excelColumns as $column)
+                            <th scope="col">{{ $column['label'] }}</th>
+                        @endforeach
+                        <th scope="col">الدور</th>
+                        <th scope="col">الحالة</th>
+                        <th scope="col">الخطأ</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($rows as $row)
-                        <tr class="students-data-row import-excel-row status-{{ $row->status }}">
+                        <tr class="import-excel-row status-{{ $row->status }}">
                             <td>{{ $row->row_index }}</td>
-                            <td>{{ e($row->exam_number ?? '') }}</td>
-                            <td>{{ e($row->student_name ?? '') }}</td>
-                            <td>{{ e($row->branch ?? '') }}</td>
-                            <td>{{ e($row->major ?? '') }}</td>
-                            <td>{{ e($row->academic_year ?? '') }}</td>
+                            @foreach($excelColumns as $column)
+                                <td>{{ e($row->{$column['key']} ?? '') }}</td>
+                            @endforeach
                             <td>{{ e($row->round ?? '') }}</td>
                             <td>
                                 @if($row->status === 'valid')
@@ -67,4 +63,8 @@
             </table>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="{{ url('js/import-excel-fit.js') }}?v={{ file_exists(public_path('js/import-excel-fit.js')) ? filemtime(public_path('js/import-excel-fit.js')) : time() }}"></script>
 @endsection

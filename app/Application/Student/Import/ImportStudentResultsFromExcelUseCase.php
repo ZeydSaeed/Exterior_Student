@@ -31,6 +31,33 @@ final class ImportStudentResultsFromExcelUseCase
     ) {}
 
     /**
+     * ترتيب أعمدة ملف Excel للنتائج كما يظهر في صفحة الاستيراد والمعاينة.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    public function excelColumnOrder(): array
+    {
+        $columns = [
+            ['key' => 'exam_number', 'label' => 'الرقم الامتحاني'],
+            ['key' => 'student_name', 'label' => 'اسم الطالب'],
+            ['key' => 'branch', 'label' => 'الفرع'],
+            ['key' => 'major', 'label' => 'الاختصاص'],
+            ['key' => 'academic_year', 'label' => 'العام الدراسي'],
+        ];
+        for ($i = 1; $i <= 8; $i++) {
+            $columns[] = [
+                'key' => 'subject_'.$i,
+                'label' => 'المادة '.$i,
+            ];
+        }
+        $columns[] = ['key' => 'total', 'label' => 'المجموع'];
+        $columns[] = ['key' => 'average', 'label' => 'المعدل'];
+        $columns[] = ['key' => 'result', 'label' => 'النتيجة'];
+
+        return $columns;
+    }
+
+    /**
      * @return array{batch_id:string,total:int,valid:int,failed:int}
      */
     public function uploadAndStage(UploadedFile $file, string $round): array
@@ -73,9 +100,21 @@ final class ImportStudentResultsFromExcelUseCase
     /**
      * @return list<object>
      */
+    /**
+     * @return list<object>
+     */
     public function getPreview(string $batchId): array
     {
-        return $this->tempRepository->getByBatchId($batchId);
+        $rows = $this->tempRepository->getByBatchId($batchId);
+        foreach ($rows as $row) {
+            $scores = $this->decodeRawScores($row->subjects_json);
+            usort($scores, static fn (array $a, array $b): int => ($a['idx'] <=> $b['idx']));
+            for ($i = 1; $i <= 8; $i++) {
+                $row->{'subject_'.$i} = (string) ($scores[$i - 1]['score'] ?? '');
+            }
+        }
+
+        return $rows;
     }
 
     /**

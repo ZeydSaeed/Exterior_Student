@@ -15,7 +15,28 @@
             </div>
         @endif
 
-        <p class="import-excel-desc">اختر ملف Excel (xlsx أو xls) يحتوي على أعمدة:<br>الرقم الامتحاني، اسم الطالب، اسم الاب، اسم الجد، اللقب، الجنس، التولد، محل الولادة، اسم الام الكامل، الفرع، الاختصاص، العام الدراسي، اخر مدرسة، رقم الوثيقة، تاريخها، جهة الاصدار.<br>صيغة التواريخ المقبولة: يوم/شهر/سنة مثل 15/06/2006</p>
+        <p class="import-excel-desc">اختر ملف Excel (xlsx أو xls) يحتوي على الأعمدة التالية بالترتيب:</p>
+
+        <div class="import-excel-table-wrap" role="region" aria-label="ترتيب أعمدة ملف Excel">
+            <table class="import-excel-table import-excel-columns-table" data-fit-table="true">
+                <thead>
+                    <tr>
+                        @foreach($excelColumns as $column)
+                            <th scope="col">{{ $column['label'] }}</th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @foreach($excelColumns as $column)
+                            <td>&nbsp;</td>
+                        @endforeach
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="import-excel-desc">صيغة التواريخ المقبولة: يوم/شهر/سنة مثل 15/06/2006 لحقل "التولد" و حقل "تاريخها"</p>
 
         <form action="{{ route('students.import-excel.upload') }}" method="POST" enctype="multipart/form-data" class="import-excel-form">
             @csrf
@@ -30,4 +51,8 @@
             </div>
         </form>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="{{ url('js/import-excel-fit.js') }}?v={{ file_exists(public_path('js/import-excel-fit.js')) ? filemtime(public_path('js/import-excel-fit.js')) : time() }}"></script>
 @endsection
